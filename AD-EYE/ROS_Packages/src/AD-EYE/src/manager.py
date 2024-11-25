@@ -216,7 +216,7 @@ class Manager:
         # "Experiment_specific_recording"
     ]
     ENGAGED_DEFAULT_FEATURES = [
-        "Recording",
+        # "Recording",
         "Map",
         "Sensing",
         "Localization",
@@ -272,7 +272,7 @@ class Manager:
         # "Experiment_specific_recording"
     ]
     ENGAGED_ALLOWED_FEATURES = [
-        "Recording",
+        # "Recording",
         "Map",
         "Sensing",
         "Localization",
