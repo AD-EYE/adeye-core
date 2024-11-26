@@ -8,6 +8,7 @@
 [submodule "ouster-sdk"]
 	path = AD-EYE/ROS_Packages/src/ouster-sdk
 	url = git@github.com:AD-EYE/ouster-sdk
+    branch = adeye
 [submodule "AD-EYE/ROS_Packages/src/Safe_Stop_Planner"]
 	path = AD-EYE/ROS_Packages/src/Safe_Stop_Planner
 	url = git@github.com:AD-EYE/Safe_Stop_Planner
