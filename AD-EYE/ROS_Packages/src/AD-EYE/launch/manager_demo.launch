@@ -1,5 +1,8 @@
 <!-- -->
 <launch>
+
+<remap from="/os_cloud_node/points" to="points_raw"/>
+
     <node
             type="manager.py"
             pkg="adeye"
