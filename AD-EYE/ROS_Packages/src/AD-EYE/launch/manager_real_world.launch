@@ -5,9 +5,9 @@
 
     <env name="ROSCONSOLE_FORMAT" value="[${severity}] [${time}] [${node}]: ${message}"/>
 
-    <arg name="lidar_source" default="Simulation"/>
-    <arg name="gnss_source" default="Simulation"/>
-    <arg name="camera_source" default="Simulation"/>
+    <arg name="lidar_source" default="RealWorld"/>
+    <arg name="gnss_source" default="RealWorld"/>
+    <arg name="camera_source" default="RealWorld"/>
 
     <param name="sensing/lidar_source" value="$(arg lidar_source)" />
     <param name="sensing/gnss_source" value="$(arg gnss_source)" />
@@ -36,8 +36,10 @@
         <param name="baud" value="9600"/>
     </node>
 
-    <include file="$(find ouster_ros)/launch/driver.launch">
+    <include file="$(find ouster_ros)/ouster.launch">
         <arg name="sensor_hostname" value="os-122226000469.local"/>
+        <arg name="viz" value="false"/>
+        <arg name="metadata" value="/home/adeye/ouster-metadata.json"/>
     </include>
 
     <node
