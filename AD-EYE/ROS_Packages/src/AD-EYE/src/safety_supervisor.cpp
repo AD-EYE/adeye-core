@@ -761,20 +761,6 @@ class SafetySupervisor
         pub_switch_.publish(msg_switch);
     };
 
-    /*!
-     * \brief The initialization loop waits until all flags have been received.
-     * \details Checks for gnss, gridmap and autoware global path flags.
-     */
-    void waitForInitialization()
-    {
-        ros::Rate rate(20);
-        while (nh_.ok() && !(gnss_flag_ && gridmap_flag_ && autoware_global_path_flag_ == 1))
-        {
-            ros::spinOnce();
-            rate.sleep();
-        }
-    }
-
     void ensureNumberOfSSMPEndposes(int target_number_of_endposes)
     {
         double SPEED_INCREMENT = 0.56;
@@ -1078,9 +1064,6 @@ class SafetySupervisor
             "/safe_stop_endposes_vis", 1, &SafetySupervisor::ssmpEndposesCallback, this);
 
         createFaultMonitors();
-
-        // Initialization loop
-        waitForInitialization();
     }
 
     void createFaultMonitors()
@@ -1108,13 +1091,20 @@ class SafetySupervisor
     void run()
     {
         ros::Rate rate(10);
+
+        // The initialization loop waits until all flags have been received.
+        while (nh_.ok() && !(gnss_flag_ && gridmap_flag_ && autoware_global_path_flag_ == 1))
+        {
+            ros::spinOnce();
+            publish();
+            rate.sleep();
+        }
+        // The main loop
         while (nh_.ok())
         {
             ros::spinOnce();
-
             performSafetyTestsAndDecision();
             publish();
-
             rate.sleep();
         }
     }
