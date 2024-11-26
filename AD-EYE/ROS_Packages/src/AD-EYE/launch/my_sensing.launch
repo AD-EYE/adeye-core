@@ -7,7 +7,4 @@
     <!-- gnss_broadcaster -->
     <include file="$(find adeye)/launch/gnss_broadcaster.launch"/>
 
-   <!-- point_cloud_broadcaster -->
-   <node pkg="adeye" type="point_cloud_broadcaster.py" name="point_cloud_broadcaster"/>
-
 </launch>
