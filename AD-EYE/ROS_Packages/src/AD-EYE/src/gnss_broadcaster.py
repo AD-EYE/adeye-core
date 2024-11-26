@@ -48,7 +48,7 @@ class GnssBroadcaster:
         self.pose.header.stamp = rospy.Time.now()
         self.pose.pose.position.x = x_p #+ 60
         self.pose.pose.position.y = y_p #+ 50
-        self.pose.pose.position.z = fix.altitude - 72
+        self.pose.pose.position.z = fix.altitude - 52
         quaternion = tf.transformations.quaternion_from_euler(0, 0, 0)
         self.pose.pose.orientation.x = quaternion[0]
         self.pose.pose.orientation.y = quaternion[1]
