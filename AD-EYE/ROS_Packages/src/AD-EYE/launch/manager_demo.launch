@@ -11,23 +11,27 @@
             output="screen"
     />
 
+    <rosparam>
+        use_sim_time: true
+    </rosparam>
 
-    <include file="$(find can_vehicle)/launch/vic.launch"/>
+    <!--<include file="$(find lidar_localizer)/launch/ndt_matching_monitor.launch"/>-->
+
+    <!--<include file="$(find can_vehicle)/launch/vic.launch"/>-->
 
 
-    <node pkg="nmea_navsat_driver" type="nmea_serial_driver" name="navsat_driver" respawn="true">
+    <!--<node pkg="nmea_navsat_driver" type="nmea_serial_driver" name="navsat_driver" respawn="true">
         <param name="port" value="/dev/ttyACM0"/>
         <param name="baud" value="9600"/>
-    </node>
+    </node>-->
 <!--
-    <node pkg="adeye" type="camera_gmsl_publisher" name="camera_gmsl_publisher" respawn="true"/>
+    <node pkg="adeye" type="camera_gmsl_publisher" name="camera_gmsl_publisher" respawn="true"/>-->
 
--->
-    <include file="$(find ouster_ros)/ouster.launch">
+    <!--<include file="$(find ouster_ros)/ouster.launch">
         <arg name="sensor_hostname" value="os-122132000155.local"/>
         <arg name="viz" value="false"/>
         <arg name="metadata" value="/home/adeye/ouster-metadata.json"/>
-    </include>
+    </include>-->
 
 <!--
 
@@ -47,6 +51,16 @@
         output="screen"
     />
 -->
+
+    <!--<arg name="ndt_config" default="'{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: ''}, init_pos_gnss: 1, x: 0.0, y: 0.0, z: 0.0, roll: 0.0, pitch: 0.0, yaw: 0.0, use_predict_pose: 0, error_threshold: 0.0, resolution: 0.0, step_size: 0.0, trans_epsilon: 0.0, max_iterations: 0}'"/>
+    <node
+        pkg="rostopic"
+        type="rostopic"
+        name="ndt_configurator"
+        args='pub /config/ndt autoware_config_msgs/ConfigNDT $(arg ndt_config) -r 1'
+        output="screen"
+    />-->
+
     <node
             type="vehicle_controller"
             pkg="adeye"
