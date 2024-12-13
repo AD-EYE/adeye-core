@@ -813,7 +813,7 @@ Visualization Manager:
       Name: Current View
       Near Clip Distance: 0.00999999978
       Pitch: 0.479796886
-      Target Frame: gps
+      Target Frame: base_link
       Value: ThirdPersonFollower (rviz)
       Yaw: 3.28544831
     Saved: ~
