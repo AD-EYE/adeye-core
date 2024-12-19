@@ -32,11 +32,11 @@
     </include>
 
     <!-- Points Downsampler -->
-    <node pkg="rostopic" type="rostopic" name="config_voxel_grid_filter_rostopic"
+    <!--<node pkg="rostopic" type="rostopic" name="config_voxel_grid_filter_rostopic"
           args="pub -l /config/voxel_grid_filter autoware_config_msgs/ConfigVoxelGridFilter
         '{voxel_leaf_size: 0.2 , measurement_range: 200.0}' "
     />
-    <include file="$(find points_downsampler)/launch/points_downsample.launch"/>
+    <include file="$(find points_downsampler)/launch/points_downsample.launch"/>-->
 
     <!-- Set params-->
     <param name="localizer" value="$(arg lidar_frame_id)"/>
@@ -50,7 +50,7 @@
     <!-- ndt_matching --> <!-- METHOD TYPE: pcl_generic=0, pcl_anh=1, pcl_anh_gpu=2, pcl_openmp=3 -->
     <include file="$(find lidar_localizer)/launch/ndt_matching.launch">
         <arg name="method_type" value="2" />
-        <arg name="use_gnss" value="1" />
+        <arg name="use_gnss" value="0" />
         <arg name="use_odom" value="false" />
         <arg name="use_imu" value="1" />
         <arg name="imu_upside_down" value="false" />
@@ -62,6 +62,13 @@
         <arg name="sync" value="false" />
         <arg name="use_scan_stamp" value="false" />
     </include>
+
+    <!--<include file="$(find lidar_localizer)/launch/icp_matching.launch">
+        <arg name="use_gnss" value="1" />
+        <arg name="queue_size" value="10" />
+        <arg name="offset" value="linear" />
+        <arg name="sync" value="false" />
+    </include>-->
 
     <!--<include file="$(find gnss_localizer)/launch/fix2tfpose.launch">
     </include>-->
