@@ -3,13 +3,8 @@
 
 <remap from="/os_cloud_node/points" to="points_raw"/>
 
-    <node
-            type="manager.py"
-            pkg="adeye"
-            name="manager"
-            respawn="false"
-            output="screen"
-    />
+    <include file="$(find adeye)/launch/my_localization.launch"/>
+    <include file="$(find adeye)/launch/my_map.launch"/>
 
     <rosparam>
         use_sim_time: true

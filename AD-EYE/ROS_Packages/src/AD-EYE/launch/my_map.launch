@@ -9,11 +9,11 @@
     <!-- Point Cloud Map -->
     <node pkg="map_file" type="points_map_loader" name="points_map_loader" args="noupdate
     $(arg PointCloud_Files_Folder)">
-        <remap from="/points_map" to="/points_map_full" />
+        <!--<remap from="/points_map" to="/points_map_full" />-->
     </node>
 
     <!-- Point Cloud Map Filter -->
-    <node pkg="rostopic" type="rostopic" name="config_voxel_grid_filter_rostopic"
+    <!--<node pkg="rostopic" type="rostopic" name="config_voxel_grid_filter_rostopic"
         args="pub -l /config/map_voxel_grid_filter autoware_config_msgs/ConfigVoxelGridFilter
         '{voxel_leaf_size: 1 , measurement_range: 200.0}' "
     />
@@ -24,7 +24,7 @@
         <remap from="/config/voxel_grid_filter" to="/config/map_voxel_grid_filter" />
         <param name="output_log" value="false" />
         <param name="latch" value="true" />
-    </node>
+    </node>-->
 
     <!-- Vector Map -->
     <!--<node pkg="map_file" type="vector_map_loader" name="vector_map_loader" args="
