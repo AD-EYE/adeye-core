@@ -3,7 +3,7 @@
     <arg name="lidar_frame_id" default="os_sensor" />
 
     <!-- Set localization method: -->
-    <arg name="topic_pose_stamped" default="/gnss_pose"/> <!-- ndt_pose | icp_pose | gnss_pose -->
+    <arg name="topic_pose_stamped" default="/ndt_pose"/> <!-- ndt_pose | icp_pose | gnss_pose -->
 
     <!-- Set args defining tf_transform: base_link to lidar-->
     <arg name="tf_x" default="0.6"/>
@@ -36,7 +36,7 @@
           args="pub -l /config/voxel_grid_filter autoware_config_msgs/ConfigVoxelGridFilter
         '{voxel_leaf_size: 0.2 , measurement_range: 200.0}' "
     />
-    <include file="$(find points_downsampler)/launch/points_downsample.launch"/>
+    <include file="$(find points_downsampler)/launch/points_downsample.launch" />
 
     <!-- Set params-->
     <param name="localizer" value="$(arg lidar_frame_id)"/>
@@ -54,7 +54,7 @@
         <arg name="use_odom" value="false" />
         <arg name="use_imu" value="1" />
         <arg name="imu_upside_down" value="false" />
-        <arg name="imu_topic" value="/os_cloud_node/imu" />
+        <arg name="imu_topic" value="/ouster/imu" />
         <arg name="queue_size" value="1" />
         <arg name="offset" value="linear" />
         <arg name="get_height" value="true" />
