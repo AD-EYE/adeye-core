@@ -9,15 +9,15 @@ def callback(msg):
     msg.header.stamp = rospy.Time.now()
     pub.publish(msg)
 
-    global first_time
-    if first_time:
+    global iter
+    if iter < 10:
         pub_init.publish(initial_pose)
-        first_time = False
+        iter += 1
 
 if __name__ == '__main__':
 
-    global first_time
-    first_time = True
+    global iter
+    iter = 0
     rospy.init_node('lidar_timestamp_updater')
 
     pub_init = rospy.Publisher('/initialpose', PoseWithCovarianceStamped, queue_size=2)
