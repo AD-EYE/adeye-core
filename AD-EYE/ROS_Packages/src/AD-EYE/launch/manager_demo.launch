@@ -1,7 +1,7 @@
 <!-- -->
 <launch>
 
-<remap from="/os_cloud_node/points" to="points_raw"/>
+<!--<remap from="/ouster/points" to="points_raw"/>-->
 
     <include file="$(find adeye)/launch/my_localization.launch"/>
     <include file="$(find adeye)/launch/my_map.launch"/>
@@ -9,6 +9,9 @@
     <rosparam>
         use_sim_time: true
     </rosparam>
+
+    <node pkg="adeye" type="lidar_timestamp_update.py" name="lidar_timestamp_update">
+    </node>
 
     <!--<include file="$(find lidar_localizer)/launch/ndt_matching_monitor.launch"/>-->
 
