@@ -9,7 +9,6 @@
     <!-- Point Cloud Map -->
     <node pkg="map_file" type="points_map_loader" name="points_map_loader" args="noupdate
     $(arg PointCloud_Files_Folder)">
-        <!--<remap from="/points_map" to="/points_map_full" />-->
     </node>
 
     <!-- Point Cloud Map Filter -->
