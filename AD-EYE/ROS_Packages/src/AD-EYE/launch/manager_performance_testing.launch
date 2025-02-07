@@ -10,7 +10,7 @@
     />
 
     <rosparam>
-        use_sim_time: true
+        use_sim_time: false
     </rosparam>
 
     <node pkg="adeye" type="lidar_timestamp_update.py" name="lidar_timestamp_update">

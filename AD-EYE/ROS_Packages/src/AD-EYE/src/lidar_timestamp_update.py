@@ -26,8 +26,8 @@ if __name__ == '__main__':
     initial_pose = PoseWithCovarianceStamped()
     initial_pose.header.stamp = rospy.Time.now()
     initial_pose.header.frame_id = "/map"
-    initial_pose.pose.pose.position.x = 133.7
-    initial_pose.pose.pose.position.y = 5.7
+    initial_pose.pose.pose.position.x = 131.06
+    initial_pose.pose.pose.position.y = -10.78
     initial_pose.pose.pose.position.z = -2.9
     initial_pose.pose.pose.orientation.w = 0.5464
     initial_pose.pose.pose.orientation.z = -0.8369
