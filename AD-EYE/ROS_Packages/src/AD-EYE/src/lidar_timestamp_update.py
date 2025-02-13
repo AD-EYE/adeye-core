@@ -55,6 +55,6 @@ if __name__ == '__main__':
     pub = rospy.Publisher('/points_raw', PointCloud2, queue_size=10)
 
     # Subscribe to the original Lidar topic
-    sub = rospy.Subscriber('/ouster/points', PointCloud2, callback)
+    sub = rospy.Subscriber('/os_cloud_node/points', PointCloud2, callback)
 
     rospy.spin()
