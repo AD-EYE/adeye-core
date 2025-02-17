@@ -18,7 +18,7 @@
 
     <node pkg="tf" type="static_transform_publisher" name="link1_broadcaster" args="101 -1 0 0 0 -0.1097783 0.9939561 map map_temp 100" />
 
-    <node pkg="topic_tools" type="relay" name="relay_velocity" args="/estimate_twist /current_velocity" />
+    <node pkg="topic_tools" type="relay" name="relay_velocity" args="/current_velocity_phy /current_velocity" />
 
     <include file="$(find adeye)/launch/my_goal.launch"/>
 
