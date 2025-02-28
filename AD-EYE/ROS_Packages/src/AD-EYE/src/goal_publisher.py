@@ -30,11 +30,13 @@ if __name__ == '__main__':
     qz = float(rospy.get_param('~qz'))
     qw = float(rospy.get_param('~qw'))
 
-    pub = rospy.Publisher('/move_base_simple/goal', PoseStamped, queue_size=1)
+    pub = rospy.Publisher('/adeye/goals', PoseStamped, queue_size=1, latch=True)
 
     time.sleep(5)
 
-    rate = rospy.Rate(0.5)
+    pub.publish(get_goal(x, y, z, qx, qy, qz, qw))
+
+    rate = rospy.Rate(1)
+    # keeping the loop so that goal publisher doesn't exit
     while not rospy.is_shutdown():
-        pub.publish(get_goal(x, y, z, qx, qy, qz, qw))
         rate.sleep()
