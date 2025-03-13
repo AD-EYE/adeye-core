@@ -10,9 +10,9 @@ def callback(msg):
     pub.publish(msg)
 
     global iter
-    if iter < 10:
-        pub_init.publish(initial_pose)
-        iter += 1
+    #if iter < 10:
+    #    pub_init.publish(initial_pose)
+    #    iter += 1
 
 if __name__ == '__main__':
 
