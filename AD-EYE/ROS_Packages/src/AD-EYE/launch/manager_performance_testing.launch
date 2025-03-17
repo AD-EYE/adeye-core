@@ -8,8 +8,8 @@
                 output="screen"
         />
 
-        <node pkg="adeye" type="camera_gmsl_publisher" name="camera_gmsl_publisher" respawn="true" >
-                <param name="resolution-ratio" value="0.21" />
+        <node pkg="adeye" type="camera_gmsl_publisher" name="camera_gmsl_publisher" respawn="false" >
+                <param name="resolution_ratio" value="0.21" />
         </node>
 
 
