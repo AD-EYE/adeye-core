@@ -1,14 +1,16 @@
 <launch>
 
-    <node
-            type="manager.py"
-            pkg="adeye"
-            name="manager"
-            respawn="false"
-            output="screen"
-    />
+        <node
+                type="manager.py"
+                pkg="adeye"
+                name="manager"
+                respawn="false"
+                output="screen"
+        />
 
-    <node pkg="adeye" type="camera_gmsl_publisher" name="camera_gmsl_publisher" respawn="true" param name="resolution_ratio" value="0.24" />
+        <node pkg="adeye" type="camera_gmsl_publisher" name="camera_gmsl_publisher" respawn="true" >
+                <param name="resolution-ratio" value="0.21" />
+        </node>
 
 
 </launch>
