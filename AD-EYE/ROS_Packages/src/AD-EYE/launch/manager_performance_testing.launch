@@ -9,7 +9,8 @@
         />
 
         <node pkg="adeye" type="camera_gmsl_publisher" name="camera_gmsl_publisher" respawn="false" >
-                <param name="resolution_ratio" value="0.21" />
+                <param name="resolution_ratio" value="0.12" />
+                <arg name="resolution-ratio" default="0.12" />
         </node>
 
 
