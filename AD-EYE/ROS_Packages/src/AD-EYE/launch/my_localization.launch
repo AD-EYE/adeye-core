@@ -34,7 +34,7 @@
     <!-- Points Downsampler -->
     <node pkg="rostopic" type="rostopic" name="config_voxel_grid_filter_rostopic"
           args="pub -l /config/voxel_grid_filter autoware_config_msgs/ConfigVoxelGridFilter
-        '{voxel_leaf_size: 0.2 , measurement_range: 200.0}' "
+        '{voxel_leaf_size: 1 , measurement_range: 200.0}' "
     />
     <include file="$(find points_downsampler)/launch/points_downsample.launch" />
 
