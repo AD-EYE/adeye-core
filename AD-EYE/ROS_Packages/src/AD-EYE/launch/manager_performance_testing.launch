@@ -32,7 +32,7 @@
     </node>
 
 <!--
-    <node pkg="adeye" type="camera_gmsl_publisher" name="camera_gmsl_publisher" respawn="true"/>
+    <node pkg="adeye" type="camera_gmsl_publisher" name="camera_gmsl_publisher" respawn="true" args="--resolution-ratio=0.5"/>
 -->
 
     <include file="$(find ouster_ros)/ouster.launch">
