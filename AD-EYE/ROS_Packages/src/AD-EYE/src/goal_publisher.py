@@ -30,7 +30,7 @@ if __name__ == '__main__':
     qz = float(rospy.get_param('~qz'))
     qw = float(rospy.get_param('~qw'))
 
-    pub = rospy.Publisher('/adeye/goals', PoseStamped, queue_size=1, latch=True)
+    pub = rospy.Publisher('/move_base_simple/goal', PoseStamped, queue_size=1, latch=True)
 
     time.sleep(5)
 
