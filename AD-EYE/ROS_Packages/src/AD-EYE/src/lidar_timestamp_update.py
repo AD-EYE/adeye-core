@@ -32,7 +32,7 @@ if __name__ == '__main__':
     initial_pose.pose.pose.orientation.w = 0.5464
     initial_pose.pose.pose.orientation.z = -0.8369 """
 
-    # Start point for in front of Brazilia, straight on Brinellvägen
+    # Start point for in front of Brazilia, straight on Brinellvagen
     initial_pose = PoseWithCovarianceStamped()
     initial_pose.header.stamp = rospy.Time.now()
     initial_pose.header.frame_id = "/map"
