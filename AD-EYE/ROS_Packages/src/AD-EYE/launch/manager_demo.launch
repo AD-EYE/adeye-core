@@ -14,9 +14,6 @@
 <!--
     <include file="$(find can_vehicle)/launch/vic.launch"/>
 -->
-    <!-- uncommend for playing back rosbags and publishing initial pose-->
-    <!--<node pkg="adeye" type="lidar_timestamp_update.py" name="lidar_timestamp_update">
-    </node>-->
 
     <!--<include file="$(find lidar_localizer)/launch/ndt_matching_monitor.launch"/>-->
 <!--
