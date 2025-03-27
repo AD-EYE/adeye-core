@@ -22,6 +22,7 @@ if __name__ == '__main__':
 
     pub_init = rospy.Publisher('/initialpose', PoseWithCovarianceStamped, queue_size=2)
 
+
     # Start point for w16 map and Jose's bag from Brazilia
     """ initial_pose = PoseWithCovarianceStamped()
     initial_pose.header.stamp = rospy.Time.now()
@@ -42,6 +43,7 @@ if __name__ == '__main__':
     initial_pose.pose.pose.orientation.w = 0.998204
     initial_pose.pose.pose.orientation.z = -0.052536
 
+
     # Start point for w16 map and demo-t2.bag
     """     initial_pose = PoseWithCovarianceStamped()
     initial_pose.header.stamp = rospy.Time.now()
@@ -52,14 +54,23 @@ if __name__ == '__main__':
     initial_pose.pose.pose.orientation.z = 0 """
 
     # Start point for w16 map and demo-2.bag from 237s (backwards)
-    """     initial_pose = PoseWithCovarianceStamped()
-    initial_pose.header.stamp = rospy.Time.now()
-    initial_pose.header.frame_id = "/map"
-    initial_pose.pose.pose.position.x = 363.72
-    initial_pose.pose.pose.position.y = -642.15
-    initial_pose.pose.pose.position.z = -11.1
-    initial_pose.pose.pose.orientation.w = 0.522
-    initial_pose.pose.pose.orientation.z = 0.853 """
+    # initial_pose = PoseWithCovarianceStamped()
+    # initial_pose.header.stamp = rospy.Time.now()
+    # initial_pose.header.frame_id = "/map"
+    # initial_pose.pose.pose.position.x = 361.00
+    # initial_pose.pose.pose.position.y = -490.00
+    # initial_pose.pose.pose.position.z = -10.0
+    # initial_pose.pose.pose.orientation.w = 0.74
+    # initial_pose.pose.pose.orientation.z = 0.67
+
+    # initial_pose = PoseWithCovarianceStamped()
+    # initial_pose.header.stamp = rospy.Time.now()
+    # initial_pose.header.frame_id = "/map"
+    # initial_pose.pose.pose.position.x = 361.00
+    # initial_pose.pose.pose.position.y = -484.00
+    # initial_pose.pose.pose.position.z = 0.0
+    # initial_pose.pose.pose.orientation.w = 0.74
+    # initial_pose.pose.pose.orientation.z = 0.66
 
     # Publish the adjusted Lidar topic
     pub = rospy.Publisher('/points_raw', PointCloud2, queue_size=10)
