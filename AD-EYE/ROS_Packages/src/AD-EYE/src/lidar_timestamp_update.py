@@ -10,9 +10,9 @@ def callback(msg):
     pub.publish(msg)
 
     global iter
-    #if iter < 10:
-    #    pub_init.publish(initial_pose)
-    #    iter += 1
+    if iter < 10:
+        pub_init.publish(initial_pose)
+        iter += 1
 
 if __name__ == '__main__':
 
@@ -71,6 +71,16 @@ if __name__ == '__main__':
     # initial_pose.pose.pose.position.z = 0.0
     # initial_pose.pose.pose.orientation.w = 0.74
     # initial_pose.pose.pose.orientation.z = 0.66
+
+    # Start point for w18 Mariehall
+    # initial_pose = PoseWithCovarianceStamped()
+    # initial_pose.header.stamp = rospy.Time.now()
+    # initial_pose.header.frame_id = "/map"
+    # initial_pose.pose.pose.position.x = 15
+    # initial_pose.pose.pose.position.y = 36
+    # initial_pose.pose.pose.position.z = -10.0
+    # initial_pose.pose.pose.orientation.w = -0.70:
+    # initial_pose.pose.pose.orientation.z = 0.70
 
     # Publish the adjusted Lidar topic
     pub = rospy.Publisher('/points_raw', PointCloud2, queue_size=10)
