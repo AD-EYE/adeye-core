@@ -1,74 +1,26 @@
 #!/bin/bash
 
 NUM_RUNS=5
+
 LOG_BASE_NAME="voxel_leaf_2.0_25_03_20_hs_back_GPUCheck"
-PX2_LOG_DIR_ON_PC="/disk2/bags/lidar_data/px2"
+
 DEST_DIR="/disk2/logs"
+
 ROSBAG_DIR="/disk2/bags/lidar_data"
+
 ROSBAG_FILE="record_25_03_20hs_back.bag"
+
 PX2_USER="adeye"
+PX2_HOST="px2.local"
 PX2_PASSWORD="adeye"
-PX2_IP="192.168.1.100"  # Replace with actual PX2 IP
+PX2_LOG_DIR="/home/adeye/.ros/log/latest"
+PX2_CPU_LOG="/tmp/cpu_usage.log"
+PX2_GPU_LOG="/tmp/gpu_usage.log"
+LOCAL_PX2_LOG_DIR="${ROSBAG_DIR}/px2"
 
-# Create directories on your PC
-mkdir -p "${PX2_LOG_DIR_ON_PC}" || { echo "Error creating directory ${PX2_LOG_DIR_ON_PC}"; exit 1; }
+# Create destination directories
 mkdir -p "${DEST_DIR}" || { echo "Error creating directory ${DEST_DIR}"; exit 1; }
-
-# Function to start monitoring on PX2
-start_px2_monitoring() {
-    local run=$1
-    sshpass -p "$PX2_PASSWORD" ssh -t $PX2_USER@$PX2_IP << 'EOF'
-        # Create monitoring directory
-        MONITOR_DIR="/tmp/px2_monitoring_run$1"
-        mkdir -p "${MONITOR_DIR}"
-
-        # Start tegrastats (GPU monitoring)
-        tegrastats --interval 1000 --logfile "${MONITOR_DIR}/tegrastats.log" &
-        echo $! > "${MONITOR_DIR}/tegrastats.pid"
-
-        # Start top for CPU monitoring (1 second interval, batch mode)
-        top -b -d 1 > "${MONITOR_DIR}/top.log" &
-        echo $! > "${MONITOR_DIR}/top.pid"
-
-        # Record initial CPU frequency
-        cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_cur_freq > "${MONITOR_DIR}/cpu_freq_start.log"
-EOF
-}
-
-# Function to stop monitoring and copy logs
-stop_px2_monitoring() {
-    local run=$1
-    local target_dir=$2
-
-    # Stop monitoring processes
-    sshpass -p "$PX2_PASSWORD" ssh -t $PX2_USER@$PX2_IP << 'EOF'
-        MONITOR_DIR="/tmp/px2_monitoring_run$1"
-
-        # Stop tegrastats
-        if [ -f "${MONITOR_DIR}/tegrastats.pid" ]; then
-            kill $(cat "${MONITOR_DIR}/tegrastats.pid") 2>/dev/null
-        fi
-
-        # Stop top
-        if [ -f "${MONITOR_DIR}/top.pid" ]; then
-            kill $(cat "${MONITOR_DIR}/top.pid") 2>/dev/null
-        fi
-
-        # Record final CPU frequency
-        cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_cur_freq > "${MONITOR_DIR}/cpu_freq_end.log"
-EOF
-
-    # Create monitoring directory on PC
-    mkdir -p "${target_dir}/monitoring"
-
-    # Copy monitoring files individually
-    sshpass -p "$PX2_PASSWORD" scp $PX2_USER@$PX2_IP:"/tmp/px2_monitoring_run${run}/tegrastats.log" "${target_dir}/monitoring/"
-    sshpass -p "$PX2_PASSWORD" scp $PX2_USER@$PX2_IP:"/tmp/px2_monitoring_run${run}/top.log" "${target_dir}/monitoring/"
-    sshpass -p "$PX2_PASSWORD" scp $PX2_USER@$PX2_IP:"/tmp/px2_monitoring_run${run}/cpu_freq_*.log" "${target_dir}/monitoring/"
-
-    # Cleanup on PX2
-    sshpass -p "$PX2_PASSWORD" ssh -t $PX2_USER@$PX2_IP "rm -rf /tmp/px2_monitoring_run${run}"
-}
+mkdir -p "${LOCAL_PX2_LOG_DIR}" || { echo "Error creating directory ${LOCAL_PX2_LOG_DIR}"; exit 1; }
 
 for ((run=1; run<=NUM_RUNS; run++)); do
     echo "================================"
@@ -78,26 +30,20 @@ for ((run=1; run<=NUM_RUNS; run++)); do
     # Cleanup previous temporary files
     rm -f /tmp/pid1 /tmp/pid2 /tmp/rosbag_done
 
-    # Start monitoring on PX2
-    start_px2_monitoring $run
+    # Launch manager_performance_testing on PX2
+    sshpass -p "${PX2_PASSWORD}" ssh -o StrictHostKeyChecking=no ${PX2_USER}@${PX2_HOST} "gnome-terminal -- bash -c 'echo $$ > /tmp/pid1; exec roslaunch adeye manager_bags_performance_testing.launch'"
 
-    # Launch manager_performance_testing on PX2 via SSH
-    echo "Starting manager on PX2..."
-    sshpass -p "$PX2_PASSWORD" ssh -t -X $PX2_USER@$PX2_IP << 'EOF'
-        echo $$ > /tmp/pid1
-        source /home/adeye/catkin_ws/devel/setup.bash
-        roslaunch adeye manager_bags_performance_testing.launch
-EOF &
-    echo $! > /tmp/px2_pid
-    sleep 15  # Give more time for PX2 to start
+    sleep 10
 
-    # Launch RViz on local PC
-    echo "Starting RViz on local PC..."
+    # Start CPU and GPU monitoring on PX2
+    sshpass -p "${PX2_PASSWORD}" ssh ${PX2_USER}@${PX2_HOST} "top -b -d 1 -c -w 10000 -o '%CPU' > ${PX2_CPU_LOG} & tagrastats > ${PX2_GPU_LOG} & echo $! > /tmp/monitor_pid"
+
+    # Launch RViz on local machine
     gnome-terminal -- bash -c 'echo $$ > /tmp/pid2; exec roslaunch adeye my_rviz.launch'
+
     sleep 5
 
-    # Play rosbag on local PC
-    echo "Starting rosbag playback..."
+    # Play rosbag on local machine
     gnome-terminal -- bash -c "cd ${ROSBAG_DIR} && rosbag play ${ROSBAG_FILE} --topics /fix /os_cloud_node/imu /os_cloud_node/points; touch /tmp/rosbag_done"
 
     # Wait for main rosbag completion
@@ -105,42 +51,34 @@ EOF &
         sleep 1
     done
 
-    # Terminate the nodes
-    echo "Terminating processes..."
+    # Terminate local nodes
     kill $(cat /tmp/pid2) 2>/dev/null || echo "RViz already closed"
 
-    # Kill PX2 processes
-    sshpass -p "$PX2_PASSWORD" ssh -t $PX2_USER@$PX2_IP "kill \$(cat /tmp/pid1) 2>/dev/null || echo 'manager_performance_testing already closed'"
+    # Terminate process on PX2
+    sshpass -p "${PX2_PASSWORD}" ssh ${PX2_USER}@${PX2_HOST} "kill \\$(cat /tmp/pid1) 2>/dev/null || echo 'manager_performance_testing already closed'"
 
-    # Create run-specific directory on your PC
-    RUN_LOG_DIR="${PX2_LOG_DIR_ON_PC}/${LOG_BASE_NAME}_run${run}"
-    mkdir -p "${RUN_LOG_DIR}"
+    # Stop monitoring on PX2
+    sshpass -p "${PX2_PASSWORD}" ssh ${PX2_USER}@${PX2_HOST} "kill \\$(cat /tmp/monitor_pid) 2>/dev/null || echo 'Monitoring already stopped'"
 
-    # Stop monitoring and copy monitoring data
-    stop_px2_monitoring $run "${RUN_LOG_DIR}"
+    # Copy logs from PX2 to local machine
+    run_log_dir="${LOCAL_PX2_LOG_DIR}/${LOG_BASE_NAME}_run${run}"
+    mkdir -p "${run_log_dir}"
+    sshpass -p "${PX2_PASSWORD}" scp -r ${PX2_USER}@${PX2_HOST}:${PX2_LOG_DIR} "${run_log_dir}" || echo "Error copying logs for run ${run}"
+    sshpass -p "${PX2_PASSWORD}" scp ${PX2_USER}@${PX2_HOST}:${PX2_CPU_LOG} "${run_log_dir}/cpu_usage_run${run}.log" || echo "Error copying CPU log for run ${run}"
+    sshpass -p "${PX2_PASSWORD}" scp ${PX2_USER}@${PX2_HOST}:${PX2_GPU_LOG} "${run_log_dir}/gpu_usage_run${run}.log" || echo "Error copying GPU log for run ${run}"
 
-    # Copy ROS logs from PX2
-    echo "Copying ROS logs from PX2..."
-    sshpass -p "$PX2_PASSWORD" scp -r $PX2_USER@$PX2_IP:/home/adeye/.ros/log/latest/* "${RUN_LOG_DIR}/"
-
-    # Optional: Also copy to original destination directory
-    if [ "$DEST_DIR" != "$PX2_LOG_DIR_ON_PC" ]; then
-        mkdir -p "${DEST_DIR}/${LOG_BASE_NAME}_run${run}"
-        cp -r "${RUN_LOG_DIR}"/* "${DEST_DIR}/${LOG_BASE_NAME}_run${run}/"
-    fi
-
-    # Short pause between runs
     sleep 10
+
     echo "Completed run ${run}/${NUM_RUNS}"
-    echo "Logs saved to: ${RUN_LOG_DIR}"
+    echo "Logs saved to: ${run_log_dir}"
     echo
+
 done
 
 # Cleanup temporary files
-rm -f /tmp/pid1 /tmp/pid2 /tmp/rosbag_done /tmp/px2_pid
+rm -f /tmp/pid1 /tmp/pid2 /tmp/rosbag_done
 
 echo "========================================"
 echo "All ${NUM_RUNS} runs completed!"
-echo "Logs available in: ${PX2_LOG_DIR_ON_PC}/${LOG_BASE_NAME}_run[1-${NUM_RUNS}]"
-[ "$DEST_DIR" != "$PX2_LOG_DIR_ON_PC" ] && echo "Logs also available in: ${DEST_DIR}/${LOG_BASE_NAME}_run[1-${NUM_RUNS}]"
+echo "Logs available in: ${LOCAL_PX2_LOG_DIR}/${LOG_BASE_NAME}_run[1-${NUM_RUNS}]"
 echo "========================================"
