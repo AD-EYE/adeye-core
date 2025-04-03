@@ -63,6 +63,9 @@
         <arg name="use_scan_stamp" value="false" />
     </include>
 
+    <!--<include file="$(find gnss_localizer)/launch/fix2tfpose.launch">
+    </include>-->
+
     <!-- Pose Connect -->
     <node pkg="topic_tools" type="relay" name="pose_relay" output="log" args="$(arg topic_pose_stamped) /current_pose"/>
 
