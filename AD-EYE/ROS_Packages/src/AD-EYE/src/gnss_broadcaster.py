@@ -24,8 +24,8 @@ class GnssBroadcaster:
         self.map_origin = map_origin
         self.pose = PoseStamped()
 
-        self.gnss_sub = rospy.Subscriber('/gnss_pose_simulink', PoseStamped, self.gnssSimulinkCallback)
-        # self.gnss_sub = rospy.Subscriber('/fix', NavSatFix, self.gnssCallback)
+        # self.gnss_sub = rospy.Subscriber('/gnss_pose_simulink', PoseStamped, self.gnssSimulinkCallback)
+        self.gnss_sub = rospy.Subscriber('/fix', NavSatFix, self.gnssCallback)
         self.gnss_pub = rospy.Publisher('/gnss_pose', PoseStamped, queue_size=1)
         self.initialpose_pub = rospy.Publisher('/initialpose', PoseWithCovarianceStamped, queue_size=1)
 
