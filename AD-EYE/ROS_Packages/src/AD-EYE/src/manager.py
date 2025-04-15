@@ -124,7 +124,7 @@ class ManagerFeaturesHandler:
     # Ordered dictionary object                 = Feature(Feature_name,                    launch_file_name,              start_delay, stop_delay)
     features["Recording"] = Feature("Recording", "", 0, 0)
     features["Map"] = Feature("Map", "my_map.launch", 8, 0)
-    features["Sensing"] = Feature("Sensing", "my_sensing.launch", 0, 0)
+    features["Sensing"] = Feature("Sensing", "my_sensing.launch", 10, 0)
     features["Localization"] = Feature("Localization", "my_localization.launch", 8, 5)
     features["Fake_Localization"] = Feature("Fake_Localization", "my_fake_localization.launch", 0, 0)
     features["Detection"] = Feature("Detection", "my_detection.launch", 0, 5)

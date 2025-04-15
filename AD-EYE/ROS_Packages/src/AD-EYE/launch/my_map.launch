@@ -4,6 +4,8 @@
     <arg name="PointCloud_Files_Folder" value="/home/adeye/experiments/$(arg world_name)/Pointcloud_Files/"/>
     <arg name="VectorMap_Files_Folder" value="/home/adeye/experiments/$(arg world_name)/Vector_Map_Files/"/>
 
+    <include file="/home/adeye/experiments/$(arg world_name)/map_params.launch" />
+
     <!-- world_to_map -->
     <node pkg="tf" type="static_transform_publisher" name="world_to_map" args="0 0 0 0 0 0 /world /map 10"/>
 
