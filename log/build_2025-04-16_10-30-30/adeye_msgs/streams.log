@@ -1,0 +1,170 @@
+[0.044s] Invoking command in '/home/adeye/adeye-core/build/adeye_msgs': _OLD_VIRTUAL_PS1=\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ /usr/local/bin/cmake /home/adeye/adeye-core/AD-EYE/ROS_Packages/src/adeye_msgs -DCMAKE_BUILD_TYPE=Release -DCATKIN_INSTALL_INTO_PREFIX_ROOT=0 -DCMAKE_INSTALL_PREFIX=/home/adeye/adeye-core/install/adeye_msgs
+[0.048s] [0mCMake Deprecation Warning at CMakeLists.txt:1 (cmake_minimum_required):
+[0.048s]   Compatibility with CMake < 3.5 will be removed from a future version of
+[0.048s]   CMake.
+[0.049s] 
+[0.049s]   Update the VERSION argument <min> value or use a ...<max> suffix to tell
+[0.049s]   CMake that the project does not need compatibility with older versions.
+[0.049s] 
+[0.049s] [0m
+[0.163s] -- The C compiler identification is GNU 5.4.0
+[0.283s] -- The CXX compiler identification is GNU 5.4.0
+[0.322s] -- Detecting C compiler ABI info
+[0.422s] -- Detecting C compiler ABI info - done
+[0.439s] -- Check for working C compiler: /usr/bin/cc - skipped
+[0.440s] -- Detecting C compile features
+[0.441s] -- Detecting C compile features - done
+[0.461s] -- Detecting CXX compiler ABI info
+[0.569s] -- Detecting CXX compiler ABI info - done
+[0.590s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[0.590s] -- Detecting CXX compile features
+[0.591s] -- Detecting CXX compile features - done
+[0.602s] -- Using CATKIN_DEVEL_PREFIX: /home/adeye/adeye-core/build/adeye_msgs/devel
+[0.603s] -- Using CMAKE_PREFIX_PATH: /home/adeye/AD-EYE_Core/autoware.ai/install/lattice_planner;/home/adeye/AD-EYE_Core/autoware.ai/install/waypoint_planner;/home/adeye/AD-EYE_Core/autoware.ai/install/waypoint_maker;/home/adeye/AD-EYE_Core/autoware.ai/install/way_planner;/home/adeye/AD-EYE_Core/autoware.ai/install/op_utilities;/home/adeye/AD-EYE_Core/autoware.ai/install/op_simulation_package;/home/adeye/AD-EYE_Core/autoware.ai/install/op_local_planner;/home/adeye/AD-EYE_Core/autoware.ai/install/op_global_planner;/home/adeye/AD-EYE_Core/autoware.ai/install/lidar_kf_contour_track;/home/adeye/AD-EYE_Core/autoware.ai/install/op_ros_helpers;/home/adeye/AD-EYE_Core/autoware.ai/install/lane_planner;/home/adeye/AD-EYE_Core/autoware.ai/install/ff_waypoint_follower;/home/adeye/AD-EYE_Core/autoware.ai/install/dp_planner;/home/adeye/AD-EYE_Core/autoware.ai/install/waypoint_follower;/home/adeye/AD-EYE_Core/autoware.ai/install/vision_ssd_detect;/home/adeye/AD-EYE_Core/autoware.ai/install/vision_segment_enet_detect;/home/adeye/AD-EYE_Core/autoware.ai/install/vision_lane_detect;/home/adeye/AD-EYE_Core/autoware.ai/install/vision_darknet_detect;/home/adeye/AD-EYE_Core/autoware.ai/install/vision_beyond_track;/home/adeye/AD-EYE_Core/autoware.ai/install/vehicle_socket;/home/adeye/AD-EYE_Core/autoware.ai/install/vehicle_model;/home/adeye/AD-EYE_Core/autoware.ai/install/vehicle_engage_panel;/home/adeye/AD-EYE_Core/autoware.ai/install/vehicle_description;/home/adeye/AD-EYE_Core/autoware.ai/install/trafficlight_recognizer;/home/adeye/AD-EYE_Core/autoware.ai/install/op_simu;/home/adeye/AD-EYE_Core/autoware.ai/install/op_planner;/home/adeye/AD-EYE_Core/autoware.ai/install/op_utility;/home/adeye/AD-EYE_Core/autoware.ai/install/lidar_euclidean_cluster_detect;/home/adeye/AD-EYE_Core/autoware.ai/install/vector_map_server;/home/adeye/AD-EYE_Core/autoware.ai/install/road_occupancy_processor;/home/adeye/AD-EYE_Core/autoware.ai/install/costmap_generator;/home/adeye/AD-EYE_Core/autoware.ai/install/object_map;/home/adeye/AD-EYE_Core/autoware.ai/install/naive_motion_predict;/home/adeye/AD-EYE_Core/autoware.ai/install/map_file;/home/adeye/AD-EYE_Core/autoware.ai/install/libvectormap;/home/adeye/AD-EYE_Core/autoware.ai/install/imm_ukf_pda_track;/home/adeye/AD-EYE_Core/autoware.ai/install/decision_maker;/home/adeye/AD-EYE_Core/autoware.ai/install/vector_map;/home/adeye/AD-EYE_Core/autoware.ai/install/vector_map_msgs;/home/adeye/AD-EYE_Core/autoware.ai/install/udon_socket;/home/adeye/AD-EYE_Core/autoware.ai/install/twist_generator;/home/adeye/AD-EYE_Core/autoware.ai/install/twist2odom;/home/adeye/AD-EYE_Core/autoware.ai/install/tablet_socket;/home/adeye/AD-EYE_Core/autoware.ai/install/runtime_manager;/home/adeye/AD-EYE_Core/autoware.ai/install/mqtt_socket;/home/adeye/AD-EYE_Core/autoware.ai/install/tablet_socket_msgs;/home/adeye/AD-EYE_Core/autoware.ai/install/state_machine_lib;/home/adeye/AD-EYE_Core/autoware.ai/install/sound_player;/home/adeye/AD-EYE_Core/autoware.ai/install/points2image;/home/adeye/AD-EYE_Core/autoware.ai/install/rosinterface;/home/adeye/AD-EYE_Core/autoware.ai/install/rosbag_controller;/home/adeye/AD-EYE_Core/autoware.ai/install/roi_object_filter;/home/adeye/AD-EYE_Core/autoware.ai/install/range_vision_fusion;/home/adeye/AD-EYE_Core/autoware.ai/install/pos_db;/home/adeye/AD-EYE_Core/autoware.ai/install/points_preprocessor;/home/adeye/AD-EYE_Core/autoware.ai/install/points_downsampler;/home/adeye/AD-EYE_Core/autoware.ai/install/pixel_cloud_fusion;/home/adeye/AD-EYE_Core/autoware.ai/install/lidar_localizer;/home/adeye/AD-EYE_Core/autoware.ai/install/pcl_omp_registration;/home/adeye/AD-EYE_Core/autoware.ai/install/pc2_downsampler;/home/adeye/AD-EYE_Core/autoware.ai/install/oculus_socket;/home/adeye/AD-EYE_Core/autoware.ai/install/obj_db;/home/adeye/AD-EYE_Core/autoware.ai/install/ndt_tku;/home/adeye/AD-EYE_Core/autoware.ai/install/ndt_gpu;/home/adeye/AD-EYE_Core/autoware.ai/install/ndt_cpu;/home/adeye/AD-EYE_Core/autoware.ai/install/multi_lidar_calibrator;/home/adeye/AD-EYE_Core/autoware.ai/install/marker_downsampler;/home/adeye/AD-EYE_Core/autoware.ai/install/map_tools;/home/adeye/AD-EYE_Core/autoware.ai/install/map_tf_generator;/home/adeye/AD-EYE_Core/autoware.ai/install/log_tools;/home/adeye/AD-EYE_Core/autoware.ai/install/lidar_shape_estimation;/home/adeye/AD-EYE_Core/autoware.ai/install/lidar_point_pillars;/home/adeye/AD-EYE_Core/autoware.ai/install/lidar_naive_l_shape_detect;/home/adeye/AD-EYE_Core/autoware.ai/install/lidar_fake_perception;/home/adeye/AD-EYE_Core/autoware.ai/install/lidar_apollo_cnn_seg_detect;/home/adeye/AD-EYE_Core/autoware.ai/install/kitti_launch;/home/adeye/AD-EYE_Core/autoware.ai/install/kitti_player;/home/adeye/AD-EYE_Core/autoware.ai/install/kitti_box_publisher;/home/adeye/AD-EYE_Core/autoware.ai/install/integrated_viewer;/home/adeye/AD-EYE_Core/autoware.ai/install/image_processor;/home/adeye/AD-EYE_Core/autoware.ai/install/graph_tools;/home/adeye/AD-EYE_Core/autoware.ai/install/gnss_localizer;/home/adeye/AD-EYE_Core/autoware.ai/install/gnss;/home/adeye/AD-EYE_Core/autoware.ai/install/glviewer;/home/adeye/AD-EYE_Core/autoware.ai/install/freespace_planner;/home/adeye/AD-EYE_Core/autoware.ai/install/fastvirtualscan;/home/adeye/AD-EYE_Core/autoware.ai/install/ekf_localizer;/home/adeye/AD-EYE_Core/autoware.ai/install/detected_objects_visualizer;/home/adeye/AD-EYE_Core/autoware.ai/install/decision_maker_panel;/home/adeye/AD-EYE_Core/autoware.ai/install/data_preprocessor;/home/adeye/AD-EYE_Core/autoware.ai/install/calibration_publisher;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_health_checker;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_system_msgs;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_rviz_plugins;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_connector;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_camera_lidar_calibrator;/home/adeye/AD-EYE_Core/autoware.ai/install/astar_search;/home/adeye/AD-EYE_Core/autoware.ai/install/amathutils_lib;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_msgs;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_map_msgs;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_launcher_rviz;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_launcher;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_lanelet2_msgs;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_external_msgs;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_config_msgs;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_can_msgs;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_build_flags;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_bag_tools;/home/adeye/AD-EYE_Core/AD-EYE/ROS_Packages/devel;/opt/ros/kinetic
+[0.607s] -- This workspace overlays: /home/adeye/AD-EYE_Core/autoware.ai/install/lattice_planner;/home/adeye/AD-EYE_Core/autoware.ai/install/waypoint_planner;/home/adeye/AD-EYE_Core/autoware.ai/install/waypoint_maker;/home/adeye/AD-EYE_Core/autoware.ai/install/way_planner;/home/adeye/AD-EYE_Core/autoware.ai/install/op_utilities;/home/adeye/AD-EYE_Core/autoware.ai/install/op_simulation_package;/home/adeye/AD-EYE_Core/autoware.ai/install/op_local_planner;/home/adeye/AD-EYE_Core/autoware.ai/install/op_global_planner;/home/adeye/AD-EYE_Core/autoware.ai/install/lidar_kf_contour_track;/home/adeye/AD-EYE_Core/autoware.ai/install/op_ros_helpers;/home/adeye/AD-EYE_Core/autoware.ai/install/lane_planner;/home/adeye/AD-EYE_Core/autoware.ai/install/ff_waypoint_follower;/home/adeye/AD-EYE_Core/autoware.ai/install/dp_planner;/home/adeye/AD-EYE_Core/autoware.ai/install/waypoint_follower;/home/adeye/AD-EYE_Core/autoware.ai/install/vision_ssd_detect;/home/adeye/AD-EYE_Core/autoware.ai/install/vision_segment_enet_detect;/home/adeye/AD-EYE_Core/autoware.ai/install/vision_lane_detect;/home/adeye/AD-EYE_Core/autoware.ai/install/vision_darknet_detect;/home/adeye/AD-EYE_Core/autoware.ai/install/vision_beyond_track;/home/adeye/AD-EYE_Core/autoware.ai/install/vehicle_socket;/home/adeye/AD-EYE_Core/autoware.ai/install/vehicle_model;/home/adeye/AD-EYE_Core/autoware.ai/install/vehicle_engage_panel;/home/adeye/AD-EYE_Core/autoware.ai/install/vehicle_description;/home/adeye/AD-EYE_Core/autoware.ai/install/trafficlight_recognizer;/home/adeye/AD-EYE_Core/autoware.ai/install/op_simu;/home/adeye/AD-EYE_Core/autoware.ai/install/op_planner;/home/adeye/AD-EYE_Core/autoware.ai/install/op_utility;/home/adeye/AD-EYE_Core/autoware.ai/install/lidar_euclidean_cluster_detect;/home/adeye/AD-EYE_Core/autoware.ai/install/vector_map_server;/home/adeye/AD-EYE_Core/autoware.ai/install/road_occupancy_processor;/home/adeye/AD-EYE_Core/autoware.ai/install/costmap_generator;/home/adeye/AD-EYE_Core/autoware.ai/install/object_map;/home/adeye/AD-EYE_Core/autoware.ai/install/naive_motion_predict;/home/adeye/AD-EYE_Core/autoware.ai/install/map_file;/home/adeye/AD-EYE_Core/autoware.ai/install/libvectormap;/home/adeye/AD-EYE_Core/autoware.ai/install/imm_ukf_pda_track;/home/adeye/AD-EYE_Core/autoware.ai/install/decision_maker;/home/adeye/AD-EYE_Core/autoware.ai/install/vector_map;/home/adeye/AD-EYE_Core/autoware.ai/install/vector_map_msgs;/home/adeye/AD-EYE_Core/autoware.ai/install/udon_socket;/home/adeye/AD-EYE_Core/autoware.ai/install/twist_generator;/home/adeye/AD-EYE_Core/autoware.ai/install/twist2odom;/home/adeye/AD-EYE_Core/autoware.ai/install/tablet_socket;/home/adeye/AD-EYE_Core/autoware.ai/install/runtime_manager;/home/adeye/AD-EYE_Core/autoware.ai/install/mqtt_socket;/home/adeye/AD-EYE_Core/autoware.ai/install/tablet_socket_msgs;/home/adeye/AD-EYE_Core/autoware.ai/install/state_machine_lib;/home/adeye/AD-EYE_Core/autoware.ai/install/sound_player;/home/adeye/AD-EYE_Core/autoware.ai/install/points2image;/home/adeye/AD-EYE_Core/autoware.ai/install/rosinterface;/home/adeye/AD-EYE_Core/autoware.ai/install/rosbag_controller;/home/adeye/AD-EYE_Core/autoware.ai/install/roi_object_filter;/home/adeye/AD-EYE_Core/autoware.ai/install/range_vision_fusion;/home/adeye/AD-EYE_Core/autoware.ai/install/pos_db;/home/adeye/AD-EYE_Core/autoware.ai/install/points_preprocessor;/home/adeye/AD-EYE_Core/autoware.ai/install/points_downsampler;/home/adeye/AD-EYE_Core/autoware.ai/install/pixel_cloud_fusion;/home/adeye/AD-EYE_Core/autoware.ai/install/lidar_localizer;/home/adeye/AD-EYE_Core/autoware.ai/install/pcl_omp_registration;/home/adeye/AD-EYE_Core/autoware.ai/install/pc2_downsampler;/home/adeye/AD-EYE_Core/autoware.ai/install/oculus_socket;/home/adeye/AD-EYE_Core/autoware.ai/install/obj_db;/home/adeye/AD-EYE_Core/autoware.ai/install/ndt_tku;/home/adeye/AD-EYE_Core/autoware.ai/install/ndt_gpu;/home/adeye/AD-EYE_Core/autoware.ai/install/ndt_cpu;/home/adeye/AD-EYE_Core/autoware.ai/install/multi_lidar_calibrator;/home/adeye/AD-EYE_Core/autoware.ai/install/marker_downsampler;/home/adeye/AD-EYE_Core/autoware.ai/install/map_tools;/home/adeye/AD-EYE_Core/autoware.ai/install/map_tf_generator;/home/adeye/AD-EYE_Core/autoware.ai/install/log_tools;/home/adeye/AD-EYE_Core/autoware.ai/install/lidar_shape_estimation;/home/adeye/AD-EYE_Core/autoware.ai/install/lidar_point_pillars;/home/adeye/AD-EYE_Core/autoware.ai/install/lidar_naive_l_shape_detect;/home/adeye/AD-EYE_Core/autoware.ai/install/lidar_fake_perception;/home/adeye/AD-EYE_Core/autoware.ai/install/lidar_apollo_cnn_seg_detect;/home/adeye/AD-EYE_Core/autoware.ai/install/kitti_launch;/home/adeye/AD-EYE_Core/autoware.ai/install/kitti_player;/home/adeye/AD-EYE_Core/autoware.ai/install/kitti_box_publisher;/home/adeye/AD-EYE_Core/autoware.ai/install/integrated_viewer;/home/adeye/AD-EYE_Core/autoware.ai/install/image_processor;/home/adeye/AD-EYE_Core/autoware.ai/install/graph_tools;/home/adeye/AD-EYE_Core/autoware.ai/install/gnss_localizer;/home/adeye/AD-EYE_Core/autoware.ai/install/gnss;/home/adeye/AD-EYE_Core/autoware.ai/install/glviewer;/home/adeye/AD-EYE_Core/autoware.ai/install/freespace_planner;/home/adeye/AD-EYE_Core/autoware.ai/install/fastvirtualscan;/home/adeye/AD-EYE_Core/autoware.ai/install/ekf_localizer;/home/adeye/AD-EYE_Core/autoware.ai/install/detected_objects_visualizer;/home/adeye/AD-EYE_Core/autoware.ai/install/decision_maker_panel;/home/adeye/AD-EYE_Core/autoware.ai/install/data_preprocessor;/home/adeye/AD-EYE_Core/autoware.ai/install/calibration_publisher;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_health_checker;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_system_msgs;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_rviz_plugins;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_connector;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_camera_lidar_calibrator;/home/adeye/AD-EYE_Core/autoware.ai/install/astar_search;/home/adeye/AD-EYE_Core/autoware.ai/install/amathutils_lib;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_msgs;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_map_msgs;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_launcher_rviz;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_launcher;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_lanelet2_msgs;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_external_msgs;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_config_msgs;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_can_msgs;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_build_flags;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_bag_tools;/home/adeye/AD-EYE_Core/AD-EYE/ROS_Packages/devel;/opt/ros/kinetic
+[0.611s] [33mCMake Warning (dev) at /opt/ros/kinetic/share/catkin/cmake/python.cmake:4 (find_package):
+[0.612s]   Policy CMP0148 is not set: The FindPythonInterp and FindPythonLibs modules
+[0.612s]   are removed.  Run "cmake --help-policy CMP0148" for policy details.  Use
+[0.612s]   the cmake_policy command to set the policy and suppress this warning.
+[0.612s] 
+[0.612s] Call Stack (most recent call first):
+[0.612s]   /opt/ros/kinetic/share/catkin/cmake/all.cmake:164 (include)
+[0.613s]   /opt/ros/kinetic/share/catkin/cmake/catkinConfig.cmake:20 (include)
+[0.613s]   CMakeLists.txt:4 (find_package)
+[0.613s] This warning is for project developers.  Use -Wno-dev to suppress it.
+[0.613s] [0m
+[0.639s] -- Found PythonInterp: /usr/bin/python2 (found suitable version "2.7.12", minimum required is "2") 
+[0.639s] -- Using PYTHON_EXECUTABLE: /usr/bin/python2
+[0.639s] -- Using Debian Python package layout
+[0.645s] -- Using empy: /usr/bin/empy
+[0.812s] -- Using CATKIN_ENABLE_TESTING: ON
+[0.812s] -- Call enable_testing()
+[0.816s] -- Using CATKIN_TEST_RESULTS_DIR: /home/adeye/adeye-core/build/adeye_msgs/test_results
+[0.904s] -- Found gtest sources under '/usr/src/gmock': gtests will be built
+[0.904s] -- Found gmock sources under '/usr/src/gmock': gmock will be built
+[0.905s] [0mCMake Deprecation Warning at /usr/src/gmock/CMakeLists.txt:41 (cmake_minimum_required):
+[0.905s]   Compatibility with CMake < 3.5 will be removed from a future version of
+[0.905s]   CMake.
+[0.905s] 
+[0.906s]   Update the VERSION argument <min> value or use a ...<max> suffix to tell
+[0.906s]   CMake that the project does not need compatibility with older versions.
+[0.906s] 
+[0.906s] [0m
+[0.906s] [0mCMake Deprecation Warning at /usr/src/gtest/CMakeLists.txt:43 (cmake_minimum_required):
+[0.907s]   Compatibility with CMake < 3.5 will be removed from a future version of
+[0.907s]   CMake.
+[0.907s] 
+[0.907s]   Update the VERSION argument <min> value or use a ...<max> suffix to tell
+[0.907s]   CMake that the project does not need compatibility with older versions.
+[0.907s] 
+[0.908s] [0m
+[0.908s] [33mCMake Warning (dev) at /usr/src/gtest/cmake/internal_utils.cmake:190 (find_package):
+[0.908s]   Policy CMP0148 is not set: The FindPythonInterp and FindPythonLibs modules
+[0.908s]   are removed.  Run "cmake --help-policy CMP0148" for policy details.  Use
+[0.908s]   the cmake_policy command to set the policy and suppress this warning.
+[0.908s] 
+[0.908s] Call Stack (most recent call first):
+[0.908s]   /usr/src/gtest/CMakeLists.txt:50 (include)
+[0.908s] This warning is for project developers.  Use -Wno-dev to suppress it.
+[0.908s] [0m
+[0.925s] -- Found PythonInterp: /usr/bin/python2 (found version "2.7.12") 
+[0.927s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+[1.016s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Failed
+[1.016s] -- Looking for pthread_create in pthreads
+[1.094s] -- Looking for pthread_create in pthreads - not found
+[1.094s] -- Looking for pthread_create in pthread
+[1.183s] -- Looking for pthread_create in pthread - found
+[1.184s] -- Found Threads: TRUE  
+[1.191s] -- Using Python nosetests: /usr/bin/nosetests-2.7
+[1.234s] -- catkin 0.7.29
+[1.234s] -- BUILD_SHARED_LIBS is on
+[1.600s] -- Using these message generators: gencpp;geneus;genlisp;gennodejs;genpy
+[1.878s] -- adeye_msgs: 2 messages, 0 services
+[2.033s] -- Configuring done (2.0s)
+[2.056s] -- Generating done (0.0s)
+[2.065s] -- Build files have been written to: /home/adeye/adeye-core/build/adeye_msgs
+[2.071s] Invoked command in '/home/adeye/adeye-core/build/adeye_msgs' returned '0': _OLD_VIRTUAL_PS1=\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ /usr/local/bin/cmake /home/adeye/adeye-core/AD-EYE/ROS_Packages/src/adeye_msgs -DCMAKE_BUILD_TYPE=Release -DCATKIN_INSTALL_INTO_PREFIX_ROOT=0 -DCMAKE_INSTALL_PREFIX=/home/adeye/adeye-core/install/adeye_msgs
+[2.076s] Invoking command in '/home/adeye/adeye-core/build/adeye_msgs': _OLD_VIRTUAL_PS1=\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ /usr/local/bin/cmake --build /home/adeye/adeye-core/build/adeye_msgs -- -j32 -l32
+[2.125s] [  0%] Built target geometry_msgs_generate_messages_eus
+[2.126s] [  0%] Built target std_msgs_generate_messages_nodejs
+[2.126s] [  0%] Built target std_msgs_generate_messages_py
+[2.127s] [  0%] Built target geometry_msgs_generate_messages_nodejs
+[2.127s] [  0%] Built target std_msgs_generate_messages_cpp
+[2.127s] [  0%] Built target geometry_msgs_generate_messages_cpp
+[2.128s] [  0%] Built target std_msgs_generate_messages_eus
+[2.128s] [  0%] Built target geometry_msgs_generate_messages_py
+[2.129s] [  0%] Built target std_msgs_generate_messages_lisp
+[2.129s] [  0%] Built target geometry_msgs_generate_messages_lisp
+[2.162s] [  0%] Built target _adeye_msgs_generate_messages_check_deps_categorized_poses
+[2.163s] [  0%] Built target _adeye_msgs_generate_messages_check_deps_categorized_pose
+[2.184s] [  8%] [34m[1mGenerating Javascript code from adeye_msgs/categorized_poses.msg[0m
+[2.184s] [ 16%] [34m[1mGenerating Javascript code from adeye_msgs/categorized_pose.msg[0m
+[2.185s] [ 25%] [34m[1mGenerating C++ code from adeye_msgs/categorized_poses.msg[0m
+[2.185s] [ 33%] [34m[1mGenerating Python from MSG adeye_msgs/categorized_poses[0m
+[2.186s] [ 41%] [34m[1mGenerating Lisp code from adeye_msgs/categorized_poses.msg[0m
+[2.186s] [ 50%] [34m[1mGenerating Lisp code from adeye_msgs/categorized_pose.msg[0m
+[2.186s] [ 58%] [34m[1mGenerating Python from MSG adeye_msgs/categorized_pose[0m
+[2.187s] [ 66%] [34m[1mGenerating EusLisp manifest code for adeye_msgs[0m
+[2.187s] [ 75%] [34m[1mGenerating EusLisp code from adeye_msgs/categorized_poses.msg[0m
+[2.188s] [ 83%] [34m[1mGenerating C++ code from adeye_msgs/categorized_pose.msg[0m
+[2.188s] [ 91%] [34m[1mGenerating EusLisp code from adeye_msgs/categorized_pose.msg[0m
+[2.240s] [ 91%] Built target adeye_msgs_generate_messages_lisp
+[2.246s] [ 91%] Built target adeye_msgs_generate_messages_nodejs
+[2.315s] [100%] [34m[1mGenerating Python msg __init__.py for adeye_msgs[0m
+[2.340s] [100%] Built target adeye_msgs_generate_messages_cpp
+[2.424s] [100%] Built target adeye_msgs_generate_messages_py
+[3.178s] [100%] Built target adeye_msgs_generate_messages_eus
+[3.197s] [100%] Built target adeye_msgs_generate_messages
+[3.205s] Invoked command in '/home/adeye/adeye-core/build/adeye_msgs' returned '0': _OLD_VIRTUAL_PS1=\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ /usr/local/bin/cmake --build /home/adeye/adeye-core/build/adeye_msgs -- -j32 -l32
+[3.211s] Invoking command in '/home/adeye/adeye-core/build/adeye_msgs': _OLD_VIRTUAL_PS1=\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ /usr/local/bin/cmake --build /home/adeye/adeye-core/build/adeye_msgs --target tests -- -j32 -l32
+[3.265s] Built target tests
+[3.273s] Invoked command in '/home/adeye/adeye-core/build/adeye_msgs' returned '0': _OLD_VIRTUAL_PS1=\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ /usr/local/bin/cmake --build /home/adeye/adeye-core/build/adeye_msgs --target tests -- -j32 -l32
+[3.288s] Invoking command in '/home/adeye/adeye-core/build/adeye_msgs': _OLD_VIRTUAL_PS1=\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ /usr/local/bin/cmake --install /home/adeye/adeye-core/build/adeye_msgs
+[3.294s] -- Install configuration: "Release"
+[3.294s] -- Installing: /home/adeye/adeye-core/install/adeye_msgs/share/adeye_msgs/msg/categorized_pose.msg
+[3.294s] -- Installing: /home/adeye/adeye-core/install/adeye_msgs/share/adeye_msgs/msg/categorized_poses.msg
+[3.295s] -- Installing: /home/adeye/adeye-core/install/adeye_msgs/share/adeye_msgs/cmake/adeye_msgs-msg-paths.cmake
+[3.295s] -- Installing: /home/adeye/adeye-core/install/adeye_msgs/include/adeye_msgs
+[3.295s] -- Installing: /home/adeye/adeye-core/install/adeye_msgs/include/adeye_msgs/categorized_poses.h
+[3.295s] -- Installing: /home/adeye/adeye-core/install/adeye_msgs/include/adeye_msgs/categorized_pose.h
+[3.296s] -- Installing: /home/adeye/adeye-core/install/adeye_msgs/share/roseus/ros/adeye_msgs
+[3.296s] -- Installing: /home/adeye/adeye-core/install/adeye_msgs/share/roseus/ros/adeye_msgs/msg
+[3.296s] -- Installing: /home/adeye/adeye-core/install/adeye_msgs/share/roseus/ros/adeye_msgs/msg/categorized_pose.l
+[3.296s] -- Installing: /home/adeye/adeye-core/install/adeye_msgs/share/roseus/ros/adeye_msgs/msg/categorized_poses.l
+[3.296s] -- Installing: /home/adeye/adeye-core/install/adeye_msgs/share/roseus/ros/adeye_msgs/manifest.l
+[3.297s] -- Installing: /home/adeye/adeye-core/install/adeye_msgs/share/common-lisp/ros/adeye_msgs
+[3.297s] -- Installing: /home/adeye/adeye-core/install/adeye_msgs/share/common-lisp/ros/adeye_msgs/msg
+[3.297s] -- Installing: /home/adeye/adeye-core/install/adeye_msgs/share/common-lisp/ros/adeye_msgs/msg/categorized_pose.lisp
+[3.297s] -- Installing: /home/adeye/adeye-core/install/adeye_msgs/share/common-lisp/ros/adeye_msgs/msg/_package_categorized_pose.lisp
+[3.297s] -- Installing: /home/adeye/adeye-core/install/adeye_msgs/share/common-lisp/ros/adeye_msgs/msg/categorized_poses.lisp
+[3.297s] -- Installing: /home/adeye/adeye-core/install/adeye_msgs/share/common-lisp/ros/adeye_msgs/msg/adeye_msgs-msg.asd
+[3.298s] -- Installing: /home/adeye/adeye-core/install/adeye_msgs/share/common-lisp/ros/adeye_msgs/msg/_package.lisp
+[3.298s] -- Installing: /home/adeye/adeye-core/install/adeye_msgs/share/common-lisp/ros/adeye_msgs/msg/_package_categorized_poses.lisp
+[3.298s] -- Installing: /home/adeye/adeye-core/install/adeye_msgs/share/gennodejs/ros/adeye_msgs
+[3.298s] -- Installing: /home/adeye/adeye-core/install/adeye_msgs/share/gennodejs/ros/adeye_msgs/msg
+[3.298s] -- Installing: /home/adeye/adeye-core/install/adeye_msgs/share/gennodejs/ros/adeye_msgs/msg/categorized_poses.js
+[3.298s] -- Installing: /home/adeye/adeye-core/install/adeye_msgs/share/gennodejs/ros/adeye_msgs/msg/categorized_pose.js
+[3.299s] -- Installing: /home/adeye/adeye-core/install/adeye_msgs/share/gennodejs/ros/adeye_msgs/msg/_index.js
+[3.299s] -- Installing: /home/adeye/adeye-core/install/adeye_msgs/share/gennodejs/ros/adeye_msgs/_index.js
+[3.318s] Listing /home/adeye/adeye-core/build/adeye_msgs/devel/lib/python2.7/dist-packages/adeye_msgs ...
+[3.318s] Compiling /home/adeye/adeye-core/build/adeye_msgs/devel/lib/python2.7/dist-packages/adeye_msgs/__init__.py ...
+[3.318s] Listing /home/adeye/adeye-core/build/adeye_msgs/devel/lib/python2.7/dist-packages/adeye_msgs/msg ...
+[3.318s] Compiling /home/adeye/adeye-core/build/adeye_msgs/devel/lib/python2.7/dist-packages/adeye_msgs/msg/__init__.py ...
+[3.318s] Compiling /home/adeye/adeye-core/build/adeye_msgs/devel/lib/python2.7/dist-packages/adeye_msgs/msg/_categorized_pose.py ...
+[3.318s] Compiling /home/adeye/adeye-core/build/adeye_msgs/devel/lib/python2.7/dist-packages/adeye_msgs/msg/_categorized_poses.py ...
+[3.319s] -- Installing: /home/adeye/adeye-core/install/adeye_msgs/lib/python2.7/dist-packages/adeye_msgs
+[3.319s] -- Installing: /home/adeye/adeye-core/install/adeye_msgs/lib/python2.7/dist-packages/adeye_msgs/__init__.py
+[3.319s] -- Installing: /home/adeye/adeye-core/install/adeye_msgs/lib/python2.7/dist-packages/adeye_msgs/__init__.pyc
+[3.320s] -- Installing: /home/adeye/adeye-core/install/adeye_msgs/lib/python2.7/dist-packages/adeye_msgs/msg
+[3.320s] -- Installing: /home/adeye/adeye-core/install/adeye_msgs/lib/python2.7/dist-packages/adeye_msgs/msg/_categorized_pose.py
+[3.320s] -- Installing: /home/adeye/adeye-core/install/adeye_msgs/lib/python2.7/dist-packages/adeye_msgs/msg/_categorized_poses.py
+[3.320s] -- Installing: /home/adeye/adeye-core/install/adeye_msgs/lib/python2.7/dist-packages/adeye_msgs/msg/_categorized_pose.pyc
+[3.320s] -- Installing: /home/adeye/adeye-core/install/adeye_msgs/lib/python2.7/dist-packages/adeye_msgs/msg/__init__.py
+[3.321s] -- Installing: /home/adeye/adeye-core/install/adeye_msgs/lib/python2.7/dist-packages/adeye_msgs/msg/__init__.pyc
+[3.321s] -- Installing: /home/adeye/adeye-core/install/adeye_msgs/lib/python2.7/dist-packages/adeye_msgs/msg/_categorized_poses.pyc
+[3.321s] -- Installing: /home/adeye/adeye-core/install/adeye_msgs/lib/pkgconfig/adeye_msgs.pc
+[3.321s] -- Installing: /home/adeye/adeye-core/install/adeye_msgs/share/adeye_msgs/cmake/adeye_msgs-msg-extras.cmake
+[3.321s] -- Installing: /home/adeye/adeye-core/install/adeye_msgs/share/adeye_msgs/cmake/adeye_msgsConfig.cmake
+[3.321s] -- Installing: /home/adeye/adeye-core/install/adeye_msgs/share/adeye_msgs/cmake/adeye_msgsConfig-version.cmake
+[3.322s] -- Installing: /home/adeye/adeye-core/install/adeye_msgs/share/adeye_msgs/package.xml
+[3.323s] Invoked command in '/home/adeye/adeye-core/build/adeye_msgs' returned '0': _OLD_VIRTUAL_PS1=\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ /usr/local/bin/cmake --install /home/adeye/adeye-core/build/adeye_msgs

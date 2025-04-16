@@ -1,0 +1,81 @@
+[0mCMake Deprecation Warning at CMakeLists.txt:1 (cmake_minimum_required):
+  Compatibility with CMake < 3.5 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value or use a ...<max> suffix to tell
+  CMake that the project does not need compatibility with older versions.
+
+[0m
+[33mCMake Warning (dev) at /opt/ros/kinetic/share/catkin/cmake/python.cmake:4 (find_package):
+  Policy CMP0148 is not set: The FindPythonInterp and FindPythonLibs modules
+  are removed.  Run "cmake --help-policy CMP0148" for policy details.  Use
+  the cmake_policy command to set the policy and suppress this warning.
+
+Call Stack (most recent call first):
+  /opt/ros/kinetic/share/catkin/cmake/all.cmake:164 (include)
+  /opt/ros/kinetic/share/catkin/cmake/catkinConfig.cmake:20 (include)
+  CMakeLists.txt:7 (find_package)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+[0m
+[0mCMake Deprecation Warning at /usr/src/gmock/CMakeLists.txt:41 (cmake_minimum_required):
+  Compatibility with CMake < 3.5 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value or use a ...<max> suffix to tell
+  CMake that the project does not need compatibility with older versions.
+
+[0m
+[0mCMake Deprecation Warning at /usr/src/gtest/CMakeLists.txt:43 (cmake_minimum_required):
+  Compatibility with CMake < 3.5 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value or use a ...<max> suffix to tell
+  CMake that the project does not need compatibility with older versions.
+
+[0m
+[33mCMake Warning (dev) at /usr/src/gtest/cmake/internal_utils.cmake:190 (find_package):
+  Policy CMP0148 is not set: The FindPythonInterp and FindPythonLibs modules
+  are removed.  Run "cmake --help-policy CMP0148" for policy details.  Use
+  the cmake_policy command to set the policy and suppress this warning.
+
+Call Stack (most recent call first):
+  /usr/src/gtest/CMakeLists.txt:50 (include)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+[0m
+[01m[K/home/adeye/adeye-core/AD-EYE/ROS_Packages/src/AD-EYE/src/experimentC.cpp:[m[K In member function ‘[01m[Kvirtual void ExperimentC::stopRecording()[m[K’:
+[01m[K/home/adeye/adeye-core/AD-EYE/ROS_Packages/src/AD-EYE/src/experimentC.cpp:122:29:[m[K [01;35m[Kwarning: [m[Kignoring return value of ‘[01m[Kint system(const char*)[m[K’, declared with attribute warn_unused_result [-Wunused-result]
+         system(char_command);
+[01;32m[K                             ^[m[K
+[01m[K/home/adeye/adeye-core/AD-EYE/ROS_Packages/src/AD-EYE/src/experimentC.cpp:126:55:[m[K [01;35m[Kwarning: [m[Kignoring return value of ‘[01m[Kint system(const char*)[m[K’, declared with attribute warn_unused_result [-Wunused-result]
+         system("rosnode kill /expC_rosbag_recorder &");
+[01;32m[K                                                       ^[m[K
+In file included from [01m[K/home/adeye/AD-EYE_Core/autoware.ai/install/op_planner/include/op_planner/RoadNetwork.h:14:0[m[K,
+                 from [01m[K/home/adeye/AD-EYE_Core/autoware.ai/install/op_planner/include/op_planner/PlannerH.h:12[m[K,
+                 from [01m[K/home/adeye/adeye-core/AD-EYE/ROS_Packages/src/AD-EYE/src/safety_supervisor.cpp:19[m[K:
+[01m[K/home/adeye/AD-EYE_Core/autoware.ai/install/op_utility/include/op_utility/UtilityH.h:21:0:[m[K [01;35m[Kwarning: [m[K"MIN" redefined
+ #define MIN(x,y) (x <= y ? x : y)
+[01;32m[K ^[m[K
+In file included from [01m[K/opt/ros/kinetic/include/opencv-3.3.1-dev/opencv2/core.hpp:52:0[m[K,
+                 from [01m[K/opt/ros/kinetic/include/opencv-3.3.1-dev/opencv2/core/core.hpp:48[m[K,
+                 from [01m[K/opt/ros/kinetic/include/cv_bridge/cv_bridge.h:43[m[K,
+                 from [01m[K/opt/ros/kinetic/include/grid_map_ros/GridMapRosConverter.hpp:28[m[K,
+                 from [01m[K/opt/ros/kinetic/include/grid_map_ros/grid_map_ros.hpp:13[m[K,
+                 from [01m[K/home/adeye/adeye-core/AD-EYE/ROS_Packages/src/AD-EYE/src/safety_supervisor.cpp:4[m[K:
+[01m[K/opt/ros/kinetic/include/opencv-3.3.1-dev/opencv2/core/cvdef.h:325:0:[m[K [01;36m[Knote: [m[Kthis is the location of the previous definition
+ #  define MIN(a,b)  ((a) > (b) ? (b) : (a))
+[01;32m[K ^[m[K
+In file included from [01m[K/home/adeye/AD-EYE_Core/autoware.ai/install/op_planner/include/op_planner/RoadNetwork.h:14:0[m[K,
+                 from [01m[K/home/adeye/AD-EYE_Core/autoware.ai/install/op_planner/include/op_planner/PlannerH.h:12[m[K,
+                 from [01m[K/home/adeye/adeye-core/AD-EYE/ROS_Packages/src/AD-EYE/src/safety_supervisor.cpp:19[m[K:
+[01m[K/home/adeye/AD-EYE_Core/autoware.ai/install/op_utility/include/op_utility/UtilityH.h:22:0:[m[K [01;35m[Kwarning: [m[K"MAX" redefined
+ #define MAX(x,y) (x >= y ? x : y)
+[01;32m[K ^[m[K
+In file included from [01m[K/opt/ros/kinetic/include/opencv-3.3.1-dev/opencv2/core.hpp:52:0[m[K,
+                 from [01m[K/opt/ros/kinetic/include/opencv-3.3.1-dev/opencv2/core/core.hpp:48[m[K,
+                 from [01m[K/opt/ros/kinetic/include/cv_bridge/cv_bridge.h:43[m[K,
+                 from [01m[K/opt/ros/kinetic/include/grid_map_ros/GridMapRosConverter.hpp:28[m[K,
+                 from [01m[K/opt/ros/kinetic/include/grid_map_ros/grid_map_ros.hpp:13[m[K,
+                 from [01m[K/home/adeye/adeye-core/AD-EYE/ROS_Packages/src/AD-EYE/src/safety_supervisor.cpp:4[m[K:
+[01m[K/opt/ros/kinetic/include/opencv-3.3.1-dev/opencv2/core/cvdef.h:329:0:[m[K [01;36m[Knote: [m[Kthis is the location of the previous definition
+ #  define MAX(a,b)  ((a) < (b) ? (b) : (a))
+[01;32m[K ^[m[K

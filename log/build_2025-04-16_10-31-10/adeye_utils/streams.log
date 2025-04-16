@@ -1,0 +1,167 @@
+[0.103s] Invoking command in '/home/adeye/adeye-core/build/adeye_utils': _OLD_VIRTUAL_PS1=\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ /usr/local/bin/cmake --build /home/adeye/adeye-core/build/adeye_utils -- -j32 -l32
+[0.181s] [  0%] Built target tf_generate_messages_eus
+[0.182s] [  0%] Built target std_msgs_generate_messages_cpp
+[0.182s] [  0%] Built target rosgraph_msgs_generate_messages_py
+[0.184s] [  0%] Built target rosgraph_msgs_generate_messages_cpp
+[0.186s] [  0%] Built target std_msgs_generate_messages_eus
+[0.186s] [  0%] Built target std_msgs_generate_messages_py
+[0.186s] [  0%] Built target tf_generate_messages_cpp
+[0.187s] [  0%] Built target nav_msgs_generate_messages_py
+[0.187s] [  0%] Built target std_msgs_generate_messages_lisp
+[0.188s] [  0%] Built target rosgraph_msgs_generate_messages_lisp
+[0.188s] [  0%] Built target sensor_msgs_generate_messages_eus
+[0.189s] [  0%] Built target sensor_msgs_generate_messages_nodejs
+[0.189s] [  0%] Built target geometry_msgs_generate_messages_eus
+[0.189s] [  0%] Built target rosgraph_msgs_generate_messages_nodejs
+[0.191s] [  0%] Built target tf_generate_messages_py
+[0.191s] [  0%] Built target tf_generate_messages_lisp
+[0.192s] [  0%] Built target geometry_msgs_generate_messages_lisp
+[0.192s] [  0%] Built target actionlib_generate_messages_cpp
+[0.192s] [  0%] Built target rosgraph_msgs_generate_messages_eus
+[0.192s] [  0%] Built target roscpp_generate_messages_nodejs
+[0.192s] [  0%] Built target actionlib_generate_messages_eus
+[0.192s] [  0%] Built target tf_generate_messages_nodejs
+[0.193s] [  0%] Built target geometry_msgs_generate_messages_py
+[0.194s] [  0%] Built target roscpp_generate_messages_py
+[0.194s] [  0%] Built target geometry_msgs_generate_messages_nodejs
+[0.195s] [  0%] Built target std_msgs_generate_messages_nodejs
+[0.196s] [  0%] Built target sensor_msgs_generate_messages_cpp
+[0.197s] [  0%] Built target sensor_msgs_generate_messages_py
+[0.197s] [  0%] Built target geometry_msgs_generate_messages_cpp
+[0.198s] [  0%] Built target sensor_msgs_generate_messages_lisp
+[0.209s] [ 15%] Built target trajectoryVisualizer
+[0.210s] [ 15%] Built target actionlib_generate_messages_nodejs
+[0.217s] [ 15%] Built target actionlib_generate_messages_lisp
+[0.217s] [ 15%] Built target actionlib_msgs_generate_messages_nodejs
+[0.217s] [ 15%] Built target actionlib_generate_messages_py
+[0.219s] [ 30%] Built target adeye_utils
+[0.220s] [ 30%] Built target tf2_msgs_generate_messages_lisp
+[0.221s] [ 30%] Built target actionlib_msgs_generate_messages_eus
+[0.221s] [ 30%] Built target actionlib_msgs_generate_messages_lisp
+[0.221s] [ 30%] Built target autoware_msgs_generate_messages_lisp
+[0.221s] [ 30%] Built target tf2_msgs_generate_messages_eus
+[0.222s] [ 30%] Built target actionlib_msgs_generate_messages_cpp
+[0.223s] [ 30%] Built target jsk_recognition_msgs_generate_messages_eus
+[0.224s] [ 30%] Built target tf2_msgs_generate_messages_nodejs
+[0.224s] [ 30%] Built target autoware_msgs_generate_messages_eus
+[0.224s] [ 30%] Built target tf2_msgs_generate_messages_cpp
+[0.225s] [ 30%] Built target autoware_msgs_generate_messages_cpp
+[0.225s] [ 30%] Built target autoware_msgs_generate_messages_py
+[0.225s] [ 30%] Built target jsk_recognition_msgs_generate_messages_py
+[0.226s] [ 30%] Built target autoware_msgs_generate_messages_nodejs
+[0.226s] [ 30%] Built target pcl_msgs_generate_messages_eus
+[0.226s] [ 30%] Built target tf2_msgs_generate_messages_py
+[0.227s] [ 30%] Built target pcl_msgs_generate_messages_cpp
+[0.227s] [ 30%] Built target actionlib_msgs_generate_messages_py
+[0.228s] [ 30%] Built target pcl_msgs_generate_messages_nodejs
+[0.228s] [ 30%] Built target pcl_msgs_generate_messages_lisp
+[0.228s] [ 30%] Built target jsk_footstep_msgs_generate_messages_eus
+[0.228s] [ 30%] Built target jsk_recognition_msgs_generate_messages_nodejs
+[0.228s] [ 30%] Built target jsk_recognition_msgs_generate_messages_cpp
+[0.229s] [ 30%] Built target jsk_recognition_msgs_generate_messages_lisp
+[0.232s] [ 30%] Built target jsk_footstep_msgs_generate_messages_cpp
+[0.232s] [ 30%] Built target pcl_msgs_generate_messages_py
+[0.242s] [ 30%] Built target jsk_footstep_msgs_generate_messages_lisp
+[0.249s] [ 30%] Built target dynamic_reconfigure_generate_messages_lisp
+[0.249s] [ 30%] Built target jsk_footstep_msgs_generate_messages_py
+[0.250s] [ 30%] Built target dynamic_reconfigure_generate_messages_eus
+[0.253s] [ 30%] Built target bond_generate_messages_lisp
+[0.253s] [ 30%] Built target dynamic_reconfigure_generate_messages_nodejs
+[0.253s] [ 30%] Built target dynamic_reconfigure_generate_messages_py
+[0.254s] [ 30%] Built target bond_generate_messages_eus
+[0.254s] [ 30%] Built target pcl_ros_gencfg
+[0.254s] [ 30%] Built target jsk_footstep_msgs_generate_messages_nodejs
+[0.255s] [ 30%] Built target dynamic_reconfigure_gencfg
+[0.256s] [ 30%] Built target nodelet_generate_messages_eus
+[0.256s] [ 30%] Built target std_srvs_generate_messages_eus
+[0.257s] [ 30%] Built target nodelet_generate_messages_cpp
+[0.258s] [ 30%] Built target std_srvs_generate_messages_cpp
+[0.258s] [ 30%] Built target nodelet_generate_messages_py
+[0.258s] [ 30%] Built target nodelet_generate_messages_nodejs
+[0.258s] [ 30%] Built target nodelet_generate_messages_lisp
+[0.258s] [ 30%] Built target std_srvs_generate_messages_lisp
+[0.260s] [ 30%] Built target dynamic_reconfigure_generate_messages_cpp
+[0.261s] [ 30%] Built target nodelet_topic_tools_gencfg
+[0.261s] [ 30%] Built target roscpp_generate_messages_cpp
+[0.262s] [ 30%] Built target roscpp_generate_messages_eus
+[0.262s] [ 30%] Built target roscpp_generate_messages_lisp
+[0.262s] [ 30%] Built target bond_generate_messages_py
+[0.263s] [ 30%] Built target std_srvs_generate_messages_nodejs
+[0.264s] [ 30%] Built target std_srvs_generate_messages_py
+[0.264s] [ 30%] Built target bond_generate_messages_nodejs
+[0.265s] [ 30%] Built target bond_generate_messages_cpp
+[0.268s] [ 30%] Built target topic_tools_generate_messages_lisp
+[0.269s] [ 30%] Built target topic_tools_generate_messages_cpp
+[0.270s] [ 30%] Built target topic_tools_generate_messages_eus
+[0.271s] [ 30%] Built target topic_tools_generate_messages_nodejs
+[0.279s] [ 30%] Built target topic_tools_generate_messages_py
+[0.284s] [ 30%] Built target vector_map_msgs_generate_messages_cpp
+[0.285s] [ 30%] Built target vector_map_msgs_generate_messages_py
+[0.286s] [ 30%] Built target vector_map_msgs_generate_messages_nodejs
+[0.286s] [ 30%] Built target vector_map_msgs_generate_messages_lisp
+[0.286s] [ 30%] Built target vector_map_server_generate_messages_eus
+[0.287s] [ 30%] Built target vector_map_msgs_generate_messages_eus
+[0.287s] [ 30%] Built target vector_map_server_generate_messages_cpp
+[0.291s] [ 30%] Built target vector_map_server_generate_messages_lisp
+[0.291s] [ 30%] Built target autoware_config_msgs_generate_messages_cpp
+[0.291s] [ 30%] Built target vector_map_server_generate_messages_py
+[0.292s] [ 30%] Built target visualization_msgs_generate_messages_eus
+[0.292s] [ 30%] Built target visualization_msgs_generate_messages_py
+[0.292s] [ 30%] Built target vector_map_server_generate_messages_nodejs
+[0.293s] [ 30%] Built target visualization_msgs_generate_messages_lisp
+[0.294s] [ 30%] Built target tablet_socket_msgs_generate_messages_lisp
+[0.294s] [ 30%] Built target autoware_config_msgs_generate_messages_lisp
+[0.295s] [ 30%] Built target tablet_socket_msgs_generate_messages_cpp
+[0.297s] [ 30%] Built target visualization_msgs_generate_messages_cpp
+[0.297s] [ 30%] Built target autoware_config_msgs_generate_messages_eus
+[0.297s] [ 30%] Built target tablet_socket_msgs_generate_messages_py
+[0.298s] [ 30%] Built target tablet_socket_msgs_generate_messages_nodejs
+[0.298s] [ 30%] Built target autoware_system_msgs_generate_messages_eus
+[0.299s] [ 30%] Built target visualization_msgs_generate_messages_nodejs
+[0.299s] [ 30%] Built target autoware_config_msgs_generate_messages_nodejs
+[0.299s] [ 30%] Built target tablet_socket_msgs_generate_messages_eus
+[0.300s] [ 30%] Built target autoware_system_msgs_generate_messages_lisp
+[0.300s] [ 30%] Built target autoware_system_msgs_generate_messages_nodejs
+[0.300s] [ 30%] Built target autoware_system_msgs_generate_messages_cpp
+[0.301s] [ 30%] Built target autoware_system_msgs_generate_messages_py
+[0.302s] [ 30%] Built target autoware_config_msgs_generate_messages_py
+[0.310s] [ 30%] Built target gazebo_msgs_generate_messages_cpp
+[0.316s] [ 30%] Built target gazebo_msgs_generate_messages_py
+[0.317s] [ 30%] Built target gazebo_msgs_generate_messages_nodejs
+[0.317s] [ 30%] Built target trajectory_msgs_generate_messages_nodejs
+[0.317s] [ 30%] Built target gazebo_msgs_generate_messages_lisp
+[0.318s] [ 30%] Built target trajectory_msgs_generate_messages_py
+[0.319s] [ 30%] Built target grid_map_msgs_generate_messages_cpp
+[0.319s] [ 30%] Built target grid_map_msgs_generate_messages_py
+[0.319s] [ 30%] Built target trajectory_msgs_generate_messages_cpp
+[0.320s] [ 30%] Built target nav_msgs_generate_messages_lisp
+[0.320s] [ 30%] Built target grid_map_msgs_generate_messages_lisp
+[0.320s] [ 30%] Built target gazebo_msgs_generate_messages_eus
+[0.320s] [ 30%] Built target grid_map_msgs_generate_messages_eus
+[0.321s] [ 30%] Built target nav_msgs_generate_messages_eus
+[0.321s] [ 30%] Built target nav_msgs_generate_messages_cpp
+[0.321s] [ 30%] Built target trajectory_msgs_generate_messages_eus
+[0.322s] [ 30%] Built target trajectory_msgs_generate_messages_lisp
+[0.322s] [ 30%] Built target nav_msgs_generate_messages_nodejs
+[0.323s] [ 30%] Built target grid_map_msgs_generate_messages_nodejs
+[0.368s] [ 46%] Built target pointCloudAccumulator
+[0.371s] [ 61%] Built target layerVisualizer
+[0.379s] [ 84%] Built target pointCloudToOccupancyGrid
+[0.394s] [100%] Built target pointCloudFrameChanger
+[0.403s] Invoked command in '/home/adeye/adeye-core/build/adeye_utils' returned '0': _OLD_VIRTUAL_PS1=\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ /usr/local/bin/cmake --build /home/adeye/adeye-core/build/adeye_utils -- -j32 -l32
+[0.409s] Invoking command in '/home/adeye/adeye-core/build/adeye_utils': _OLD_VIRTUAL_PS1=\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ /usr/local/bin/cmake --build /home/adeye/adeye-core/build/adeye_utils --target tests -- -j32 -l32
+[0.487s] Built target tests
+[0.508s] Invoked command in '/home/adeye/adeye-core/build/adeye_utils' returned '0': _OLD_VIRTUAL_PS1=\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ /usr/local/bin/cmake --build /home/adeye/adeye-core/build/adeye_utils --target tests -- -j32 -l32
+[0.512s] Invoking command in '/home/adeye/adeye-core/build/adeye_utils': _OLD_VIRTUAL_PS1=\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ /usr/local/bin/cmake --install /home/adeye/adeye-core/build/adeye_utils
+[0.518s] -- Install configuration: "Release"
+[0.519s] -- Up-to-date: /home/adeye/adeye-core/install/adeye_utils/lib/pkgconfig/adeye_utils.pc
+[0.519s] -- Up-to-date: /home/adeye/adeye-core/install/adeye_utils/share/adeye_utils/cmake/adeye_utilsConfig.cmake
+[0.519s] -- Up-to-date: /home/adeye/adeye-core/install/adeye_utils/share/adeye_utils/cmake/adeye_utilsConfig-version.cmake
+[0.519s] -- Up-to-date: /home/adeye/adeye-core/install/adeye_utils/share/adeye_utils/package.xml
+[0.520s] -- Up-to-date: /home/adeye/adeye-core/install/adeye_utils/lib/adeye_utils/trajectoryVisualizer
+[0.520s] -- Up-to-date: /home/adeye/adeye-core/install/adeye_utils/lib/adeye_utils/pointCloudFrameChanger
+[0.521s] -- Up-to-date: /home/adeye/adeye-core/install/adeye_utils/lib/adeye_utils/pointCloudToOccupancyGrid
+[0.521s] -- Up-to-date: /home/adeye/adeye-core/install/adeye_utils/lib/libadeye_utils.so
+[0.522s] -- Up-to-date: /home/adeye/adeye-core/install/adeye_utils/include/adeye_utils
+[0.522s] -- Up-to-date: /home/adeye/adeye-core/install/adeye_utils/include/adeye_utils/point_cloud_to_occupancy_grid.h
+[0.524s] Invoked command in '/home/adeye/adeye-core/build/adeye_utils' returned '0': _OLD_VIRTUAL_PS1=\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ /usr/local/bin/cmake --install /home/adeye/adeye-core/build/adeye_utils

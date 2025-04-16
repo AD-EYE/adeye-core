@@ -1,0 +1,212 @@
+[0.034s] Invoking command in '/home/adeye/adeye-core/build/adeye': CMAKE_PREFIX_PATH=/home/adeye/adeye-core/install/adeye_utils:${CMAKE_PREFIX_PATH} LD_LIBRARY_PATH=/home/adeye/adeye-core/install/adeye_utils/lib:${LD_LIBRARY_PATH} PKG_CONFIG_PATH=/home/adeye/adeye-core/install/adeye_utils/lib/x86_64-linux-gnu/pkgconfig:/home/adeye/adeye-core/install/adeye_utils/lib/pkgconfig:${PKG_CONFIG_PATH} ROS_PACKAGE_PATH=/home/adeye/adeye-core/install/adeye_utils/share:${ROS_PACKAGE_PATH} _OLD_VIRTUAL_PS1=\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ /usr/local/bin/cmake --build /home/adeye/adeye-core/build/adeye -- -j32 -l32
+[0.096s] [  0%] Built target topic_tools_generate_messages_eus
+[0.098s] [  0%] Built target topic_tools_generate_messages_py
+[0.098s] [  0%] Built target tf_generate_messages_lisp
+[0.098s] [  0%] Built target std_srvs_generate_messages_py
+[0.099s] [  0%] Built target actionlib_generate_messages_cpp
+[0.100s] [  0%] Built target topic_tools_generate_messages_cpp
+[0.100s] [  0%] Built target tf_generate_messages_eus
+[0.101s] [  0%] Built target tf_generate_messages_cpp
+[0.101s] [  0%] Built target topic_tools_generate_messages_lisp
+[0.101s] [  0%] Built target tf_generate_messages_nodejs
+[0.102s] [  0%] Built target topic_tools_generate_messages_nodejs
+[0.102s] [  0%] Built target tf2_msgs_generate_messages_eus
+[0.102s] [  4%] Built target PID
+[0.103s] [  4%] Built target actionlib_generate_messages_lisp
+[0.103s] [  4%] Built target tf_generate_messages_py
+[0.103s] [  4%] Built target actionlib_generate_messages_eus
+[0.103s] [  4%] Built target rcv_common_msgs_generate_messages_eus
+[0.104s] [  4%] Built target visualization_msgs_generate_messages_nodejs
+[0.104s] [  4%] Built target tf2_msgs_generate_messages_py
+[0.105s] [  4%] Built target actionlib_generate_messages_nodejs
+[0.105s] [  4%] Built target actionlib_generate_messages_py
+[0.105s] [  4%] Built target tf2_msgs_generate_messages_cpp
+[0.106s] [  4%] Built target visualization_msgs_generate_messages_py
+[0.106s] [  4%] Built target tf2_msgs_generate_messages_nodejs
+[0.107s] [  4%] Built target rcv_common_msgs_generate_messages_lisp
+[0.108s] [  4%] Built target visualization_msgs_generate_messages_eus
+[0.108s] [  4%] Built target tf2_msgs_generate_messages_lisp
+[0.108s] [  4%] Built target rcv_common_msgs_generate_messages_cpp
+[0.109s] [  4%] Built target visualization_msgs_generate_messages_lisp
+[0.109s] [  4%] Built target visualization_msgs_generate_messages_cpp
+[0.117s] [  8%] Built target vectorMap
+[0.125s] [  8%] Built target costmap_2d_generate_messages_eus
+[0.126s] [  8%] Built target costmap_2d_generate_messages_py
+[0.126s] [ 12%] Built target experimentRecording
+[0.127s] [ 12%] Built target costmap_2d_generate_messages_nodejs
+[0.129s] [ 12%] Built target rcv_common_msgs_generate_messages_py
+[0.130s] [ 12%] Built target dynamic_reconfigure_generate_messages_lisp
+[0.130s] [ 12%] Built target dynamic_reconfigure_generate_messages_py
+[0.130s] [ 12%] Built target costmap_2d_generate_messages_lisp
+[0.130s] [ 12%] Built target costmap_2d_generate_messages_cpp
+[0.131s] [ 12%] Built target dynamic_reconfigure_generate_messages_cpp
+[0.131s] [ 12%] Built target rcv_common_msgs_generate_messages_nodejs
+[0.132s] [ 12%] Built target map_msgs_generate_messages_lisp
+[0.132s] [ 12%] Built target dynamic_reconfigure_generate_messages_eus
+[0.132s] [ 12%] Built target dynamic_reconfigure_generate_messages_nodejs
+[0.132s] [ 12%] Built target dynamic_reconfigure_gencfg
+[0.133s] [ 12%] Built target costmap_2d_gencfg
+[0.133s] [ 12%] Built target map_msgs_generate_messages_py
+[0.134s] [ 12%] Built target map_msgs_generate_messages_cpp
+[0.134s] [ 12%] Built target map_msgs_generate_messages_nodejs
+[0.134s] [ 12%] Built target nodelet_generate_messages_nodejs
+[0.135s] [ 12%] Built target nodelet_generate_messages_py
+[0.136s] [ 12%] Built target map_msgs_generate_messages_eus
+[0.136s] [ 12%] Built target nodelet_generate_messages_lisp
+[0.136s] [ 12%] Built target nodelet_generate_messages_eus
+[0.137s] [ 12%] Built target nodelet_generate_messages_cpp
+[0.137s] [ 12%] Built target pcl_ros_gencfg
+[0.138s] [ 12%] Built target bond_generate_messages_cpp
+[0.138s] [ 12%] Built target bond_generate_messages_eus
+[0.140s] [ 12%] Built target bond_generate_messages_py
+[0.141s] [ 12%] Built target bond_generate_messages_lisp
+[0.141s] [ 12%] Built target bond_generate_messages_nodejs
+[0.145s] [ 12%] Built target nodelet_topic_tools_gencfg
+[0.155s] [ 12%] Built target pcl_msgs_generate_messages_eus
+[0.157s] [ 12%] Built target pcl_msgs_generate_messages_cpp
+[0.158s] [ 12%] Built target pcl_msgs_generate_messages_nodejs
+[0.160s] [ 12%] Built target base_local_planner_generate_messages_eus
+[0.160s] [ 12%] Built target base_local_planner_generate_messages_cpp
+[0.161s] [ 12%] Built target pcl_msgs_generate_messages_lisp
+[0.162s] [ 12%] Built target pcl_msgs_generate_messages_py
+[0.162s] [ 12%] Built target base_local_planner_generate_messages_nodejs
+[0.162s] [ 12%] Built target autoware_msgs_generate_messages_eus
+[0.163s] [ 12%] Built target autoware_msgs_generate_messages_lisp
+[0.163s] [ 12%] Built target base_local_planner_generate_messages_lisp
+[0.163s] [ 12%] Built target autoware_msgs_generate_messages_py
+[0.163s] [ 12%] Built target autoware_msgs_generate_messages_cpp
+[0.164s] [ 12%] Built target base_local_planner_generate_messages_py
+[0.165s] [ 12%] Built target jsk_recognition_msgs_generate_messages_eus
+[0.166s] [ 12%] Built target jsk_recognition_msgs_generate_messages_py
+[0.166s] [ 12%] Built target jsk_recognition_msgs_generate_messages_lisp
+[0.166s] [ 12%] Built target base_local_planner_gencfg
+[0.167s] [ 12%] Built target jsk_recognition_msgs_generate_messages_cpp
+[0.167s] [ 12%] Built target jsk_footstep_msgs_generate_messages_eus
+[0.167s] [ 12%] Built target jsk_footstep_msgs_generate_messages_cpp
+[0.168s] [ 12%] Built target autoware_msgs_generate_messages_nodejs
+[0.168s] [ 12%] Built target vector_map_msgs_generate_messages_lisp
+[0.169s] [ 12%] Built target jsk_footstep_msgs_generate_messages_lisp
+[0.170s] [ 12%] Built target jsk_footstep_msgs_generate_messages_py
+[0.170s] [ 12%] Built target jsk_footstep_msgs_generate_messages_nodejs
+[0.170s] [ 12%] Built target vector_map_msgs_generate_messages_py
+[0.170s] [ 12%] Built target jsk_recognition_msgs_generate_messages_nodejs
+[0.171s] [ 12%] Built target vector_map_msgs_generate_messages_nodejs
+[0.171s] [ 12%] Built target vector_map_msgs_generate_messages_eus
+[0.172s] [ 12%] Built target vector_map_msgs_generate_messages_cpp
+[0.176s] [ 12%] Built target vector_map_server_generate_messages_cpp
+[0.183s] [ 12%] Built target vector_map_server_generate_messages_eus
+[0.188s] [ 12%] Built target vector_map_server_generate_messages_lisp
+[0.189s] [ 12%] Built target vector_map_server_generate_messages_nodejs
+[0.192s] [ 12%] Built target autoware_config_msgs_generate_messages_cpp
+[0.193s] [ 12%] Built target vector_map_server_generate_messages_py
+[0.194s] [ 12%] Built target autoware_config_msgs_generate_messages_py
+[0.196s] [ 12%] Built target autoware_config_msgs_generate_messages_eus
+[0.197s] [ 12%] Built target autoware_config_msgs_generate_messages_lisp
+[0.197s] [ 12%] Built target autoware_system_msgs_generate_messages_py
+[0.197s] [ 12%] Built target tablet_socket_msgs_generate_messages_py
+[0.197s] [ 12%] Built target tablet_socket_msgs_generate_messages_nodejs
+[0.198s] [ 12%] Built target trajectory_msgs_generate_messages_cpp
+[0.198s] [ 12%] Built target autoware_system_msgs_generate_messages_nodejs
+[0.199s] [ 12%] Built target tablet_socket_msgs_generate_messages_eus
+[0.199s] [ 12%] Built target roscpp_generate_messages_cpp
+[0.200s] [ 12%] Built target trajectory_msgs_generate_messages_nodejs
+[0.200s] [ 12%] Built target gazebo_msgs_generate_messages_eus
+[0.200s] [ 12%] Built target trajectory_msgs_generate_messages_lisp
+[0.200s] [ 12%] Built target autoware_config_msgs_generate_messages_nodejs
+[0.201s] [ 12%] Built target gazebo_msgs_generate_messages_lisp
+[0.201s] [ 12%] Built target tablet_socket_msgs_generate_messages_lisp
+[0.201s] [ 12%] Built target autoware_system_msgs_generate_messages_cpp
+[0.202s] [ 12%] Built target trajectory_msgs_generate_messages_py
+[0.202s] [ 12%] Built target autoware_system_msgs_generate_messages_lisp
+[0.202s] [ 12%] Built target tablet_socket_msgs_generate_messages_cpp
+[0.202s] [ 12%] Built target autoware_system_msgs_generate_messages_eus
+[0.203s] [ 12%] Built target gazebo_msgs_generate_messages_py
+[0.203s] [ 12%] Built target gazebo_msgs_generate_messages_cpp
+[0.203s] [ 12%] Built target gazebo_msgs_generate_messages_nodejs
+[0.203s] [ 12%] Built target trajectory_msgs_generate_messages_eus
+[0.204s] [ 12%] Built target roscpp_generate_messages_eus
+[0.206s] [ 12%] Built target roscpp_generate_messages_lisp
+[0.219s] [ 12%] Built target roscpp_generate_messages_nodejs
+[0.223s] [ 12%] Built target rosgraph_msgs_generate_messages_cpp
+[0.223s] [ 12%] Built target roscpp_generate_messages_py
+[0.225s] [ 12%] Built target rosgraph_msgs_generate_messages_py
+[0.225s] [ 12%] Built target rosgraph_msgs_generate_messages_nodejs
+[0.226s] [ 12%] Built target grid_map_msgs_generate_messages_cpp
+[0.226s] [ 12%] Built target std_msgs_generate_messages_eus
+[0.226s] [ 12%] Built target grid_map_msgs_generate_messages_eus
+[0.227s] [ 12%] Built target rosgraph_msgs_generate_messages_lisp
+[0.227s] [ 12%] Built target std_msgs_generate_messages_py
+[0.228s] [ 12%] Built target grid_map_msgs_generate_messages_py
+[0.229s] [ 12%] Built target std_msgs_generate_messages_nodejs
+[0.229s] [ 12%] Built target rosgraph_msgs_generate_messages_eus
+[0.229s] [ 12%] Built target std_msgs_generate_messages_cpp
+[0.229s] [ 12%] Built target grid_map_msgs_generate_messages_lisp
+[0.229s] [ 12%] Built target std_msgs_generate_messages_lisp
+[0.231s] [ 12%] Built target geometry_msgs_generate_messages_py
+[0.232s] [ 12%] Built target geometry_msgs_generate_messages_eus
+[0.233s] [ 12%] Built target sensor_msgs_generate_messages_py
+[0.233s] [ 12%] Built target sensor_msgs_generate_messages_eus
+[0.233s] [ 12%] Built target geometry_msgs_generate_messages_lisp
+[0.233s] [ 12%] Built target grid_map_msgs_generate_messages_nodejs
+[0.234s] [ 12%] Built target sensor_msgs_generate_messages_lisp
+[0.234s] [ 12%] Built target geometry_msgs_generate_messages_nodejs
+[0.235s] [ 12%] Built target nav_msgs_generate_messages_cpp
+[0.235s] [ 12%] Built target sensor_msgs_generate_messages_cpp
+[0.235s] [ 12%] Built target nav_msgs_generate_messages_lisp
+[0.236s] [ 12%] Built target sensor_msgs_generate_messages_nodejs
+[0.236s] [ 12%] Built target nav_msgs_generate_messages_py
+[0.236s] [ 12%] Built target geometry_msgs_generate_messages_cpp
+[0.238s] [ 12%] Built target nav_msgs_generate_messages_eus
+[0.238s] [ 12%] Built target nav_msgs_generate_messages_nodejs
+[0.245s] [ 12%] Built target actionlib_msgs_generate_messages_cpp
+[0.248s] [ 12%] Built target actionlib_msgs_generate_messages_eus
+[0.251s] [ 12%] Built target actionlib_msgs_generate_messages_nodejs
+[0.251s] [ 12%] Built target actionlib_msgs_generate_messages_py
+[0.251s] [ 12%] Built target actionlib_msgs_generate_messages_lisp
+[0.252s] [ 12%] Built target std_srvs_generate_messages_eus
+[0.252s] [ 12%] Built target std_srvs_generate_messages_lisp
+[0.253s] [ 12%] Built target std_srvs_generate_messages_nodejs
+[0.253s] [ 12%] Built target std_srvs_generate_messages_cpp
+[0.273s] [ 16%] Built target FloatToString
+[0.281s] [ 20%] Built target flattening
+[0.297s] [ 24%] Built target radar_broadcaster
+[0.300s] [ 28%] Built target GridMapCreator
+[0.303s] [ 42%] Built target SafetyFaultMonitors
+[0.306s] [ 46%] Built target lidarRadarFuse
+[0.308s] [ 51%] Built target laneMapImager
+[0.311s] [ 55%] Built target goalSequencer
+[0.312s] [ 59%] Built target objectsFrameAdapter
+[0.313s] [ 63%] Built target ExperimentC
+[0.314s] [ 67%] Built target cameraObjectListFuse
+[0.314s] [ 71%] Built target safetyChannelPerception
+[0.315s] [ 75%] Built target collisionDetector
+[0.316s] [ 79%] Built target controlSwitch
+[0.317s] [ 83%] Built target vehicle_controller
+[0.318s] [ 87%] Built target goalViewer
+[0.320s] [ 91%] Built target sensorMonitor
+[0.339s] [ 95%] Built target TestFault
+[0.353s] [100%] Built target safetySupervisor
+[0.360s] Invoked command in '/home/adeye/adeye-core/build/adeye' returned '0': CMAKE_PREFIX_PATH=/home/adeye/adeye-core/install/adeye_utils:${CMAKE_PREFIX_PATH} LD_LIBRARY_PATH=/home/adeye/adeye-core/install/adeye_utils/lib:${LD_LIBRARY_PATH} PKG_CONFIG_PATH=/home/adeye/adeye-core/install/adeye_utils/lib/x86_64-linux-gnu/pkgconfig:/home/adeye/adeye-core/install/adeye_utils/lib/pkgconfig:${PKG_CONFIG_PATH} ROS_PACKAGE_PATH=/home/adeye/adeye-core/install/adeye_utils/share:${ROS_PACKAGE_PATH} _OLD_VIRTUAL_PS1=\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ /usr/local/bin/cmake --build /home/adeye/adeye-core/build/adeye -- -j32 -l32
+[0.366s] Invoking command in '/home/adeye/adeye-core/build/adeye': CMAKE_PREFIX_PATH=/home/adeye/adeye-core/install/adeye_utils:${CMAKE_PREFIX_PATH} LD_LIBRARY_PATH=/home/adeye/adeye-core/install/adeye_utils/lib:${LD_LIBRARY_PATH} PKG_CONFIG_PATH=/home/adeye/adeye-core/install/adeye_utils/lib/x86_64-linux-gnu/pkgconfig:/home/adeye/adeye-core/install/adeye_utils/lib/pkgconfig:${PKG_CONFIG_PATH} ROS_PACKAGE_PATH=/home/adeye/adeye-core/install/adeye_utils/share:${ROS_PACKAGE_PATH} _OLD_VIRTUAL_PS1=\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ /usr/local/bin/cmake --build /home/adeye/adeye-core/build/adeye --target tests -- -j32 -l32
+[0.457s] Built target tests
+[0.466s] Invoked command in '/home/adeye/adeye-core/build/adeye' returned '0': CMAKE_PREFIX_PATH=/home/adeye/adeye-core/install/adeye_utils:${CMAKE_PREFIX_PATH} LD_LIBRARY_PATH=/home/adeye/adeye-core/install/adeye_utils/lib:${LD_LIBRARY_PATH} PKG_CONFIG_PATH=/home/adeye/adeye-core/install/adeye_utils/lib/x86_64-linux-gnu/pkgconfig:/home/adeye/adeye-core/install/adeye_utils/lib/pkgconfig:${PKG_CONFIG_PATH} ROS_PACKAGE_PATH=/home/adeye/adeye-core/install/adeye_utils/share:${ROS_PACKAGE_PATH} _OLD_VIRTUAL_PS1=\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ /usr/local/bin/cmake --build /home/adeye/adeye-core/build/adeye --target tests -- -j32 -l32
+[0.473s] Invoking command in '/home/adeye/adeye-core/build/adeye': CMAKE_PREFIX_PATH=/home/adeye/adeye-core/install/adeye_utils:${CMAKE_PREFIX_PATH} LD_LIBRARY_PATH=/home/adeye/adeye-core/install/adeye_utils/lib:${LD_LIBRARY_PATH} PKG_CONFIG_PATH=/home/adeye/adeye-core/install/adeye_utils/lib/x86_64-linux-gnu/pkgconfig:/home/adeye/adeye-core/install/adeye_utils/lib/pkgconfig:${PKG_CONFIG_PATH} ROS_PACKAGE_PATH=/home/adeye/adeye-core/install/adeye_utils/share:${ROS_PACKAGE_PATH} _OLD_VIRTUAL_PS1=\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ /usr/local/bin/cmake --install /home/adeye/adeye-core/build/adeye
+[0.478s] -- Install configuration: "Release"
+[0.478s] -- Up-to-date: /home/adeye/adeye-core/install/adeye/lib/pkgconfig/adeye.pc
+[0.479s] -- Up-to-date: /home/adeye/adeye-core/install/adeye/share/adeye/cmake/adeyeConfig.cmake
+[0.479s] -- Up-to-date: /home/adeye/adeye-core/install/adeye/share/adeye/cmake/adeyeConfig-version.cmake
+[0.479s] -- Up-to-date: /home/adeye/adeye-core/install/adeye/share/adeye/package.xml
+[0.479s] -- Up-to-date: /home/adeye/adeye-core/install/adeye/lib/adeye/GridMapCreator
+[0.479s] -- Up-to-date: /home/adeye/adeye-core/install/adeye/lib/adeye/flattening
+[0.480s] -- Up-to-date: /home/adeye/adeye-core/install/adeye/lib/adeye/controlSwitch
+[0.480s] -- Up-to-date: /home/adeye/adeye-core/install/adeye/lib/adeye/safetySupervisor
+[0.480s] -- Up-to-date: /home/adeye/adeye-core/install/adeye/lib/adeye/collisionDetector
+[0.481s] -- Up-to-date: /home/adeye/adeye-core/install/adeye/lib/adeye/radar_broadcaster
+[0.481s] -- Up-to-date: /home/adeye/adeye-core/install/adeye/lib/adeye/objectsFrameAdapter
+[0.481s] -- Up-to-date: /home/adeye/adeye-core/install/adeye/lib/adeye/cameraObjectListFuse
+[0.481s] -- Up-to-date: /home/adeye/adeye-core/install/adeye/lib/adeye/lidarRadarFuse
+[0.481s] -- Up-to-date: /home/adeye/adeye-core/install/adeye/lib/adeye/safetyChannelPerception
+[0.482s] -- Up-to-date: /home/adeye/adeye-core/install/adeye/lib/adeye/ExperimentC
+[0.482s] -- Up-to-date: /home/adeye/adeye-core/install/adeye/lib/adeye/camera_broadcaster.py
+[0.482s] -- Up-to-date: /home/adeye/adeye-core/install/adeye/lib/adeye/zed_driver.py
+[0.484s] Invoked command in '/home/adeye/adeye-core/build/adeye' returned '0': CMAKE_PREFIX_PATH=/home/adeye/adeye-core/install/adeye_utils:${CMAKE_PREFIX_PATH} LD_LIBRARY_PATH=/home/adeye/adeye-core/install/adeye_utils/lib:${LD_LIBRARY_PATH} PKG_CONFIG_PATH=/home/adeye/adeye-core/install/adeye_utils/lib/x86_64-linux-gnu/pkgconfig:/home/adeye/adeye-core/install/adeye_utils/lib/pkgconfig:${PKG_CONFIG_PATH} ROS_PACKAGE_PATH=/home/adeye/adeye-core/install/adeye_utils/share:${ROS_PACKAGE_PATH} _OLD_VIRTUAL_PS1=\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ /usr/local/bin/cmake --install /home/adeye/adeye-core/build/adeye

@@ -1,0 +1,386 @@
+[0mCMake Deprecation Warning at CMakeLists.txt:1 (cmake_minimum_required):
+  Compatibility with CMake < 3.5 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value or use a ...<max> suffix to tell
+  CMake that the project does not need compatibility with older versions.
+
+[0m
+-- The C compiler identification is GNU 5.4.0
+-- The CXX compiler identification is GNU 5.4.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Using CATKIN_DEVEL_PREFIX: /home/adeye/adeye-core/build/adeye/devel
+-- Using CMAKE_PREFIX_PATH: /home/adeye/adeye-core/install/adeye_utils;/home/adeye/AD-EYE_Core/autoware.ai/install/lattice_planner;/home/adeye/AD-EYE_Core/autoware.ai/install/waypoint_planner;/home/adeye/AD-EYE_Core/autoware.ai/install/waypoint_maker;/home/adeye/AD-EYE_Core/autoware.ai/install/way_planner;/home/adeye/AD-EYE_Core/autoware.ai/install/op_utilities;/home/adeye/AD-EYE_Core/autoware.ai/install/op_simulation_package;/home/adeye/AD-EYE_Core/autoware.ai/install/op_local_planner;/home/adeye/AD-EYE_Core/autoware.ai/install/op_global_planner;/home/adeye/AD-EYE_Core/autoware.ai/install/lidar_kf_contour_track;/home/adeye/AD-EYE_Core/autoware.ai/install/op_ros_helpers;/home/adeye/AD-EYE_Core/autoware.ai/install/lane_planner;/home/adeye/AD-EYE_Core/autoware.ai/install/ff_waypoint_follower;/home/adeye/AD-EYE_Core/autoware.ai/install/dp_planner;/home/adeye/AD-EYE_Core/autoware.ai/install/waypoint_follower;/home/adeye/AD-EYE_Core/autoware.ai/install/vision_ssd_detect;/home/adeye/AD-EYE_Core/autoware.ai/install/vision_segment_enet_detect;/home/adeye/AD-EYE_Core/autoware.ai/install/vision_lane_detect;/home/adeye/AD-EYE_Core/autoware.ai/install/vision_darknet_detect;/home/adeye/AD-EYE_Core/autoware.ai/install/vision_beyond_track;/home/adeye/AD-EYE_Core/autoware.ai/install/vehicle_socket;/home/adeye/AD-EYE_Core/autoware.ai/install/vehicle_model;/home/adeye/AD-EYE_Core/autoware.ai/install/vehicle_engage_panel;/home/adeye/AD-EYE_Core/autoware.ai/install/vehicle_description;/home/adeye/AD-EYE_Core/autoware.ai/install/trafficlight_recognizer;/home/adeye/AD-EYE_Core/autoware.ai/install/op_simu;/home/adeye/AD-EYE_Core/autoware.ai/install/op_planner;/home/adeye/AD-EYE_Core/autoware.ai/install/op_utility;/home/adeye/AD-EYE_Core/autoware.ai/install/lidar_euclidean_cluster_detect;/home/adeye/AD-EYE_Core/autoware.ai/install/vector_map_server;/home/adeye/AD-EYE_Core/autoware.ai/install/road_occupancy_processor;/home/adeye/AD-EYE_Core/autoware.ai/install/costmap_generator;/home/adeye/AD-EYE_Core/autoware.ai/install/object_map;/home/adeye/AD-EYE_Core/autoware.ai/install/naive_motion_predict;/home/adeye/AD-EYE_Core/autoware.ai/install/map_file;/home/adeye/AD-EYE_Core/autoware.ai/install/libvectormap;/home/adeye/AD-EYE_Core/autoware.ai/install/imm_ukf_pda_track;/home/adeye/AD-EYE_Core/autoware.ai/install/decision_maker;/home/adeye/AD-EYE_Core/autoware.ai/install/vector_map;/home/adeye/AD-EYE_Core/autoware.ai/install/vector_map_msgs;/home/adeye/AD-EYE_Core/autoware.ai/install/udon_socket;/home/adeye/AD-EYE_Core/autoware.ai/install/twist_generator;/home/adeye/AD-EYE_Core/autoware.ai/install/twist2odom;/home/adeye/AD-EYE_Core/autoware.ai/install/tablet_socket;/home/adeye/AD-EYE_Core/autoware.ai/install/runtime_manager;/home/adeye/AD-EYE_Core/autoware.ai/install/mqtt_socket;/home/adeye/AD-EYE_Core/autoware.ai/install/tablet_socket_msgs;/home/adeye/AD-EYE_Core/autoware.ai/install/state_machine_lib;/home/adeye/AD-EYE_Core/autoware.ai/install/sound_player;/home/adeye/AD-EYE_Core/autoware.ai/install/points2image;/home/adeye/AD-EYE_Core/autoware.ai/install/rosinterface;/home/adeye/AD-EYE_Core/autoware.ai/install/rosbag_controller;/home/adeye/AD-EYE_Core/autoware.ai/install/roi_object_filter;/home/adeye/AD-EYE_Core/autoware.ai/install/range_vision_fusion;/home/adeye/AD-EYE_Core/autoware.ai/install/pos_db;/home/adeye/AD-EYE_Core/autoware.ai/install/points_preprocessor;/home/adeye/AD-EYE_Core/autoware.ai/install/points_downsampler;/home/adeye/AD-EYE_Core/autoware.ai/install/pixel_cloud_fusion;/home/adeye/AD-EYE_Core/autoware.ai/install/lidar_localizer;/home/adeye/AD-EYE_Core/autoware.ai/install/pcl_omp_registration;/home/adeye/AD-EYE_Core/autoware.ai/install/pc2_downsampler;/home/adeye/AD-EYE_Core/autoware.ai/install/oculus_socket;/home/adeye/AD-EYE_Core/autoware.ai/install/obj_db;/home/adeye/AD-EYE_Core/autoware.ai/install/ndt_tku;/home/adeye/AD-EYE_Core/autoware.ai/install/ndt_gpu;/home/adeye/AD-EYE_Core/autoware.ai/install/ndt_cpu;/home/adeye/AD-EYE_Core/autoware.ai/install/multi_lidar_calibrator;/home/adeye/AD-EYE_Core/autoware.ai/install/marker_downsampler;/home/adeye/AD-EYE_Core/autoware.ai/install/map_tools;/home/adeye/AD-EYE_Core/autoware.ai/install/map_tf_generator;/home/adeye/AD-EYE_Core/autoware.ai/install/log_tools;/home/adeye/AD-EYE_Core/autoware.ai/install/lidar_shape_estimation;/home/adeye/AD-EYE_Core/autoware.ai/install/lidar_point_pillars;/home/adeye/AD-EYE_Core/autoware.ai/install/lidar_naive_l_shape_detect;/home/adeye/AD-EYE_Core/autoware.ai/install/lidar_fake_perception;/home/adeye/AD-EYE_Core/autoware.ai/install/lidar_apollo_cnn_seg_detect;/home/adeye/AD-EYE_Core/autoware.ai/install/kitti_launch;/home/adeye/AD-EYE_Core/autoware.ai/install/kitti_player;/home/adeye/AD-EYE_Core/autoware.ai/install/kitti_box_publisher;/home/adeye/AD-EYE_Core/autoware.ai/install/integrated_viewer;/home/adeye/AD-EYE_Core/autoware.ai/install/image_processor;/home/adeye/AD-EYE_Core/autoware.ai/install/graph_tools;/home/adeye/AD-EYE_Core/autoware.ai/install/gnss_localizer;/home/adeye/AD-EYE_Core/autoware.ai/install/gnss;/home/adeye/AD-EYE_Core/autoware.ai/install/glviewer;/home/adeye/AD-EYE_Core/autoware.ai/install/freespace_planner;/home/adeye/AD-EYE_Core/autoware.ai/install/fastvirtualscan;/home/adeye/AD-EYE_Core/autoware.ai/install/ekf_localizer;/home/adeye/AD-EYE_Core/autoware.ai/install/detected_objects_visualizer;/home/adeye/AD-EYE_Core/autoware.ai/install/decision_maker_panel;/home/adeye/AD-EYE_Core/autoware.ai/install/data_preprocessor;/home/adeye/AD-EYE_Core/autoware.ai/install/calibration_publisher;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_health_checker;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_system_msgs;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_rviz_plugins;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_connector;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_camera_lidar_calibrator;/home/adeye/AD-EYE_Core/autoware.ai/install/astar_search;/home/adeye/AD-EYE_Core/autoware.ai/install/amathutils_lib;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_msgs;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_map_msgs;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_launcher_rviz;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_launcher;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_lanelet2_msgs;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_external_msgs;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_config_msgs;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_can_msgs;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_build_flags;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_bag_tools;/home/adeye/AD-EYE_Core/AD-EYE/ROS_Packages/devel;/opt/ros/kinetic
+-- This workspace overlays: /home/adeye/adeye-core/install/adeye_utils;/home/adeye/AD-EYE_Core/autoware.ai/install/lattice_planner;/home/adeye/AD-EYE_Core/autoware.ai/install/waypoint_planner;/home/adeye/AD-EYE_Core/autoware.ai/install/waypoint_maker;/home/adeye/AD-EYE_Core/autoware.ai/install/way_planner;/home/adeye/AD-EYE_Core/autoware.ai/install/op_utilities;/home/adeye/AD-EYE_Core/autoware.ai/install/op_simulation_package;/home/adeye/AD-EYE_Core/autoware.ai/install/op_local_planner;/home/adeye/AD-EYE_Core/autoware.ai/install/op_global_planner;/home/adeye/AD-EYE_Core/autoware.ai/install/lidar_kf_contour_track;/home/adeye/AD-EYE_Core/autoware.ai/install/op_ros_helpers;/home/adeye/AD-EYE_Core/autoware.ai/install/lane_planner;/home/adeye/AD-EYE_Core/autoware.ai/install/ff_waypoint_follower;/home/adeye/AD-EYE_Core/autoware.ai/install/dp_planner;/home/adeye/AD-EYE_Core/autoware.ai/install/waypoint_follower;/home/adeye/AD-EYE_Core/autoware.ai/install/vision_ssd_detect;/home/adeye/AD-EYE_Core/autoware.ai/install/vision_segment_enet_detect;/home/adeye/AD-EYE_Core/autoware.ai/install/vision_lane_detect;/home/adeye/AD-EYE_Core/autoware.ai/install/vision_darknet_detect;/home/adeye/AD-EYE_Core/autoware.ai/install/vision_beyond_track;/home/adeye/AD-EYE_Core/autoware.ai/install/vehicle_socket;/home/adeye/AD-EYE_Core/autoware.ai/install/vehicle_model;/home/adeye/AD-EYE_Core/autoware.ai/install/vehicle_engage_panel;/home/adeye/AD-EYE_Core/autoware.ai/install/vehicle_description;/home/adeye/AD-EYE_Core/autoware.ai/install/trafficlight_recognizer;/home/adeye/AD-EYE_Core/autoware.ai/install/op_simu;/home/adeye/AD-EYE_Core/autoware.ai/install/op_planner;/home/adeye/AD-EYE_Core/autoware.ai/install/op_utility;/home/adeye/AD-EYE_Core/autoware.ai/install/lidar_euclidean_cluster_detect;/home/adeye/AD-EYE_Core/autoware.ai/install/vector_map_server;/home/adeye/AD-EYE_Core/autoware.ai/install/road_occupancy_processor;/home/adeye/AD-EYE_Core/autoware.ai/install/costmap_generator;/home/adeye/AD-EYE_Core/autoware.ai/install/object_map;/home/adeye/AD-EYE_Core/autoware.ai/install/naive_motion_predict;/home/adeye/AD-EYE_Core/autoware.ai/install/map_file;/home/adeye/AD-EYE_Core/autoware.ai/install/libvectormap;/home/adeye/AD-EYE_Core/autoware.ai/install/imm_ukf_pda_track;/home/adeye/AD-EYE_Core/autoware.ai/install/decision_maker;/home/adeye/AD-EYE_Core/autoware.ai/install/vector_map;/home/adeye/AD-EYE_Core/autoware.ai/install/vector_map_msgs;/home/adeye/AD-EYE_Core/autoware.ai/install/udon_socket;/home/adeye/AD-EYE_Core/autoware.ai/install/twist_generator;/home/adeye/AD-EYE_Core/autoware.ai/install/twist2odom;/home/adeye/AD-EYE_Core/autoware.ai/install/tablet_socket;/home/adeye/AD-EYE_Core/autoware.ai/install/runtime_manager;/home/adeye/AD-EYE_Core/autoware.ai/install/mqtt_socket;/home/adeye/AD-EYE_Core/autoware.ai/install/tablet_socket_msgs;/home/adeye/AD-EYE_Core/autoware.ai/install/state_machine_lib;/home/adeye/AD-EYE_Core/autoware.ai/install/sound_player;/home/adeye/AD-EYE_Core/autoware.ai/install/points2image;/home/adeye/AD-EYE_Core/autoware.ai/install/rosinterface;/home/adeye/AD-EYE_Core/autoware.ai/install/rosbag_controller;/home/adeye/AD-EYE_Core/autoware.ai/install/roi_object_filter;/home/adeye/AD-EYE_Core/autoware.ai/install/range_vision_fusion;/home/adeye/AD-EYE_Core/autoware.ai/install/pos_db;/home/adeye/AD-EYE_Core/autoware.ai/install/points_preprocessor;/home/adeye/AD-EYE_Core/autoware.ai/install/points_downsampler;/home/adeye/AD-EYE_Core/autoware.ai/install/pixel_cloud_fusion;/home/adeye/AD-EYE_Core/autoware.ai/install/lidar_localizer;/home/adeye/AD-EYE_Core/autoware.ai/install/pcl_omp_registration;/home/adeye/AD-EYE_Core/autoware.ai/install/pc2_downsampler;/home/adeye/AD-EYE_Core/autoware.ai/install/oculus_socket;/home/adeye/AD-EYE_Core/autoware.ai/install/obj_db;/home/adeye/AD-EYE_Core/autoware.ai/install/ndt_tku;/home/adeye/AD-EYE_Core/autoware.ai/install/ndt_gpu;/home/adeye/AD-EYE_Core/autoware.ai/install/ndt_cpu;/home/adeye/AD-EYE_Core/autoware.ai/install/multi_lidar_calibrator;/home/adeye/AD-EYE_Core/autoware.ai/install/marker_downsampler;/home/adeye/AD-EYE_Core/autoware.ai/install/map_tools;/home/adeye/AD-EYE_Core/autoware.ai/install/map_tf_generator;/home/adeye/AD-EYE_Core/autoware.ai/install/log_tools;/home/adeye/AD-EYE_Core/autoware.ai/install/lidar_shape_estimation;/home/adeye/AD-EYE_Core/autoware.ai/install/lidar_point_pillars;/home/adeye/AD-EYE_Core/autoware.ai/install/lidar_naive_l_shape_detect;/home/adeye/AD-EYE_Core/autoware.ai/install/lidar_fake_perception;/home/adeye/AD-EYE_Core/autoware.ai/install/lidar_apollo_cnn_seg_detect;/home/adeye/AD-EYE_Core/autoware.ai/install/kitti_launch;/home/adeye/AD-EYE_Core/autoware.ai/install/kitti_player;/home/adeye/AD-EYE_Core/autoware.ai/install/kitti_box_publisher;/home/adeye/AD-EYE_Core/autoware.ai/install/integrated_viewer;/home/adeye/AD-EYE_Core/autoware.ai/install/image_processor;/home/adeye/AD-EYE_Core/autoware.ai/install/graph_tools;/home/adeye/AD-EYE_Core/autoware.ai/install/gnss_localizer;/home/adeye/AD-EYE_Core/autoware.ai/install/gnss;/home/adeye/AD-EYE_Core/autoware.ai/install/glviewer;/home/adeye/AD-EYE_Core/autoware.ai/install/freespace_planner;/home/adeye/AD-EYE_Core/autoware.ai/install/fastvirtualscan;/home/adeye/AD-EYE_Core/autoware.ai/install/ekf_localizer;/home/adeye/AD-EYE_Core/autoware.ai/install/detected_objects_visualizer;/home/adeye/AD-EYE_Core/autoware.ai/install/decision_maker_panel;/home/adeye/AD-EYE_Core/autoware.ai/install/data_preprocessor;/home/adeye/AD-EYE_Core/autoware.ai/install/calibration_publisher;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_health_checker;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_system_msgs;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_rviz_plugins;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_connector;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_camera_lidar_calibrator;/home/adeye/AD-EYE_Core/autoware.ai/install/astar_search;/home/adeye/AD-EYE_Core/autoware.ai/install/amathutils_lib;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_msgs;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_map_msgs;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_launcher_rviz;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_launcher;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_lanelet2_msgs;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_external_msgs;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_config_msgs;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_can_msgs;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_build_flags;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_bag_tools;/home/adeye/AD-EYE_Core/AD-EYE/ROS_Packages/devel;/opt/ros/kinetic
+[33mCMake Warning (dev) at /opt/ros/kinetic/share/catkin/cmake/python.cmake:4 (find_package):
+  Policy CMP0148 is not set: The FindPythonInterp and FindPythonLibs modules
+  are removed.  Run "cmake --help-policy CMP0148" for policy details.  Use
+  the cmake_policy command to set the policy and suppress this warning.
+
+Call Stack (most recent call first):
+  /opt/ros/kinetic/share/catkin/cmake/all.cmake:164 (include)
+  /opt/ros/kinetic/share/catkin/cmake/catkinConfig.cmake:20 (include)
+  CMakeLists.txt:7 (find_package)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+[0m
+-- Found PythonInterp: /usr/bin/python2 (found suitable version "2.7.12", minimum required is "2") 
+-- Using PYTHON_EXECUTABLE: /usr/bin/python2
+-- Using Debian Python package layout
+-- Using empy: /usr/bin/empy
+-- Using CATKIN_ENABLE_TESTING: ON
+-- Call enable_testing()
+-- Using CATKIN_TEST_RESULTS_DIR: /home/adeye/adeye-core/build/adeye/test_results
+-- Found gtest sources under '/usr/src/gmock': gtests will be built
+-- Found gmock sources under '/usr/src/gmock': gmock will be built
+[0mCMake Deprecation Warning at /usr/src/gmock/CMakeLists.txt:41 (cmake_minimum_required):
+  Compatibility with CMake < 3.5 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value or use a ...<max> suffix to tell
+  CMake that the project does not need compatibility with older versions.
+
+[0m
+[0mCMake Deprecation Warning at /usr/src/gtest/CMakeLists.txt:43 (cmake_minimum_required):
+  Compatibility with CMake < 3.5 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value or use a ...<max> suffix to tell
+  CMake that the project does not need compatibility with older versions.
+
+[0m
+[33mCMake Warning (dev) at /usr/src/gtest/cmake/internal_utils.cmake:190 (find_package):
+  Policy CMP0148 is not set: The FindPythonInterp and FindPythonLibs modules
+  are removed.  Run "cmake --help-policy CMP0148" for policy details.  Use
+  the cmake_policy command to set the policy and suppress this warning.
+
+Call Stack (most recent call first):
+  /usr/src/gtest/CMakeLists.txt:50 (include)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+[0m
+-- Found PythonInterp: /usr/bin/python2 (found version "2.7.12") 
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Failed
+-- Looking for pthread_create in pthreads
+-- Looking for pthread_create in pthreads - not found
+-- Looking for pthread_create in pthread
+-- Looking for pthread_create in pthread - found
+-- Found Threads: TRUE  
+-- Using Python nosetests: /usr/bin/nosetests-2.7
+-- catkin 0.7.29
+-- BUILD_SHARED_LIBS is on
+-- Using these message generators: gencpp;geneus;genlisp;gennodejs;genpy
+-- Configuring done (5.0s)
+-- Generating done (1.1s)
+-- Build files have been written to: /home/adeye/adeye-core/build/adeye
+[  2%] [32mBuilding CXX object CMakeFiles/vectorMap.dir/src/vectormap.cpp.o[0m
+[  4%] [32mBuilding CXX object CMakeFiles/experimentRecording.dir/src/experiment_recording.cpp.o[0m
+[  6%] [32mBuilding CXX object CMakeFiles/PID.dir/src/PID.cpp.o[0m
+[  6%] Built target std_srvs_generate_messages_py
+[  6%] Built target topic_tools_generate_messages_cpp
+[  6%] Built target topic_tools_generate_messages_nodejs
+[  6%] Built target topic_tools_generate_messages_lisp
+[  6%] Built target tf_generate_messages_eus
+[  6%] Built target tf2_msgs_generate_messages_eus
+[  6%] Built target tf_generate_messages_nodejs
+[  6%] Built target tf_generate_messages_cpp
+[  6%] Built target actionlib_generate_messages_eus
+[  6%] Built target topic_tools_generate_messages_py
+[  6%] Built target actionlib_generate_messages_lisp
+[  6%] Built target topic_tools_generate_messages_eus
+[  6%] Built target tf_generate_messages_py
+[  6%] Built target actionlib_generate_messages_py
+[  6%] Built target actionlib_generate_messages_cpp
+[  6%] Built target tf2_msgs_generate_messages_cpp
+[  6%] Built target tf_generate_messages_lisp
+[  6%] Built target actionlib_generate_messages_nodejs
+[  6%] Built target tf2_msgs_generate_messages_lisp
+[  6%] Built target visualization_msgs_generate_messages_py
+[  6%] Built target tf2_msgs_generate_messages_py
+[  6%] Built target visualization_msgs_generate_messages_cpp
+[  6%] Built target tf2_msgs_generate_messages_nodejs
+[  6%] Built target visualization_msgs_generate_messages_eus
+[  6%] Built target rcv_common_msgs_generate_messages_lisp
+[  6%] Built target visualization_msgs_generate_messages_nodejs
+[  6%] Built target rcv_common_msgs_generate_messages_eus
+[  6%] Built target visualization_msgs_generate_messages_lisp
+[  6%] Built target rcv_common_msgs_generate_messages_cpp
+[  6%] Built target costmap_2d_generate_messages_py
+[  6%] Built target costmap_2d_generate_messages_cpp
+[  6%] Built target rcv_common_msgs_generate_messages_py
+[  6%] Built target costmap_2d_generate_messages_eus
+[  6%] Built target rcv_common_msgs_generate_messages_nodejs
+[  6%] Built target costmap_2d_generate_messages_lisp
+[  6%] Built target dynamic_reconfigure_generate_messages_cpp
+[  6%] Built target costmap_2d_gencfg
+[  6%] Built target dynamic_reconfigure_generate_messages_nodejs
+[  6%] Built target dynamic_reconfigure_gencfg
+[  6%] Built target costmap_2d_generate_messages_nodejs
+[  6%] Built target pcl_ros_gencfg
+[  6%] Built target map_msgs_generate_messages_eus
+[  6%] Built target nodelet_generate_messages_lisp
+[  6%] Built target nodelet_generate_messages_eus
+[  6%] Built target dynamic_reconfigure_generate_messages_py
+[  6%] Built target map_msgs_generate_messages_nodejs
+[  6%] Built target dynamic_reconfigure_generate_messages_eus
+[  6%] Built target dynamic_reconfigure_generate_messages_lisp
+[  6%] Built target nodelet_generate_messages_py
+[  6%] Built target nodelet_generate_messages_cpp
+[  6%] Built target nodelet_generate_messages_nodejs
+[  6%] Built target map_msgs_generate_messages_lisp
+[  6%] Built target bond_generate_messages_nodejs
+[  6%] Built target map_msgs_generate_messages_py
+[  6%] Built target map_msgs_generate_messages_cpp
+[  6%] Built target bond_generate_messages_eus
+[  6%] Built target bond_generate_messages_lisp
+[  6%] Built target bond_generate_messages_cpp
+[  6%] Built target pcl_msgs_generate_messages_lisp
+[  6%] Built target pcl_msgs_generate_messages_nodejs
+[  6%] Built target pcl_msgs_generate_messages_py
+[  6%] Built target bond_generate_messages_py
+[  6%] Built target base_local_planner_generate_messages_py
+[  6%] Built target autoware_msgs_generate_messages_cpp
+[  6%] Built target pcl_msgs_generate_messages_cpp
+[  6%] Built target nodelet_topic_tools_gencfg
+[  6%] Built target base_local_planner_generate_messages_nodejs
+[  6%] Built target base_local_planner_gencfg
+[  6%] Built target base_local_planner_generate_messages_eus
+[  6%] Built target autoware_msgs_generate_messages_eus
+[  6%] Built target jsk_recognition_msgs_generate_messages_eus
+[  6%] Built target pcl_msgs_generate_messages_eus
+[  6%] Built target autoware_msgs_generate_messages_lisp
+[  6%] Built target autoware_msgs_generate_messages_py
+[  6%] Built target autoware_msgs_generate_messages_nodejs
+[  6%] Built target jsk_recognition_msgs_generate_messages_nodejs
+[  6%] Built target jsk_recognition_msgs_generate_messages_lisp
+[  6%] Built target jsk_footstep_msgs_generate_messages_cpp
+[  6%] Built target jsk_recognition_msgs_generate_messages_py
+[  6%] Built target base_local_planner_generate_messages_lisp
+[  6%] Built target jsk_footstep_msgs_generate_messages_py
+[  6%] Built target jsk_recognition_msgs_generate_messages_cpp
+[  6%] Built target vector_map_msgs_generate_messages_cpp
+[  6%] Built target jsk_footstep_msgs_generate_messages_eus
+[  6%] Built target jsk_footstep_msgs_generate_messages_nodejs
+[  6%] Built target base_local_planner_generate_messages_cpp
+[  6%] Built target jsk_footstep_msgs_generate_messages_lisp
+[  6%] Built target vector_map_msgs_generate_messages_py
+[  6%] Built target vector_map_msgs_generate_messages_eus
+[  6%] Built target vector_map_server_generate_messages_py
+[  6%] Built target vector_map_server_generate_messages_cpp
+[  6%] Built target autoware_config_msgs_generate_messages_lisp
+[  6%] Built target vector_map_server_generate_messages_nodejs
+[  6%] Built target vector_map_msgs_generate_messages_nodejs
+[  6%] Built target vector_map_server_generate_messages_lisp
+[  6%] Built target autoware_config_msgs_generate_messages_nodejs
+[  6%] Built target tablet_socket_msgs_generate_messages_cpp
+[  6%] Built target tablet_socket_msgs_generate_messages_eus
+[  6%] Built target autoware_config_msgs_generate_messages_cpp
+[  6%] Built target tablet_socket_msgs_generate_messages_nodejs
+[  6%] Built target gazebo_msgs_generate_messages_eus
+[  6%] Built target vector_map_server_generate_messages_eus
+[  6%] Built target tablet_socket_msgs_generate_messages_py
+[  6%] Built target vector_map_msgs_generate_messages_lisp
+[  6%] Built target autoware_config_msgs_generate_messages_eus
+[  6%] Built target autoware_config_msgs_generate_messages_py
+[  6%] Built target autoware_system_msgs_generate_messages_cpp
+[  6%] Built target autoware_system_msgs_generate_messages_eus
+[  6%] Built target gazebo_msgs_generate_messages_cpp
+[  6%] Built target autoware_system_msgs_generate_messages_lisp
+[  6%] Built target gazebo_msgs_generate_messages_nodejs
+[  6%] Built target autoware_system_msgs_generate_messages_py
+[  6%] Built target tablet_socket_msgs_generate_messages_lisp
+[  6%] Built target gazebo_msgs_generate_messages_lisp
+[  6%] Built target autoware_system_msgs_generate_messages_nodejs
+[  6%] Built target gazebo_msgs_generate_messages_py
+[  6%] Built target trajectory_msgs_generate_messages_nodejs
+[  6%] Built target trajectory_msgs_generate_messages_eus
+[  6%] Built target trajectory_msgs_generate_messages_lisp
+[  6%] Built target trajectory_msgs_generate_messages_cpp
+[  6%] Built target roscpp_generate_messages_cpp
+[  6%] Built target rosgraph_msgs_generate_messages_cpp
+[  6%] Built target roscpp_generate_messages_nodejs
+[  6%] Built target roscpp_generate_messages_py
+[  6%] Built target trajectory_msgs_generate_messages_py
+[  6%] Built target std_msgs_generate_messages_py
+[  6%] Built target roscpp_generate_messages_eus
+[  6%] Built target rosgraph_msgs_generate_messages_lisp
+[  6%] Built target rosgraph_msgs_generate_messages_nodejs
+[  6%] Built target rosgraph_msgs_generate_messages_eus
+[  6%] Built target roscpp_generate_messages_lisp
+[  6%] Built target grid_map_msgs_generate_messages_cpp
+[  6%] Built target geometry_msgs_generate_messages_eus
+[  6%] Built target std_msgs_generate_messages_cpp
+[  6%] Built target grid_map_msgs_generate_messages_py
+[  6%] Built target std_msgs_generate_messages_nodejs
+[  6%] Built target grid_map_msgs_generate_messages_lisp
+[  6%] Built target rosgraph_msgs_generate_messages_py
+[  6%] Built target grid_map_msgs_generate_messages_eus
+[  6%] Built target grid_map_msgs_generate_messages_nodejs
+[  6%] Built target std_msgs_generate_messages_eus
+[  6%] Built target std_msgs_generate_messages_lisp
+[  6%] Built target geometry_msgs_generate_messages_nodejs
+[  6%] Built target geometry_msgs_generate_messages_cpp
+[  6%] Built target geometry_msgs_generate_messages_lisp
+[  6%] Built target geometry_msgs_generate_messages_py
+[  6%] Built target sensor_msgs_generate_messages_eus
+[  6%] Built target sensor_msgs_generate_messages_lisp
+[  6%] Built target nav_msgs_generate_messages_eus
+[  6%] Built target nav_msgs_generate_messages_cpp
+[  6%] Built target nav_msgs_generate_messages_lisp
+[  6%] Built target nav_msgs_generate_messages_nodejs
+[  6%] Built target nav_msgs_generate_messages_py
+[  6%] Built target sensor_msgs_generate_messages_cpp
+[  6%] Built target sensor_msgs_generate_messages_py
+[  6%] Built target actionlib_msgs_generate_messages_lisp
+[  6%] Built target std_srvs_generate_messages_lisp
+[  6%] Built target actionlib_msgs_generate_messages_eus
+[  6%] Built target actionlib_msgs_generate_messages_cpp
+[  6%] Built target std_srvs_generate_messages_eus
+[  6%] Built target sensor_msgs_generate_messages_nodejs
+[  6%] Built target std_srvs_generate_messages_nodejs
+[  6%] Built target actionlib_msgs_generate_messages_py
+[  6%] Built target actionlib_msgs_generate_messages_nodejs
+[  6%] Built target std_srvs_generate_messages_cpp
+[  8%] [32mBuilding CXX object CMakeFiles/FloatToString.dir/src/floatToString.cpp.o[0m
+[ 10%] [32mBuilding CXX object CMakeFiles/flattening.dir/src/flattening_node.cpp.o[0m
+[ 12%] [32mBuilding CXX object CMakeFiles/SafetyFaultMonitors.dir/src/safety_fault_monitors/safety_fault_monitor.cpp.o[0m
+[ 14%] [32mBuilding CXX object CMakeFiles/SafetyFaultMonitors.dir/src/safety_fault_monitors/geofencing_checker.cpp.o[0m
+[ 18%] [32mBuilding CXX object CMakeFiles/SafetyFaultMonitors.dir/src/safety_fault_monitors/sensor_checker.cpp.o[0m
+[ 18%] [32mBuilding CXX object CMakeFiles/SafetyFaultMonitors.dir/src/safety_fault_monitors/active_nodes_checker.cpp.o[0m
+[ 20%] [32mBuilding CXX object CMakeFiles/SafetyFaultMonitors.dir/src/safety_fault_monitors/car_off_road_checker.cpp.o[0m
+[ 22%] [32mBuilding CXX object CMakeFiles/SafetyFaultMonitors.dir/src/safety_fault_monitors/obstacles_in_critical_area_checker.cpp.o[0m
+[ 24%] [32mBuilding CXX object CMakeFiles/collisionDetector.dir/src/collision_detector.cpp.o[0m
+[ 26%] [32mBuilding CXX object CMakeFiles/cameraObjectListFuse.dir/src/camera_object_list_fuse.cpp.o[0m
+[ 28%] [32mBuilding CXX object CMakeFiles/radar_broadcaster.dir/src/radar_broadcaster.cpp.o[0m
+[ 30%] [32mBuilding CXX object CMakeFiles/safetyChannelPerception.dir/src/safety_channel_perception.cpp.o[0m
+[ 32%] [32mBuilding CXX object CMakeFiles/objectsFrameAdapter.dir/src/objects_frame_adapter.cpp.o[0m
+[ 34%] [32mBuilding CXX object CMakeFiles/goalSequencer.dir/src/goal_sequencer.cpp.o[0m
+[ 36%] [32mBuilding CXX object CMakeFiles/sensorMonitor.dir/src/sensor_monitor.cpp.o[0m
+[ 38%] [32mBuilding CXX object CMakeFiles/controlSwitch.dir/src/control_switch.cpp.o[0m
+[ 40%] [32mBuilding CXX object CMakeFiles/lidarRadarFuse.dir/src/lidar_radar_fuse.cpp.o[0m
+[ 42%] [32mBuilding CXX object CMakeFiles/goalViewer.dir/src/goal_viewer.cpp.o[0m
+[ 44%] [32mBuilding CXX object CMakeFiles/laneMapImager.dir/src/lane_map_imager.cpp.o[0m
+[ 46%] [32m[1mLinking CXX shared library devel/lib/libPID.so[0m
+[ 46%] Built target PID
+[ 48%] [32mBuilding CXX object CMakeFiles/vehicle_controller.dir/src/vehicle_controller.cpp.o[0m
+[ 51%] [32m[1mLinking CXX shared library devel/lib/libexperimentRecording.so[0m
+[ 51%] Built target experimentRecording
+[ 53%] [32m[1mLinking CXX shared library devel/lib/libvectorMap.so[0m
+[ 55%] [32mBuilding CXX object CMakeFiles/ExperimentC.dir/src/experimentC.cpp.o[0m
+[ 55%] Built target vectorMap
+[ 57%] [32mBuilding CXX object CMakeFiles/GridMapCreator.dir/src/grid_map_creator.cpp.o[0m
+[ 59%] [32m[1mLinking CXX executable devel/lib/adeye/FloatToString[0m
+[ 61%] [32m[1mLinking CXX executable devel/lib/adeye/vehicle_controller[0m
+[ 63%] [32m[1mLinking CXX executable devel/lib/adeye/radar_broadcaster[0m
+[ 63%] Built target FloatToString
+[ 65%] [32m[1mLinking CXX executable devel/lib/adeye/cameraObjectListFuse[0m
+[ 67%] [32m[1mLinking CXX executable devel/lib/adeye/goalViewer[0m
+[ 67%] Built target vehicle_controller
+[ 69%] [32m[1mLinking CXX executable devel/lib/adeye/goalSequencer[0m
+[ 69%] Built target radar_broadcaster
+[ 71%] [32m[1mLinking CXX executable devel/lib/adeye/lidarRadarFuse[0m
+[ 73%] [32m[1mLinking CXX executable devel/lib/adeye/laneMapImager[0m
+[ 75%] [32m[1mLinking CXX executable devel/lib/adeye/sensorMonitor[0m
+[ 77%] [32m[1mLinking CXX executable devel/lib/adeye/collisionDetector[0m
+[ 77%] Built target cameraObjectListFuse
+[ 77%] Built target goalViewer
+[ 77%] Built target goalSequencer
+[ 77%] Built target lidarRadarFuse
+[ 77%] Built target laneMapImager
+[ 77%] Built target sensorMonitor
+[ 79%] [32m[1mLinking CXX shared library devel/lib/libSafetyFaultMonitors.so[0m
+[ 79%] Built target collisionDetector
+[ 81%] [32m[1mLinking CXX executable devel/lib/adeye/flattening[0m
+[ 83%] [32m[1mLinking CXX executable devel/lib/adeye/objectsFrameAdapter[0m
+[ 83%] Built target SafetyFaultMonitors
+[ 85%] [32mBuilding CXX object CMakeFiles/safetySupervisor.dir/src/safety_supervisor.cpp.o[0m
+[ 87%] [32mBuilding CXX object CMakeFiles/TestFault.dir/src/safety_fault_monitors/fault_monitors_unit_tests.cpp.o[0m
+[ 87%] Built target flattening
+[ 87%] Built target objectsFrameAdapter
+[ 89%] [32m[1mLinking CXX executable devel/lib/adeye/safetyChannelPerception[0m
+[ 91%] [32m[1mLinking CXX executable devel/lib/adeye/controlSwitch[0m
+[01m[K/home/adeye/adeye-core/AD-EYE/ROS_Packages/src/AD-EYE/src/experimentC.cpp:[m[K In member function ‘[01m[Kvirtual void ExperimentC::stopRecording()[m[K’:
+[01m[K/home/adeye/adeye-core/AD-EYE/ROS_Packages/src/AD-EYE/src/experimentC.cpp:122:29:[m[K [01;35m[Kwarning: [m[Kignoring return value of ‘[01m[Kint system(const char*)[m[K’, declared with attribute warn_unused_result [-Wunused-result]
+         system(char_command);
+[01;32m[K                             ^[m[K
+[01m[K/home/adeye/adeye-core/AD-EYE/ROS_Packages/src/AD-EYE/src/experimentC.cpp:126:55:[m[K [01;35m[Kwarning: [m[Kignoring return value of ‘[01m[Kint system(const char*)[m[K’, declared with attribute warn_unused_result [-Wunused-result]
+         system("rosnode kill /expC_rosbag_recorder &");
+[01;32m[K                                                       ^[m[K
+[ 91%] Built target safetyChannelPerception
+In file included from [01m[K/home/adeye/AD-EYE_Core/autoware.ai/install/op_planner/include/op_planner/RoadNetwork.h:14:0[m[K,
+                 from [01m[K/home/adeye/AD-EYE_Core/autoware.ai/install/op_planner/include/op_planner/PlannerH.h:12[m[K,
+                 from [01m[K/home/adeye/adeye-core/AD-EYE/ROS_Packages/src/AD-EYE/src/safety_supervisor.cpp:19[m[K:
+[01m[K/home/adeye/AD-EYE_Core/autoware.ai/install/op_utility/include/op_utility/UtilityH.h:21:0:[m[K [01;35m[Kwarning: [m[K"MIN" redefined
+ #define MIN(x,y) (x <= y ? x : y)
+[01;32m[K ^[m[K
+In file included from [01m[K/opt/ros/kinetic/include/opencv-3.3.1-dev/opencv2/core.hpp:52:0[m[K,
+                 from [01m[K/opt/ros/kinetic/include/opencv-3.3.1-dev/opencv2/core/core.hpp:48[m[K,
+                 from [01m[K/opt/ros/kinetic/include/cv_bridge/cv_bridge.h:43[m[K,
+                 from [01m[K/opt/ros/kinetic/include/grid_map_ros/GridMapRosConverter.hpp:28[m[K,
+                 from [01m[K/opt/ros/kinetic/include/grid_map_ros/grid_map_ros.hpp:13[m[K,
+                 from [01m[K/home/adeye/adeye-core/AD-EYE/ROS_Packages/src/AD-EYE/src/safety_supervisor.cpp:4[m[K:
+[01m[K/opt/ros/kinetic/include/opencv-3.3.1-dev/opencv2/core/cvdef.h:325:0:[m[K [01;36m[Knote: [m[Kthis is the location of the previous definition
+ #  define MIN(a,b)  ((a) > (b) ? (b) : (a))
+[01;32m[K ^[m[K
+In file included from [01m[K/home/adeye/AD-EYE_Core/autoware.ai/install/op_planner/include/op_planner/RoadNetwork.h:14:0[m[K,
+                 from [01m[K/home/adeye/AD-EYE_Core/autoware.ai/install/op_planner/include/op_planner/PlannerH.h:12[m[K,
+                 from [01m[K/home/adeye/adeye-core/AD-EYE/ROS_Packages/src/AD-EYE/src/safety_supervisor.cpp:19[m[K:
+[01m[K/home/adeye/AD-EYE_Core/autoware.ai/install/op_utility/include/op_utility/UtilityH.h:22:0:[m[K [01;35m[Kwarning: [m[K"MAX" redefined
+ #define MAX(x,y) (x >= y ? x : y)
+[01;32m[K ^[m[K
+In file included from [01m[K/opt/ros/kinetic/include/opencv-3.3.1-dev/opencv2/core.hpp:52:0[m[K,
+                 from [01m[K/opt/ros/kinetic/include/opencv-3.3.1-dev/opencv2/core/core.hpp:48[m[K,
+                 from [01m[K/opt/ros/kinetic/include/cv_bridge/cv_bridge.h:43[m[K,
+                 from [01m[K/opt/ros/kinetic/include/grid_map_ros/GridMapRosConverter.hpp:28[m[K,
+                 from [01m[K/opt/ros/kinetic/include/grid_map_ros/grid_map_ros.hpp:13[m[K,
+                 from [01m[K/home/adeye/adeye-core/AD-EYE/ROS_Packages/src/AD-EYE/src/safety_supervisor.cpp:4[m[K:
+[01m[K/opt/ros/kinetic/include/opencv-3.3.1-dev/opencv2/core/cvdef.h:329:0:[m[K [01;36m[Knote: [m[Kthis is the location of the previous definition
+ #  define MAX(a,b)  ((a) < (b) ? (b) : (a))
+[01;32m[K ^[m[K
+[ 91%] Built target controlSwitch
+[ 93%] [32m[1mLinking CXX executable devel/lib/adeye/ExperimentC[0m
+[ 93%] Built target ExperimentC
+[ 95%] [32m[1mLinking CXX executable devel/lib/adeye/TestFault[0m
+[ 97%] [32m[1mLinking CXX executable devel/lib/adeye/GridMapCreator[0m
+[ 97%] Built target TestFault
+[ 97%] Built target GridMapCreator
+[100%] [32m[1mLinking CXX executable devel/lib/adeye/safetySupervisor[0m
+[100%] Built target safetySupervisor
+Built target tests
+-- Install configuration: "Release"
+-- Installing: /home/adeye/adeye-core/install/adeye/lib/pkgconfig/adeye.pc
+-- Installing: /home/adeye/adeye-core/install/adeye/share/adeye/cmake/adeyeConfig.cmake
+-- Installing: /home/adeye/adeye-core/install/adeye/share/adeye/cmake/adeyeConfig-version.cmake
+-- Installing: /home/adeye/adeye-core/install/adeye/share/adeye/package.xml
+-- Installing: /home/adeye/adeye-core/install/adeye/lib/adeye/GridMapCreator
+-- Set runtime path of "/home/adeye/adeye-core/install/adeye/lib/adeye/GridMapCreator" to ""
+-- Installing: /home/adeye/adeye-core/install/adeye/lib/adeye/flattening
+-- Set runtime path of "/home/adeye/adeye-core/install/adeye/lib/adeye/flattening" to ""
+-- Installing: /home/adeye/adeye-core/install/adeye/lib/adeye/controlSwitch
+-- Set runtime path of "/home/adeye/adeye-core/install/adeye/lib/adeye/controlSwitch" to ""
+-- Installing: /home/adeye/adeye-core/install/adeye/lib/adeye/safetySupervisor
+-- Set runtime path of "/home/adeye/adeye-core/install/adeye/lib/adeye/safetySupervisor" to ""
+-- Installing: /home/adeye/adeye-core/install/adeye/lib/adeye/collisionDetector
+-- Set runtime path of "/home/adeye/adeye-core/install/adeye/lib/adeye/collisionDetector" to ""
+-- Installing: /home/adeye/adeye-core/install/adeye/lib/adeye/radar_broadcaster
+-- Set runtime path of "/home/adeye/adeye-core/install/adeye/lib/adeye/radar_broadcaster" to ""
+-- Installing: /home/adeye/adeye-core/install/adeye/lib/adeye/objectsFrameAdapter
+-- Set runtime path of "/home/adeye/adeye-core/install/adeye/lib/adeye/objectsFrameAdapter" to ""
+-- Installing: /home/adeye/adeye-core/install/adeye/lib/adeye/cameraObjectListFuse
+-- Set runtime path of "/home/adeye/adeye-core/install/adeye/lib/adeye/cameraObjectListFuse" to ""
+-- Installing: /home/adeye/adeye-core/install/adeye/lib/adeye/lidarRadarFuse
+-- Set runtime path of "/home/adeye/adeye-core/install/adeye/lib/adeye/lidarRadarFuse" to ""
+-- Installing: /home/adeye/adeye-core/install/adeye/lib/adeye/safetyChannelPerception
+-- Set runtime path of "/home/adeye/adeye-core/install/adeye/lib/adeye/safetyChannelPerception" to ""
+-- Installing: /home/adeye/adeye-core/install/adeye/lib/adeye/ExperimentC
+-- Set runtime path of "/home/adeye/adeye-core/install/adeye/lib/adeye/ExperimentC" to ""
+-- Installing: /home/adeye/adeye-core/install/adeye/lib/adeye/camera_broadcaster.py
+-- Installing: /home/adeye/adeye-core/install/adeye/lib/adeye/zed_driver.py

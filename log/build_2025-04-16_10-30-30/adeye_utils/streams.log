@@ -1,0 +1,269 @@
+[0.049s] Invoking command in '/home/adeye/adeye-core/build/adeye_utils': _OLD_VIRTUAL_PS1=\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ /usr/local/bin/cmake /home/adeye/adeye-core/AD-EYE/ROS_Packages/src/AD-EYE_utils -DCMAKE_BUILD_TYPE=Release -DCATKIN_INSTALL_INTO_PREFIX_ROOT=0 -DCMAKE_INSTALL_PREFIX=/home/adeye/adeye-core/install/adeye_utils
+[0.068s] [0mCMake Deprecation Warning at CMakeLists.txt:1 (cmake_minimum_required):
+[0.068s]   Compatibility with CMake < 3.5 will be removed from a future version of
+[0.068s]   CMake.
+[0.068s] 
+[0.068s]   Update the VERSION argument <min> value or use a ...<max> suffix to tell
+[0.069s]   CMake that the project does not need compatibility with older versions.
+[0.069s] 
+[0.069s] [0m
+[0.191s] -- The C compiler identification is GNU 5.4.0
+[0.302s] -- The CXX compiler identification is GNU 5.4.0
+[0.343s] -- Detecting C compiler ABI info
+[0.449s] -- Detecting C compiler ABI info - done
+[0.465s] -- Check for working C compiler: /usr/bin/cc - skipped
+[0.465s] -- Detecting C compile features
+[0.466s] -- Detecting C compile features - done
+[0.485s] -- Detecting CXX compiler ABI info
+[0.594s] -- Detecting CXX compiler ABI info - done
+[0.613s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[0.614s] -- Detecting CXX compile features
+[0.614s] -- Detecting CXX compile features - done
+[0.625s] -- Using CATKIN_DEVEL_PREFIX: /home/adeye/adeye-core/build/adeye_utils/devel
+[0.625s] -- Using CMAKE_PREFIX_PATH: /home/adeye/AD-EYE_Core/autoware.ai/install/lattice_planner;/home/adeye/AD-EYE_Core/autoware.ai/install/waypoint_planner;/home/adeye/AD-EYE_Core/autoware.ai/install/waypoint_maker;/home/adeye/AD-EYE_Core/autoware.ai/install/way_planner;/home/adeye/AD-EYE_Core/autoware.ai/install/op_utilities;/home/adeye/AD-EYE_Core/autoware.ai/install/op_simulation_package;/home/adeye/AD-EYE_Core/autoware.ai/install/op_local_planner;/home/adeye/AD-EYE_Core/autoware.ai/install/op_global_planner;/home/adeye/AD-EYE_Core/autoware.ai/install/lidar_kf_contour_track;/home/adeye/AD-EYE_Core/autoware.ai/install/op_ros_helpers;/home/adeye/AD-EYE_Core/autoware.ai/install/lane_planner;/home/adeye/AD-EYE_Core/autoware.ai/install/ff_waypoint_follower;/home/adeye/AD-EYE_Core/autoware.ai/install/dp_planner;/home/adeye/AD-EYE_Core/autoware.ai/install/waypoint_follower;/home/adeye/AD-EYE_Core/autoware.ai/install/vision_ssd_detect;/home/adeye/AD-EYE_Core/autoware.ai/install/vision_segment_enet_detect;/home/adeye/AD-EYE_Core/autoware.ai/install/vision_lane_detect;/home/adeye/AD-EYE_Core/autoware.ai/install/vision_darknet_detect;/home/adeye/AD-EYE_Core/autoware.ai/install/vision_beyond_track;/home/adeye/AD-EYE_Core/autoware.ai/install/vehicle_socket;/home/adeye/AD-EYE_Core/autoware.ai/install/vehicle_model;/home/adeye/AD-EYE_Core/autoware.ai/install/vehicle_engage_panel;/home/adeye/AD-EYE_Core/autoware.ai/install/vehicle_description;/home/adeye/AD-EYE_Core/autoware.ai/install/trafficlight_recognizer;/home/adeye/AD-EYE_Core/autoware.ai/install/op_simu;/home/adeye/AD-EYE_Core/autoware.ai/install/op_planner;/home/adeye/AD-EYE_Core/autoware.ai/install/op_utility;/home/adeye/AD-EYE_Core/autoware.ai/install/lidar_euclidean_cluster_detect;/home/adeye/AD-EYE_Core/autoware.ai/install/vector_map_server;/home/adeye/AD-EYE_Core/autoware.ai/install/road_occupancy_processor;/home/adeye/AD-EYE_Core/autoware.ai/install/costmap_generator;/home/adeye/AD-EYE_Core/autoware.ai/install/object_map;/home/adeye/AD-EYE_Core/autoware.ai/install/naive_motion_predict;/home/adeye/AD-EYE_Core/autoware.ai/install/map_file;/home/adeye/AD-EYE_Core/autoware.ai/install/libvectormap;/home/adeye/AD-EYE_Core/autoware.ai/install/imm_ukf_pda_track;/home/adeye/AD-EYE_Core/autoware.ai/install/decision_maker;/home/adeye/AD-EYE_Core/autoware.ai/install/vector_map;/home/adeye/AD-EYE_Core/autoware.ai/install/vector_map_msgs;/home/adeye/AD-EYE_Core/autoware.ai/install/udon_socket;/home/adeye/AD-EYE_Core/autoware.ai/install/twist_generator;/home/adeye/AD-EYE_Core/autoware.ai/install/twist2odom;/home/adeye/AD-EYE_Core/autoware.ai/install/tablet_socket;/home/adeye/AD-EYE_Core/autoware.ai/install/runtime_manager;/home/adeye/AD-EYE_Core/autoware.ai/install/mqtt_socket;/home/adeye/AD-EYE_Core/autoware.ai/install/tablet_socket_msgs;/home/adeye/AD-EYE_Core/autoware.ai/install/state_machine_lib;/home/adeye/AD-EYE_Core/autoware.ai/install/sound_player;/home/adeye/AD-EYE_Core/autoware.ai/install/points2image;/home/adeye/AD-EYE_Core/autoware.ai/install/rosinterface;/home/adeye/AD-EYE_Core/autoware.ai/install/rosbag_controller;/home/adeye/AD-EYE_Core/autoware.ai/install/roi_object_filter;/home/adeye/AD-EYE_Core/autoware.ai/install/range_vision_fusion;/home/adeye/AD-EYE_Core/autoware.ai/install/pos_db;/home/adeye/AD-EYE_Core/autoware.ai/install/points_preprocessor;/home/adeye/AD-EYE_Core/autoware.ai/install/points_downsampler;/home/adeye/AD-EYE_Core/autoware.ai/install/pixel_cloud_fusion;/home/adeye/AD-EYE_Core/autoware.ai/install/lidar_localizer;/home/adeye/AD-EYE_Core/autoware.ai/install/pcl_omp_registration;/home/adeye/AD-EYE_Core/autoware.ai/install/pc2_downsampler;/home/adeye/AD-EYE_Core/autoware.ai/install/oculus_socket;/home/adeye/AD-EYE_Core/autoware.ai/install/obj_db;/home/adeye/AD-EYE_Core/autoware.ai/install/ndt_tku;/home/adeye/AD-EYE_Core/autoware.ai/install/ndt_gpu;/home/adeye/AD-EYE_Core/autoware.ai/install/ndt_cpu;/home/adeye/AD-EYE_Core/autoware.ai/install/multi_lidar_calibrator;/home/adeye/AD-EYE_Core/autoware.ai/install/marker_downsampler;/home/adeye/AD-EYE_Core/autoware.ai/install/map_tools;/home/adeye/AD-EYE_Core/autoware.ai/install/map_tf_generator;/home/adeye/AD-EYE_Core/autoware.ai/install/log_tools;/home/adeye/AD-EYE_Core/autoware.ai/install/lidar_shape_estimation;/home/adeye/AD-EYE_Core/autoware.ai/install/lidar_point_pillars;/home/adeye/AD-EYE_Core/autoware.ai/install/lidar_naive_l_shape_detect;/home/adeye/AD-EYE_Core/autoware.ai/install/lidar_fake_perception;/home/adeye/AD-EYE_Core/autoware.ai/install/lidar_apollo_cnn_seg_detect;/home/adeye/AD-EYE_Core/autoware.ai/install/kitti_launch;/home/adeye/AD-EYE_Core/autoware.ai/install/kitti_player;/home/adeye/AD-EYE_Core/autoware.ai/install/kitti_box_publisher;/home/adeye/AD-EYE_Core/autoware.ai/install/integrated_viewer;/home/adeye/AD-EYE_Core/autoware.ai/install/image_processor;/home/adeye/AD-EYE_Core/autoware.ai/install/graph_tools;/home/adeye/AD-EYE_Core/autoware.ai/install/gnss_localizer;/home/adeye/AD-EYE_Core/autoware.ai/install/gnss;/home/adeye/AD-EYE_Core/autoware.ai/install/glviewer;/home/adeye/AD-EYE_Core/autoware.ai/install/freespace_planner;/home/adeye/AD-EYE_Core/autoware.ai/install/fastvirtualscan;/home/adeye/AD-EYE_Core/autoware.ai/install/ekf_localizer;/home/adeye/AD-EYE_Core/autoware.ai/install/detected_objects_visualizer;/home/adeye/AD-EYE_Core/autoware.ai/install/decision_maker_panel;/home/adeye/AD-EYE_Core/autoware.ai/install/data_preprocessor;/home/adeye/AD-EYE_Core/autoware.ai/install/calibration_publisher;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_health_checker;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_system_msgs;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_rviz_plugins;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_connector;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_camera_lidar_calibrator;/home/adeye/AD-EYE_Core/autoware.ai/install/astar_search;/home/adeye/AD-EYE_Core/autoware.ai/install/amathutils_lib;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_msgs;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_map_msgs;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_launcher_rviz;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_launcher;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_lanelet2_msgs;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_external_msgs;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_config_msgs;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_can_msgs;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_build_flags;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_bag_tools;/home/adeye/AD-EYE_Core/AD-EYE/ROS_Packages/devel;/opt/ros/kinetic
+[0.630s] -- This workspace overlays: /home/adeye/AD-EYE_Core/autoware.ai/install/lattice_planner;/home/adeye/AD-EYE_Core/autoware.ai/install/waypoint_planner;/home/adeye/AD-EYE_Core/autoware.ai/install/waypoint_maker;/home/adeye/AD-EYE_Core/autoware.ai/install/way_planner;/home/adeye/AD-EYE_Core/autoware.ai/install/op_utilities;/home/adeye/AD-EYE_Core/autoware.ai/install/op_simulation_package;/home/adeye/AD-EYE_Core/autoware.ai/install/op_local_planner;/home/adeye/AD-EYE_Core/autoware.ai/install/op_global_planner;/home/adeye/AD-EYE_Core/autoware.ai/install/lidar_kf_contour_track;/home/adeye/AD-EYE_Core/autoware.ai/install/op_ros_helpers;/home/adeye/AD-EYE_Core/autoware.ai/install/lane_planner;/home/adeye/AD-EYE_Core/autoware.ai/install/ff_waypoint_follower;/home/adeye/AD-EYE_Core/autoware.ai/install/dp_planner;/home/adeye/AD-EYE_Core/autoware.ai/install/waypoint_follower;/home/adeye/AD-EYE_Core/autoware.ai/install/vision_ssd_detect;/home/adeye/AD-EYE_Core/autoware.ai/install/vision_segment_enet_detect;/home/adeye/AD-EYE_Core/autoware.ai/install/vision_lane_detect;/home/adeye/AD-EYE_Core/autoware.ai/install/vision_darknet_detect;/home/adeye/AD-EYE_Core/autoware.ai/install/vision_beyond_track;/home/adeye/AD-EYE_Core/autoware.ai/install/vehicle_socket;/home/adeye/AD-EYE_Core/autoware.ai/install/vehicle_model;/home/adeye/AD-EYE_Core/autoware.ai/install/vehicle_engage_panel;/home/adeye/AD-EYE_Core/autoware.ai/install/vehicle_description;/home/adeye/AD-EYE_Core/autoware.ai/install/trafficlight_recognizer;/home/adeye/AD-EYE_Core/autoware.ai/install/op_simu;/home/adeye/AD-EYE_Core/autoware.ai/install/op_planner;/home/adeye/AD-EYE_Core/autoware.ai/install/op_utility;/home/adeye/AD-EYE_Core/autoware.ai/install/lidar_euclidean_cluster_detect;/home/adeye/AD-EYE_Core/autoware.ai/install/vector_map_server;/home/adeye/AD-EYE_Core/autoware.ai/install/road_occupancy_processor;/home/adeye/AD-EYE_Core/autoware.ai/install/costmap_generator;/home/adeye/AD-EYE_Core/autoware.ai/install/object_map;/home/adeye/AD-EYE_Core/autoware.ai/install/naive_motion_predict;/home/adeye/AD-EYE_Core/autoware.ai/install/map_file;/home/adeye/AD-EYE_Core/autoware.ai/install/libvectormap;/home/adeye/AD-EYE_Core/autoware.ai/install/imm_ukf_pda_track;/home/adeye/AD-EYE_Core/autoware.ai/install/decision_maker;/home/adeye/AD-EYE_Core/autoware.ai/install/vector_map;/home/adeye/AD-EYE_Core/autoware.ai/install/vector_map_msgs;/home/adeye/AD-EYE_Core/autoware.ai/install/udon_socket;/home/adeye/AD-EYE_Core/autoware.ai/install/twist_generator;/home/adeye/AD-EYE_Core/autoware.ai/install/twist2odom;/home/adeye/AD-EYE_Core/autoware.ai/install/tablet_socket;/home/adeye/AD-EYE_Core/autoware.ai/install/runtime_manager;/home/adeye/AD-EYE_Core/autoware.ai/install/mqtt_socket;/home/adeye/AD-EYE_Core/autoware.ai/install/tablet_socket_msgs;/home/adeye/AD-EYE_Core/autoware.ai/install/state_machine_lib;/home/adeye/AD-EYE_Core/autoware.ai/install/sound_player;/home/adeye/AD-EYE_Core/autoware.ai/install/points2image;/home/adeye/AD-EYE_Core/autoware.ai/install/rosinterface;/home/adeye/AD-EYE_Core/autoware.ai/install/rosbag_controller;/home/adeye/AD-EYE_Core/autoware.ai/install/roi_object_filter;/home/adeye/AD-EYE_Core/autoware.ai/install/range_vision_fusion;/home/adeye/AD-EYE_Core/autoware.ai/install/pos_db;/home/adeye/AD-EYE_Core/autoware.ai/install/points_preprocessor;/home/adeye/AD-EYE_Core/autoware.ai/install/points_downsampler;/home/adeye/AD-EYE_Core/autoware.ai/install/pixel_cloud_fusion;/home/adeye/AD-EYE_Core/autoware.ai/install/lidar_localizer;/home/adeye/AD-EYE_Core/autoware.ai/install/pcl_omp_registration;/home/adeye/AD-EYE_Core/autoware.ai/install/pc2_downsampler;/home/adeye/AD-EYE_Core/autoware.ai/install/oculus_socket;/home/adeye/AD-EYE_Core/autoware.ai/install/obj_db;/home/adeye/AD-EYE_Core/autoware.ai/install/ndt_tku;/home/adeye/AD-EYE_Core/autoware.ai/install/ndt_gpu;/home/adeye/AD-EYE_Core/autoware.ai/install/ndt_cpu;/home/adeye/AD-EYE_Core/autoware.ai/install/multi_lidar_calibrator;/home/adeye/AD-EYE_Core/autoware.ai/install/marker_downsampler;/home/adeye/AD-EYE_Core/autoware.ai/install/map_tools;/home/adeye/AD-EYE_Core/autoware.ai/install/map_tf_generator;/home/adeye/AD-EYE_Core/autoware.ai/install/log_tools;/home/adeye/AD-EYE_Core/autoware.ai/install/lidar_shape_estimation;/home/adeye/AD-EYE_Core/autoware.ai/install/lidar_point_pillars;/home/adeye/AD-EYE_Core/autoware.ai/install/lidar_naive_l_shape_detect;/home/adeye/AD-EYE_Core/autoware.ai/install/lidar_fake_perception;/home/adeye/AD-EYE_Core/autoware.ai/install/lidar_apollo_cnn_seg_detect;/home/adeye/AD-EYE_Core/autoware.ai/install/kitti_launch;/home/adeye/AD-EYE_Core/autoware.ai/install/kitti_player;/home/adeye/AD-EYE_Core/autoware.ai/install/kitti_box_publisher;/home/adeye/AD-EYE_Core/autoware.ai/install/integrated_viewer;/home/adeye/AD-EYE_Core/autoware.ai/install/image_processor;/home/adeye/AD-EYE_Core/autoware.ai/install/graph_tools;/home/adeye/AD-EYE_Core/autoware.ai/install/gnss_localizer;/home/adeye/AD-EYE_Core/autoware.ai/install/gnss;/home/adeye/AD-EYE_Core/autoware.ai/install/glviewer;/home/adeye/AD-EYE_Core/autoware.ai/install/freespace_planner;/home/adeye/AD-EYE_Core/autoware.ai/install/fastvirtualscan;/home/adeye/AD-EYE_Core/autoware.ai/install/ekf_localizer;/home/adeye/AD-EYE_Core/autoware.ai/install/detected_objects_visualizer;/home/adeye/AD-EYE_Core/autoware.ai/install/decision_maker_panel;/home/adeye/AD-EYE_Core/autoware.ai/install/data_preprocessor;/home/adeye/AD-EYE_Core/autoware.ai/install/calibration_publisher;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_health_checker;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_system_msgs;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_rviz_plugins;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_connector;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_camera_lidar_calibrator;/home/adeye/AD-EYE_Core/autoware.ai/install/astar_search;/home/adeye/AD-EYE_Core/autoware.ai/install/amathutils_lib;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_msgs;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_map_msgs;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_launcher_rviz;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_launcher;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_lanelet2_msgs;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_external_msgs;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_config_msgs;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_can_msgs;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_build_flags;/home/adeye/AD-EYE_Core/autoware.ai/install/autoware_bag_tools;/home/adeye/AD-EYE_Core/AD-EYE/ROS_Packages/devel;/opt/ros/kinetic
+[0.636s] [33mCMake Warning (dev) at /opt/ros/kinetic/share/catkin/cmake/python.cmake:4 (find_package):
+[0.636s]   Policy CMP0148 is not set: The FindPythonInterp and FindPythonLibs modules
+[0.636s]   are removed.  Run "cmake --help-policy CMP0148" for policy details.  Use
+[0.637s]   the cmake_policy command to set the policy and suppress this warning.
+[0.637s] 
+[0.637s] Call Stack (most recent call first):
+[0.637s]   /opt/ros/kinetic/share/catkin/cmake/all.cmake:164 (include)
+[0.637s]   /opt/ros/kinetic/share/catkin/cmake/catkinConfig.cmake:20 (include)
+[0.637s]   CMakeLists.txt:4 (find_package)
+[0.638s] This warning is for project developers.  Use -Wno-dev to suppress it.
+[0.638s] [0m
+[0.661s] -- Found PythonInterp: /usr/bin/python2 (found suitable version "2.7.12", minimum required is "2") 
+[0.662s] -- Using PYTHON_EXECUTABLE: /usr/bin/python2
+[0.662s] -- Using Debian Python package layout
+[0.667s] -- Using empy: /usr/bin/empy
+[0.830s] -- Using CATKIN_ENABLE_TESTING: ON
+[0.830s] -- Call enable_testing()
+[0.834s] -- Using CATKIN_TEST_RESULTS_DIR: /home/adeye/adeye-core/build/adeye_utils/test_results
+[0.919s] -- Found gtest sources under '/usr/src/gmock': gtests will be built
+[0.919s] -- Found gmock sources under '/usr/src/gmock': gmock will be built
+[0.920s] [0mCMake Deprecation Warning at /usr/src/gmock/CMakeLists.txt:41 (cmake_minimum_required):
+[0.920s]   Compatibility with CMake < 3.5 will be removed from a future version of
+[0.920s]   CMake.
+[0.921s] 
+[0.921s]   Update the VERSION argument <min> value or use a ...<max> suffix to tell
+[0.921s]   CMake that the project does not need compatibility with older versions.
+[0.921s] 
+[0.921s] [0m
+[0.922s] [0mCMake Deprecation Warning at /usr/src/gtest/CMakeLists.txt:43 (cmake_minimum_required):
+[0.922s]   Compatibility with CMake < 3.5 will be removed from a future version of
+[0.922s]   CMake.
+[0.923s] 
+[0.923s]   Update the VERSION argument <min> value or use a ...<max> suffix to tell
+[0.923s]   CMake that the project does not need compatibility with older versions.
+[0.923s] 
+[0.923s] [0m
+[0.923s] [33mCMake Warning (dev) at /usr/src/gtest/cmake/internal_utils.cmake:190 (find_package):
+[0.924s]   Policy CMP0148 is not set: The FindPythonInterp and FindPythonLibs modules
+[0.924s]   are removed.  Run "cmake --help-policy CMP0148" for policy details.  Use
+[0.924s]   the cmake_policy command to set the policy and suppress this warning.
+[0.924s] 
+[0.924s] Call Stack (most recent call first):
+[0.925s]   /usr/src/gtest/CMakeLists.txt:50 (include)
+[0.925s] This warning is for project developers.  Use -Wno-dev to suppress it.
+[0.925s] [0m
+[0.941s] -- Found PythonInterp: /usr/bin/python2 (found version "2.7.12") 
+[0.943s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+[1.027s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Failed
+[1.028s] -- Looking for pthread_create in pthreads
+[1.102s] -- Looking for pthread_create in pthreads - not found
+[1.103s] -- Looking for pthread_create in pthread
+[1.184s] -- Looking for pthread_create in pthread - found
+[1.186s] -- Found Threads: TRUE  
+[1.199s] -- Using Python nosetests: /usr/bin/nosetests-2.7
+[1.245s] -- catkin 0.7.29
+[1.245s] -- BUILD_SHARED_LIBS is on
+[1.687s] -- Using these message generators: gencpp;geneus;genlisp;gennodejs;genpy
+[3.752s] -- Configuring done (3.7s)
+[4.186s] -- Generating done (0.4s)
+[4.221s] -- Build files have been written to: /home/adeye/adeye-core/build/adeye_utils
+[4.230s] Invoked command in '/home/adeye/adeye-core/build/adeye_utils' returned '0': _OLD_VIRTUAL_PS1=\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ /usr/local/bin/cmake /home/adeye/adeye-core/AD-EYE/ROS_Packages/src/AD-EYE_utils -DCMAKE_BUILD_TYPE=Release -DCATKIN_INSTALL_INTO_PREFIX_ROOT=0 -DCMAKE_INSTALL_PREFIX=/home/adeye/adeye-core/install/adeye_utils
+[4.234s] Invoking command in '/home/adeye/adeye-core/build/adeye_utils': _OLD_VIRTUAL_PS1=\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ /usr/local/bin/cmake --build /home/adeye/adeye-core/build/adeye_utils -- -j32 -l32
+[4.298s] [  0%] Built target roscpp_generate_messages_py
+[4.299s] [  7%] [32mBuilding CXX object CMakeFiles/adeye_utils.dir/src/point_cloud_to_occupancy_grid.cpp.o[0m
+[4.300s] [ 15%] [32mBuilding CXX object CMakeFiles/trajectoryVisualizer.dir/src/trajectory_visualizer.cpp.o[0m
+[4.303s] [ 15%] Built target roscpp_generate_messages_nodejs
+[4.303s] [ 15%] Built target rosgraph_msgs_generate_messages_lisp
+[4.304s] [ 15%] Built target rosgraph_msgs_generate_messages_eus
+[4.304s] [ 15%] Built target rosgraph_msgs_generate_messages_nodejs
+[4.304s] [ 15%] Built target rosgraph_msgs_generate_messages_cpp
+[4.304s] [ 15%] Built target nav_msgs_generate_messages_py
+[4.304s] [ 15%] Built target rosgraph_msgs_generate_messages_py
+[4.305s] [ 15%] Built target tf_generate_messages_py
+[4.305s] [ 15%] Built target tf_generate_messages_lisp
+[4.306s] [ 15%] Built target std_msgs_generate_messages_cpp
+[4.306s] [ 15%] Built target std_msgs_generate_messages_py
+[4.307s] [ 15%] Built target std_msgs_generate_messages_eus
+[4.308s] [ 15%] Built target tf_generate_messages_eus
+[4.309s] [ 15%] Built target std_msgs_generate_messages_lisp
+[4.309s] [ 15%] Built target std_msgs_generate_messages_nodejs
+[4.309s] [ 15%] Built target tf_generate_messages_nodejs
+[4.309s] [ 15%] Built target sensor_msgs_generate_messages_cpp
+[4.310s] [ 15%] Built target geometry_msgs_generate_messages_py
+[4.310s] [ 15%] Built target sensor_msgs_generate_messages_nodejs
+[4.310s] [ 15%] Built target geometry_msgs_generate_messages_cpp
+[4.311s] [ 15%] Built target geometry_msgs_generate_messages_lisp
+[4.311s] [ 15%] Built target sensor_msgs_generate_messages_py
+[4.311s] [ 15%] Built target tf_generate_messages_cpp
+[4.311s] [ 15%] Built target sensor_msgs_generate_messages_eus
+[4.311s] [ 15%] Built target geometry_msgs_generate_messages_nodejs
+[4.311s] [ 15%] Built target actionlib_generate_messages_eus
+[4.311s] [ 15%] Built target sensor_msgs_generate_messages_lisp
+[4.313s] [ 15%] Built target geometry_msgs_generate_messages_eus
+[4.316s] [ 15%] Built target actionlib_generate_messages_cpp
+[4.326s] [ 15%] Built target actionlib_generate_messages_lisp
+[4.329s] [ 15%] Built target actionlib_msgs_generate_messages_lisp
+[4.329s] [ 15%] Built target actionlib_msgs_generate_messages_py
+[4.330s] [ 15%] Built target tf2_msgs_generate_messages_cpp
+[4.330s] [ 15%] Built target actionlib_generate_messages_nodejs
+[4.333s] [ 15%] Built target actionlib_generate_messages_py
+[4.333s] [ 15%] Built target actionlib_msgs_generate_messages_eus
+[4.334s] [ 15%] Built target tf2_msgs_generate_messages_lisp
+[4.334s] [ 15%] Built target tf2_msgs_generate_messages_eus
+[4.335s] [ 15%] Built target autoware_msgs_generate_messages_cpp
+[4.335s] [ 15%] Built target tf2_msgs_generate_messages_nodejs
+[4.336s] [ 15%] Built target autoware_msgs_generate_messages_eus
+[4.336s] [ 15%] Built target autoware_msgs_generate_messages_py
+[4.337s] [ 15%] Built target actionlib_msgs_generate_messages_nodejs
+[4.337s] [ 15%] Built target tf2_msgs_generate_messages_py
+[4.338s] [ 15%] Built target jsk_recognition_msgs_generate_messages_py
+[4.338s] [ 15%] Built target jsk_recognition_msgs_generate_messages_eus
+[4.338s] [ 15%] Built target jsk_recognition_msgs_generate_messages_lisp
+[4.340s] [ 15%] Built target pcl_msgs_generate_messages_eus
+[4.340s] [ 15%] Built target autoware_msgs_generate_messages_nodejs
+[4.341s] [ 15%] Built target autoware_msgs_generate_messages_lisp
+[4.341s] [ 15%] Built target jsk_recognition_msgs_generate_messages_nodejs
+[4.341s] [ 15%] Built target jsk_footstep_msgs_generate_messages_cpp
+[4.342s] [ 15%] Built target actionlib_msgs_generate_messages_cpp
+[4.342s] [ 15%] Built target pcl_msgs_generate_messages_cpp
+[4.342s] [ 15%] Built target pcl_msgs_generate_messages_lisp
+[4.342s] [ 15%] Built target jsk_footstep_msgs_generate_messages_eus
+[4.343s] [ 15%] Built target jsk_recognition_msgs_generate_messages_cpp
+[4.343s] [ 15%] Built target pcl_msgs_generate_messages_nodejs
+[4.346s] [ 15%] Built target pcl_msgs_generate_messages_py
+[4.351s] [ 15%] Built target jsk_footstep_msgs_generate_messages_lisp
+[4.361s] [ 15%] Built target jsk_footstep_msgs_generate_messages_py
+[4.361s] [ 15%] Built target dynamic_reconfigure_generate_messages_cpp
+[4.364s] [ 15%] Built target dynamic_reconfigure_generate_messages_py
+[4.364s] [ 15%] Built target pcl_ros_gencfg
+[4.364s] [ 15%] Built target dynamic_reconfigure_generate_messages_eus
+[4.364s] [ 15%] Built target dynamic_reconfigure_generate_messages_nodejs
+[4.366s] [ 15%] Built target jsk_footstep_msgs_generate_messages_nodejs
+[4.366s] [ 15%] Built target dynamic_reconfigure_generate_messages_lisp
+[4.367s] [ 15%] Built target dynamic_reconfigure_gencfg
+[4.367s] [ 15%] Built target bond_generate_messages_eus
+[4.367s] [ 15%] Built target bond_generate_messages_nodejs
+[4.368s] [ 15%] Built target nodelet_generate_messages_py
+[4.369s] [ 15%] Built target nodelet_generate_messages_cpp
+[4.369s] [ 15%] Built target nodelet_generate_messages_lisp
+[4.370s] [ 15%] Built target bond_generate_messages_cpp
+[4.370s] [ 15%] Built target nodelet_generate_messages_nodejs
+[4.371s] [ 15%] Built target bond_generate_messages_py
+[4.371s] [ 15%] Built target nodelet_generate_messages_eus
+[4.372s] [ 15%] Built target std_srvs_generate_messages_lisp
+[4.372s] [ 15%] Built target bond_generate_messages_lisp
+[4.373s] [ 15%] Built target std_srvs_generate_messages_py
+[4.373s] [ 15%] Built target roscpp_generate_messages_cpp
+[4.373s] [ 15%] Built target std_srvs_generate_messages_cpp
+[4.375s] [ 15%] Built target nodelet_topic_tools_gencfg
+[4.375s] [ 15%] Built target roscpp_generate_messages_lisp
+[4.375s] [ 15%] Built target roscpp_generate_messages_eus
+[4.376s] [ 15%] Built target topic_tools_generate_messages_cpp
+[4.376s] [ 15%] Built target std_srvs_generate_messages_nodejs
+[4.376s] [ 15%] Built target std_srvs_generate_messages_eus
+[4.379s] [ 15%] Built target topic_tools_generate_messages_eus
+[4.393s] [ 15%] Built target topic_tools_generate_messages_nodejs
+[4.394s] [ 15%] Built target topic_tools_generate_messages_lisp
+[4.395s] [ 15%] Built target vector_map_server_generate_messages_py
+[4.395s] [ 15%] Built target vector_map_msgs_generate_messages_py
+[4.397s] [ 15%] Built target topic_tools_generate_messages_py
+[4.397s] [ 15%] Built target vector_map_server_generate_messages_cpp
+[4.397s] [ 15%] Built target vector_map_msgs_generate_messages_eus
+[4.397s] [ 15%] Built target vector_map_msgs_generate_messages_cpp
+[4.397s] [ 15%] Built target vector_map_msgs_generate_messages_nodejs
+[4.398s] [ 15%] Built target vector_map_server_generate_messages_nodejs
+[4.399s] [ 15%] Built target vector_map_server_generate_messages_lisp
+[4.400s] [ 15%] Built target vector_map_msgs_generate_messages_lisp
+[4.400s] [ 15%] Built target visualization_msgs_generate_messages_lisp
+[4.401s] [ 15%] Built target visualization_msgs_generate_messages_nodejs
+[4.401s] [ 15%] Built target vector_map_server_generate_messages_eus
+[4.401s] [ 15%] Built target autoware_config_msgs_generate_messages_nodejs
+[4.402s] [ 15%] Built target visualization_msgs_generate_messages_cpp
+[4.402s] [ 15%] Built target visualization_msgs_generate_messages_py
+[4.402s] [ 15%] Built target tablet_socket_msgs_generate_messages_cpp
+[4.403s] [ 15%] Built target autoware_config_msgs_generate_messages_py
+[4.404s] [ 15%] Built target visualization_msgs_generate_messages_eus
+[4.404s] [ 15%] Built target autoware_config_msgs_generate_messages_lisp
+[4.405s] [ 15%] Built target tablet_socket_msgs_generate_messages_nodejs
+[4.405s] [ 15%] Built target tablet_socket_msgs_generate_messages_py
+[4.406s] [ 15%] Built target tablet_socket_msgs_generate_messages_eus
+[4.407s] [ 15%] Built target autoware_system_msgs_generate_messages_cpp
+[4.407s] [ 15%] Built target autoware_config_msgs_generate_messages_cpp
+[4.408s] [ 15%] Built target autoware_config_msgs_generate_messages_eus
+[4.408s] [ 15%] Built target autoware_system_msgs_generate_messages_eus
+[4.409s] [ 15%] Built target tablet_socket_msgs_generate_messages_lisp
+[4.424s] [ 15%] Built target autoware_system_msgs_generate_messages_py
+[4.424s] [ 15%] Built target grid_map_msgs_generate_messages_lisp
+[4.424s] [ 15%] Built target autoware_system_msgs_generate_messages_lisp
+[4.424s] [ 15%] Built target gazebo_msgs_generate_messages_nodejs
+[4.424s] [ 15%] Built target autoware_system_msgs_generate_messages_nodejs
+[4.425s] [ 15%] Built target gazebo_msgs_generate_messages_lisp
+[4.426s] [ 15%] Built target trajectory_msgs_generate_messages_nodejs
+[4.426s] [ 15%] Built target gazebo_msgs_generate_messages_py
+[4.427s] [ 15%] Built target grid_map_msgs_generate_messages_nodejs
+[4.427s] [ 15%] Built target trajectory_msgs_generate_messages_lisp
+[4.427s] [ 15%] Built target gazebo_msgs_generate_messages_eus
+[4.428s] [ 15%] Built target grid_map_msgs_generate_messages_eus
+[4.428s] [ 15%] Built target gazebo_msgs_generate_messages_cpp
+[4.428s] [ 15%] Built target trajectory_msgs_generate_messages_cpp
+[4.429s] [ 15%] Built target grid_map_msgs_generate_messages_cpp
+[4.429s] [ 15%] Built target nav_msgs_generate_messages_lisp
+[4.429s] [ 15%] Built target nav_msgs_generate_messages_nodejs
+[4.429s] [ 15%] Built target trajectory_msgs_generate_messages_py
+[4.429s] [ 15%] Built target grid_map_msgs_generate_messages_py
+[4.430s] [ 15%] Built target nav_msgs_generate_messages_cpp
+[4.430s] [ 15%] Built target trajectory_msgs_generate_messages_eus
+[4.430s] [ 15%] Built target nav_msgs_generate_messages_eus
+[4.451s] [ 23%] [32mBuilding CXX object CMakeFiles/layerVisualizer.dir/src/layer_visualizer.cpp.o[0m
+[4.452s] [ 30%] [32mBuilding CXX object CMakeFiles/pointCloudToOccupancyGrid.dir/src/point_cloud_to_occupancy_grid_wrapper.cpp.o[0m
+[4.452s] [ 38%] [32mBuilding CXX object CMakeFiles/pointCloudFrameChanger.dir/src/point_cloud_frame_changer.cpp.o[0m
+[4.453s] [ 53%] [32mBuilding CXX object CMakeFiles/pointCloudToOccupancyGrid.dir/src/point_cloud_to_occupancy_grid.cpp.o[0m
+[4.453s] [ 53%] [32mBuilding CXX object CMakeFiles/pointCloudAccumulator.dir/src/point_cloud_accumulator.cpp.o[0m
+[7.611s] [ 61%] [32m[1mLinking CXX executable devel/lib/adeye_utils/trajectoryVisualizer[0m
+[7.857s] [ 69%] [32m[1mLinking CXX executable devel/lib/adeye_utils/layerVisualizer[0m
+[8.144s] [ 69%] Built target trajectoryVisualizer
+[8.240s] [ 69%] Built target layerVisualizer
+[10.217s] [ 76%] [32m[1mLinking CXX executable devel/lib/adeye_utils/pointCloudAccumulator[0m
+[10.469s] [ 84%] [32m[1mLinking CXX shared library devel/lib/libadeye_utils.so[0m
+[10.566s] [ 84%] Built target pointCloudAccumulator
+[10.592s] [ 92%] [32m[1mLinking CXX executable devel/lib/adeye_utils/pointCloudToOccupancyGrid[0m
+[10.760s] [ 92%] Built target adeye_utils
+[10.925s] [ 92%] Built target pointCloudToOccupancyGrid
+[12.226s] [100%] [32m[1mLinking CXX executable devel/lib/adeye_utils/pointCloudFrameChanger[0m
+[12.536s] [100%] Built target pointCloudFrameChanger
+[12.545s] Invoked command in '/home/adeye/adeye-core/build/adeye_utils' returned '0': _OLD_VIRTUAL_PS1=\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ /usr/local/bin/cmake --build /home/adeye/adeye-core/build/adeye_utils -- -j32 -l32
+[12.550s] Invoking command in '/home/adeye/adeye-core/build/adeye_utils': _OLD_VIRTUAL_PS1=\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ /usr/local/bin/cmake --build /home/adeye/adeye-core/build/adeye_utils --target tests -- -j32 -l32
+[12.615s] Built target tests
+[12.624s] Invoked command in '/home/adeye/adeye-core/build/adeye_utils' returned '0': _OLD_VIRTUAL_PS1=\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ /usr/local/bin/cmake --build /home/adeye/adeye-core/build/adeye_utils --target tests -- -j32 -l32
+[12.630s] Invoking command in '/home/adeye/adeye-core/build/adeye_utils': _OLD_VIRTUAL_PS1=\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ /usr/local/bin/cmake --install /home/adeye/adeye-core/build/adeye_utils
+[12.636s] -- Install configuration: "Release"
+[12.636s] -- Installing: /home/adeye/adeye-core/install/adeye_utils/lib/pkgconfig/adeye_utils.pc
+[12.636s] -- Installing: /home/adeye/adeye-core/install/adeye_utils/share/adeye_utils/cmake/adeye_utilsConfig.cmake
+[12.637s] -- Installing: /home/adeye/adeye-core/install/adeye_utils/share/adeye_utils/cmake/adeye_utilsConfig-version.cmake
+[12.637s] -- Installing: /home/adeye/adeye-core/install/adeye_utils/share/adeye_utils/package.xml
+[12.637s] -- Installing: /home/adeye/adeye-core/install/adeye_utils/lib/adeye_utils/trajectoryVisualizer
+[12.637s] -- Set runtime path of "/home/adeye/adeye-core/install/adeye_utils/lib/adeye_utils/trajectoryVisualizer" to ""
+[12.637s] -- Installing: /home/adeye/adeye-core/install/adeye_utils/lib/adeye_utils/pointCloudFrameChanger
+[12.638s] -- Set runtime path of "/home/adeye/adeye-core/install/adeye_utils/lib/adeye_utils/pointCloudFrameChanger" to ""
+[12.638s] -- Installing: /home/adeye/adeye-core/install/adeye_utils/lib/adeye_utils/pointCloudToOccupancyGrid
+[12.639s] -- Set runtime path of "/home/adeye/adeye-core/install/adeye_utils/lib/adeye_utils/pointCloudToOccupancyGrid" to ""
+[12.639s] -- Installing: /home/adeye/adeye-core/install/adeye_utils/lib/libadeye_utils.so
+[12.639s] -- Set runtime path of "/home/adeye/adeye-core/install/adeye_utils/lib/libadeye_utils.so" to ""
+[12.639s] -- Installing: /home/adeye/adeye-core/install/adeye_utils/include/adeye_utils
+[12.640s] -- Installing: /home/adeye/adeye-core/install/adeye_utils/include/adeye_utils/point_cloud_to_occupancy_grid.h
+[12.641s] Invoked command in '/home/adeye/adeye-core/build/adeye_utils' returned '0': _OLD_VIRTUAL_PS1=\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ /usr/local/bin/cmake --install /home/adeye/adeye-core/build/adeye_utils

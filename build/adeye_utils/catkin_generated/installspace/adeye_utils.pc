@@ -1,0 +1,8 @@
+prefix=/home/adeye/adeye-core/install/adeye_utils
+
+Name: adeye_utils
+Description: Description of adeye_utils
+Version: 0.0.0
+Cflags: -I${prefix}/include
+Libs: -L${prefix}/lib -ladeye_utils
+Requires: roscpp tf op_ros_helpers grid_map_core grid_map_msgs grid_map_ros nav_msgs

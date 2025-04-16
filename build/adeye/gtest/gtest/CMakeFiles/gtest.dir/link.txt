@@ -1,0 +1,1 @@
+/usr/bin/c++ -fPIC -std=c++11  -O3 -DNDEBUG -shared -Wl,-soname,libgtest.so -o libgtest.so "CMakeFiles/gtest.dir/src/gtest-all.cc.o"   -L/home/adeye/adeye-core/build/adeye/gtest/gtest/src  -Wl,-rpath,/home/adeye/adeye-core/build/adeye/gtest/gtest/src -lpthread 
