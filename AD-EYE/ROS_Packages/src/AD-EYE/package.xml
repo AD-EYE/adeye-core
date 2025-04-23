@@ -12,9 +12,7 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <!-- Add dependencies for build time -->
-  <build_depend>roscpp</build_depend>
-  <build_depend>rospy</build_depend>
-  <build_depend>std_msgs</build_depend>
+
   <build_depend>sensor_msgs</build_depend>
 
   <depend>roscpp</depend>
@@ -32,7 +30,6 @@
   <depend>adeye_utils</depend>
   <depend>rospy</depend>
   <exec_depend>sensor_msgs</exec_depend>
-  <exec_depend>std_msgs</exec_depend>
   <exec_depend>topic_tools</exec_depend>
 
 

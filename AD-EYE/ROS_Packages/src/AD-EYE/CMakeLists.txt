@@ -22,7 +22,6 @@ find_package(catkin REQUIRED COMPONENTS
   op_ros_helpers
   tf2_ros
   adeye_utils
-  ouster_os
 )
 
 
@@ -43,7 +42,6 @@ catkin_package(
     op_ros_helpers
     tf2_ros
     adeye_utils
-    ouster_ros
   DEPENDS
 )
 

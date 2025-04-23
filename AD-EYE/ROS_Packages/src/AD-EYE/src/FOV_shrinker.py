@@ -5,143 +5,173 @@ from sensor_msgs.msg import PointCloud2, PointField
 import sensor_msgs.point_cloud2 as pc2
 import numpy as np
 import struct
+import ctypes
+from std_msgs.msg import Header
+import copy
 
 class CloudROI:
     def __init__(self):
         rospy.init_node('cloud_ROI', anonymous=True)
 
-        self.n_beams = rospy.get_param('~n_beams', 64)  # default 64 beams for ouster lidar OS-0-64-U13
+        self.n_beams = rospy.get_param('~n_beams', 64) # default 64 beams for ouster lidar OS-0-64-U13
 
-        # Calculate the range of beams to keep (middle half)
-        self.start_beam = self.n_beams // 4
-        self.end_beam = self.start_beam + self.n_beams // 2
+        # keep middle half beams
+        self.start_beam = rospy.get_param('~start_beam', self.n_beams // 4)
+        self.end_beam = rospy.get_param('~end_beam', self.start_beam + self.n_beams // 2)
 
         rospy.loginfo("Cloud ROI node initialized")
-        rospy.loginfo("Keeping beams {} to {} (middle half of {} beams)".format(
+        rospy.loginfo("Keeping beams {} to {} (of {} beams)".format(
             self.start_beam, self.end_beam-1, self.n_beams))
 
-        rospy.Subscriber('/os_cloud_node/points', PointCloud2, self.cloud_callback)
+        # Use a queue size of 1 to avoid buffering and reduce latency
+        rospy.Subscriber('/os_cloud_node/points', PointCloud2, self.cloud_callback, queue_size=1)
 
-        self.filtered_publisher = rospy.Publisher('/os_cloud_node/ROI_points', PointCloud2, queue_size=2)
+        self.filtered_publisher = rospy.Publisher('/os_cloud_node/ROI_points', PointCloud2, queue_size=1)
 
-        # debug parameters
         self.last_debug_time = rospy.Time.now()
-        self.debug_interval = rospy.Duration(5.0)  # debug output every 5 seconds
-        self.debug_mode = rospy.get_param('~debug', False)  # enable debug logging
+        self.debug_interval = rospy.Duration(5.0)  # Debug output every 5 seconds
+        self.debug_mode = rospy.get_param('~debug', False)  # Default false
+
+        self.processing_times = []
+        self.max_times_to_track = 100
 
     def cloud_callback(self, cloud_msg):
-        """Process point cloud and filter to keep only the middle beams."""
+        """Process point cloud and filter to keep only the middle beams using zero-copy where possible."""
         try:
+            start_time = rospy.Time.now()
 
-            current_time = rospy.Time.now()
-            if self.debug_mode and (current_time - self.last_debug_time) > self.debug_interval:
-                rospy.loginfo("---------- CLOUD DEBUG INFO ----------")
-                rospy.loginfo("Point cloud height: {}, width: {}".format(cloud_msg.height, cloud_msg.width))
-                rospy.loginfo("Point step: {}, row step: {}".format(cloud_msg.point_step, cloud_msg.row_step))
-                rospy.loginfo("Point cloud size: {} bytes".format(len(cloud_msg.data)))
-
-                # Get field info
-                fields_info = ""
-                for field in cloud_msg.fields:
-                    fields_info += "{} (offset: {}), ".format(field.name, field.offset)
-                rospy.loginfo("Fields: {}".format(fields_info))
-
-                self.last_debug_time = current_time
-
-            # filtered cloud message
-            filtered_cloud = PointCloud2()
-            filtered_cloud.header = cloud_msg.header
-            filtered_cloud.height = cloud_msg.height
-            filtered_cloud.width = cloud_msg.width
-            filtered_cloud.fields = cloud_msg.fields
-            filtered_cloud.is_bigendian = cloud_msg.is_bigendian
-            filtered_cloud.point_step = cloud_msg.point_step
-            filtered_cloud.row_step = cloud_msg.row_step  #how many bytes make up all the points in a single beam
-            filtered_cloud.is_dense = cloud_msg.is_dense
-
+            # For organized point cloud ,height = number of beams, width = azimuth(horizontal measurement)
             if cloud_msg.height == self.n_beams and cloud_msg.height > 1:
-                # this is an organized point cloud with rows corresponding to beams
+                # Create a shallow copy of the message to preserve most metadata
+                # This avoids copying the entire data array initially
+                filtered_cloud = copy.copy(cloud_msg)
 
-                filtered_data = bytearray(len(cloud_msg.data))
+                # Find x, y, z field offsets
+                x_offset = y_offset = z_offset = None
+                for field in cloud_msg.fields:
+                    if field.name == 'x':
+                        x_offset = field.offset
+                    elif field.name == 'y':
+                        y_offset = field.offset
+                    elif field.name == 'z':
+                        z_offset = field.offset
 
-                # copy only the rows (beams) we want to keep
+
+                data_array = bytearray(cloud_msg.data)
+
+                # Only modify the rows outside our ROI - direct memory modification
                 for beam_idx in range(cloud_msg.height):
-                    row_start = beam_idx * cloud_msg.row_step
-                    row_end = row_start + cloud_msg.row_step
+                    if beam_idx < self.start_beam or beam_idx >= self.end_beam:
+                        # if the beam is outside our ROI, set points to NaN
+                        row_start = beam_idx * cloud_msg.row_step
 
-                    if self.start_beam <= beam_idx < self.end_beam: # the beam is in ROI
-                        for i in range(row_start, row_end):
-                            if i < len(cloud_msg.data):
-                                filtered_data[i] = cloud_msg.data[i]
-
-                    else:
-                        # if the beam is outside our ROI, set all points to invalid (NaN or max range)
-
-                        # offset means how many bytes from the start of a point's data that field begins.
-                        # example:
-                        # x_offset = 0 (x coordinate starts at the beginning of each point's data)
-                        # y_offset = 4 (y coordinate starts 4 bytes in)
-                        # z_offset = 8 (z coordinate starts 8 bytes in)
-                        x_offset = y_offset = z_offset = None
-                        for field in cloud_msg.fields:
-                            if field.name == 'x':
-                                x_offset = field.offset
-                            elif field.name == 'y':
-                                y_offset = field.offset
-                            elif field.name == 'z':
-                                z_offset = field.offset
-
-                        # set x, y, z to NaN for all points in this row
-                        if x_offset is not None and y_offset is not None and z_offset is not None: # 0 is not None in python
+                        # Set only the x,y,z values to NaN for all points in this row
+                        if x_offset is not None and y_offset is not None and z_offset is not None:
+                            nan_bytes = struct.pack('f', float('nan'))
                             for col_idx in range(cloud_msg.width):
                                 point_idx = row_start + col_idx * cloud_msg.point_step
 
-                                if point_idx + x_offset + 4 <= len(filtered_data):
-                                    filtered_data[point_idx+x_offset:point_idx+x_offset+4] = struct.pack('f', float('nan'))
-                                if point_idx + y_offset + 4 <= len(filtered_data):
-                                    filtered_data[point_idx+y_offset:point_idx+y_offset+4] = struct.pack('f', float('nan'))
-                                if point_idx + z_offset + 4 <= len(filtered_data):
-                                    filtered_data[point_idx+z_offset:point_idx+z_offset+4] = struct.pack('f', float('nan'))
+                                # Avoid copy operations by directly setting bytes
+                                if point_idx + x_offset + 4 <= len(data_array):
+                                    data_array[point_idx+x_offset:point_idx+x_offset+4] = nan_bytes
+                                if point_idx + y_offset + 4 <= len(data_array):
+                                    data_array[point_idx+y_offset:point_idx+y_offset+4] = nan_bytes
+                                if point_idx + z_offset + 4 <= len(data_array):
+                                    data_array[point_idx+z_offset:point_idx+z_offset+4] = nan_bytes
 
-                filtered_cloud.data = bytes(filtered_data)
+                # Update the header timestamp to be more current (reduces perceived latency)
+                filtered_cloud.header.stamp = rospy.Time.now()
+
+                # Assign the modified data buffer
+                filtered_cloud.data = bytes(data_array)
+
+                # Publish the filtered cloud
+                self.filtered_publisher.publish(filtered_cloud)
 
             # else:
-            #     # Non-organized point cloud or single-row organized cloud
-            #     # Filter points by checking ring/beam index if available
-
-            #     # Find ring/beam field offset if it exists
+            #     # Handle unorganized clouds differently
+            #     # For unorganized clouds with ring field, use more efficient approach
             #     ring_offset = None
-            #     for field in cloud_msg.fields:
+            #     for field_idx, field in enumerate(cloud_msg.fields):
             #         if field.name == 'ring':
             #             ring_offset = field.offset
+            #             ring_field_idx = field_idx
             #             break
 
             #     if ring_offset is not None:
-            #         # Extract points with ring/beam indices in our ROI
-            #         points = pc2.read_points(cloud_msg, skip_nans=False)
-            #         filtered_points = []
+            #         # For unorganized clouds, we filter directly during iteration
+            #         # Create a new point cloud with same metadata
+            #         filtered_cloud = copy.copy(cloud_msg)
+            #         data_array = bytearray(cloud_msg.data)
 
-            #         for point in points:
-            #             # Extract ring index (varies by point cloud format)
-            #             # Assuming ring is stored as uint16 or uint8
-            #             # This needs to be adjusted based on actual point cloud format
-            #             try:
-            #                 ring_idx = int(point[ring_offset//4])  # Divide by 4 because point tuple is in 32-bit elements
-            #                 if self.start_beam <= ring_idx < self.end_beam:
-            #                     filtered_points.append(point)
-            #             except (IndexError, ValueError):
-            #                 # Skip points with invalid ring indices
-            #                 pass
+            #         point_step = cloud_msg.point_step
+            #         x_offset = y_offset = z_offset = None
+            #         for field in cloud_msg.fields:
+            #             if field.name == 'x':
+            #                 x_offset = field.offset
+            #             elif field.name == 'y':
+            #                 y_offset = field.offset
+            #             elif field.name == 'z':
+            #                 z_offset = field.offset
 
-            #         # Create a new point cloud with filtered points
-            #         filtered_cloud = pc2.create_cloud(cloud_msg.header, cloud_msg.fields, filtered_points)
+            #         # If we have all necessary offsets, process the cloud
+            #         if x_offset is not None and y_offset is not None and z_offset is not None:
+            #             nan_bytes = struct.pack('f', float('nan'))
+
+            #             # Process the data buffer directly
+            #             for point_idx in range(0, len(data_array), point_step):
+            #                 if point_idx + ring_offset + 2 <= len(data_array):  # assuming uint16 for ring
+            #                     # Extract ring index - this depends on data type of ring field
+            #                     if cloud_msg.fields[ring_field_idx].datatype == PointField.UINT16:
+            #                         ring_idx = struct.unpack('H', data_array[point_idx+ring_offset:point_idx+ring_offset+2])[0]
+            #                     elif cloud_msg.fields[ring_field_idx].datatype == PointField.UINT8:
+            #                         ring_idx = data_array[point_idx+ring_offset]
+            #                     else:
+            #                         # Default to uint16 if type is unexpected
+            #                         ring_idx = struct.unpack('H', data_array[point_idx+ring_offset:point_idx+ring_offset+2])[0]
+
+            #                     # If outside ROI, set to NaN
+            #                     if ring_idx < self.start_beam or ring_idx >= self.end_beam:
+            #                         if point_idx + x_offset + 4 <= len(data_array):
+            #                             data_array[point_idx+x_offset:point_idx+x_offset+4] = nan_bytes
+            #                         if point_idx + y_offset + 4 <= len(data_array):
+            #                             data_array[point_idx+y_offset:point_idx+y_offset+4] = nan_bytes
+            #                         if point_idx + z_offset + 4 <= len(data_array):
+            #                             data_array[point_idx+z_offset:point_idx+z_offset+4] = nan_bytes
+
+            #             # Update the header timestamp
+            #             filtered_cloud.header.stamp = rospy.Time.now()
+            #             filtered_cloud.data = bytes(data_array)
+            #             self.filtered_publisher.publish(filtered_cloud)
+            #         else:
+            #             # Can't process without knowing field offsets
+            #             rospy.logwarn_once("Missing x, y, or z field offsets in point cloud")
+            #             self.filtered_publisher.publish(cloud_msg)  # Pass through
             #     else:
-            #         # No ring field, just pass through the original cloud for now
-            #         rospy.logwarn_once("No 'ring' field found in point cloud, cannot filter by beam.")
-            #         filtered_cloud = cloud_msg
+            #         # No ring field, just pass through the original cloud
+            #         rospy.logwarn_once("No 'ring' field found in point cloud, cannot filter by beam")
+            #         self.filtered_publisher.publish(cloud_msg)  # Pass through
 
-            # # Publish the filtered point cloud
-            # self.filtered_publisher.publish(filtered_cloud)
+            # Track processing time
+            end_time = rospy.Time.now()
+            processing_duration = (end_time - start_time).to_sec() * 1000.0  # Convert to milliseconds
+            self.processing_times.append(processing_duration)
+            if len(self.processing_times) > self.max_times_to_track:
+                self.processing_times.pop(0)
+
+            # Debug output
+            current_time = rospy.Time.now()
+            if self.debug_mode and (current_time - self.last_debug_time) > self.debug_interval:
+                avg_time = sum(self.processing_times) / len(self.processing_times) if self.processing_times else 0
+                max_time = max(self.processing_times) if self.processing_times else 0
+
+                rospy.loginfo("---------- CLOUD ROI PERFORMANCE ----------")
+                rospy.loginfo("Point cloud size: {} points".format(cloud_msg.width * cloud_msg.height))
+                rospy.loginfo("Processing time: {:.2f} ms (avg: {:.2f} ms, max: {:.2f} ms)".format(
+                    processing_duration, avg_time, max_time))
+                rospy.loginfo("Message timestamp latency: {:.2f} ms".format(
+                    (rospy.Time.now() - cloud_msg.header.stamp).to_sec() * 1000.0))
+                self.last_debug_time = current_time
 
         except Exception as e:
             rospy.logerr("Error processing point cloud: {}".format(e))

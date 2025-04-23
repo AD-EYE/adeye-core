@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- Arguments for ROI filtering -->
+  <arg name="n_beams" default="64" doc="number of beams in the sensor (32, 64, 128)"/>
+  <arg name="start_beam" default="16" doc="First beam ID to keep (inclusive)"/>
+  <arg name="end_beam" default="48" doc="Last beam ID to keep (exclusive)"/>
+  <arg name="debug" default="true" doc="enable debug logging for ROI node"/>
+
+  <!-- Visualization arguments -->
+  <arg name="viz" default="true" doc="whether to run rviz"/>
+  <arg name="rviz_config" default="-d $(find ouster_ros)/viz.rviz" doc="optional rviz config file"/>
+  <arg name="tf_prefix" default="" doc="namespace for tf transforms"/>
+
+  <!-- Launch the ROI filter node -->
+  <node pkg="adeye" name="cloud_ROI" type="FOV_shrinker.py" output="screen">
+    <param name="~n_beams" value="$(arg n_beams)"/>
+    <param name="~debug" value="$(arg debug)"/>
+    <!-- Override the start_beam and end_beam parameters if needed -->
+    <remap from="/os_cloud_node/points" to="/os_cloud_node/points"/>
+    <remap from="/os_cloud_node/ROI_points" to="/os_cloud_node/ROI_points"/>
+  </node>
+
+  <!-- Launch RViz for visualization with custom config that includes both point clouds -->
+  <node if="$(arg viz)" pkg="rviz" name="rviz" type="rviz" args="$(arg rviz_config)" output="screen" required="false" />
+
+  <!-- Add a static transform publisher to ensure frames are properly set up -->
+  <node pkg="tf" type="static_transform_publisher" name="roi_tf_publisher"
+        args="0 0 0 0 0 0 os_sensor os_sensor_roi 100" if="$(eval tf_prefix == '')"/>
+
+  <!-- If a tf_prefix is specified, use that in the transform -->
+  <node pkg="tf" type="static_transform_publisher" name="roi_tf_publisher_prefixed"
+        args="0 0 0 0 0 0 $(arg tf_prefix)/os_sensor $(arg tf_prefix)/os_sensor_roi 100" unless="$(eval tf_prefix == '')"/>
+
+  <!-- Instructions for the user (this is a comment and won't affect execution) -->
+  <!-- To use this launch file, run the following in a separate terminal:
+       cd /disk2/bags/lidar_data
+       rosbag play record_25_03_20_hs.bag -topic /os_cloud_node/points /os_cloud_node/imu
+  -->
+</launch>

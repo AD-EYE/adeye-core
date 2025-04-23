@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- Define all arguments -->
+  <arg name="sensor_hostname" default="192.168.2.54" doc="hostname or IP in dotted decimal form of the sensor"/>
+  <arg name="udp_dest" default="" doc="hostname or IP where the sensor will send data packets"/>
+  <arg name="lidar_port" default="0" doc="port to which the sensor should send lidar data"/>
+  <arg name="imu_port" default="0" doc="port to which the sensor should send imu data"/>
+  <arg name="replay" default="false" doc="do not connect to a sensor; expect /os_node/{lidar,imu}_packets from replay"/>
+  <arg name="lidar_mode" default="" doc="resolution and rate: either 512x10, 512x20, 1024x10, 1024x20, or 2048x10"/>
+  <arg name="timestamp_mode" default="" doc="method used to timestamp measurements: TIME_FROM_INTERNAL_OSC, TIME_FROM_SYNC_PULSE_IN, TIME_FROM_PTP_1588"/>
+  <arg name="metadata" default="os_sensor_metadata.json" doc="path to read or write metadata file when replaying or receiving sensor data, respectively"/>
+  <arg name="viz" default="true" doc="whether to run a rviz"/>
+  <arg name="rviz_config" default="-d $(find ouster_ros)/viz.rviz" doc="optional rviz config file"/>
+  <arg name="tf_prefix" default="" doc="namespace for tf transforms"/>
+  <arg name="udp_profile_lidar" default="" doc="lidar packet profile: LEGACY, RNG19_RFL8_SIG16_NIR16_DUAL, RNG19_RFL8_SIG16_NIR16, RNG15_RFL8_NIR8"/>
+
+  <!-- Beam configuration -->
+  <arg name="n_beams" default="64" doc="number of beams in the sensor (32, 64, 128)"/>
+
+  <!-- ROI filtering parameters -->
+  <arg name="start_beam" default="16" doc="First beam ID to keep (inclusive)"/>
+  <arg name="end_beam" default="48" doc="Last beam ID to keep (exclusive)"/>
+  <arg name="debug" default="true" doc="enable debug logging for ROI node"/>
+
+  <!-- Include the original ouster.launch file with args -->
+  <include file="$(find ouster_ros)/ouster.launch">
+    <arg name="sensor_hostname" value="$(arg sensor_hostname)"/>
+    <arg name="udp_dest" value="$(arg udp_dest)"/>
+    <arg name="lidar_port" value="$(arg lidar_port)"/>
+    <arg name="imu_port" value="$(arg imu_port)"/>
+    <arg name="replay" value="$(arg replay)"/>
+    <arg name="lidar_mode" value="$(arg lidar_mode)"/>
+    <arg name="timestamp_mode" value="$(arg timestamp_mode)"/>
+    <arg name="metadata" value="$(arg metadata)"/>
+    <arg name="viz" value="false"/>  <!-- We'll handle visualization ourselves -->
+    <arg name="tf_prefix" value="$(arg tf_prefix)"/>
+    <arg name="udp_profile_lidar" value="$(arg udp_profile_lidar)"/>
+  </include>
+
+  <!-- Launch the ROI filter node -->
+  <node pkg="adeye" name="os_ROI" type="FOV_shrinker.py" output="screen">
+    <param name="n_beams" value="$(arg n_beams)"/>
+    <param name="start_beam" value="$(arg start_beam)"/>
+    <param name="end_beam" value="$(arg end_beam)"/>
+    <param name="debug" value="$(arg debug)"/>
+  </node>
+
+  <!-- ROI cloud node - use the same tf_prefix to share coordinate frame -->
+  <node pkg="ouster_ros" type="os_cloud_node" name="os_cloud_node_roi" output="screen" required="true">
+    <remap from="~/os_config" to="/os_node/os_config"/>
+    <remap from="~/lidar_packets" to="/os_node/lidar_packets_ROI"/>
+    <remap from="~/imu_packets" to="/os_node/imu_packets"/>
+    <remap from="~/points" to="/os_cloud_node/ROI_points"/>
+    <param name="~/tf_prefix" value="$(arg tf_prefix)"/>
+  </node>
+
+  <!-- Add a static transform publisher to create a relationship between the two frames if needed -->
+  <node pkg="tf" type="static_transform_publisher" name="roi_tf_publisher"
+        args="0 0 0 0 0 0 os_sensor os_sensor_roi 100" if="$(eval tf_prefix == '')"/>
+
+  <!-- If a tf_prefix is specified, use that in the transform -->
+  <node pkg="tf" type="static_transform_publisher" name="roi_tf_publisher_prefixed"
+        args="0 0 0 0 0 0 $(arg tf_prefix)/os_sensor $(arg tf_prefix)/os_sensor_roi 100" unless="$(eval tf_prefix == '')"/>
+
+  <!-- Launch RViz for visualization with custom config that includes both point clouds -->
+  <node if="$(arg viz)" pkg="rviz" name="rviz" type="rviz" args="$(arg rviz_config)" output="screen" required="false" />
+
+  <!-- for compatibility with < 1.13 rosbags, using unique names to avoid conflicts -->
+  <node pkg="topic_tools" name="adeye_relay_lidar" type="relay" args="/os1_node/lidar_packets /os_node/lidar_packets" />
+  <node pkg="topic_tools" name="adeye_relay_imu" type="relay" args="/os1_node/imu_packets /os_node/imu_packets" />
+</launch>
