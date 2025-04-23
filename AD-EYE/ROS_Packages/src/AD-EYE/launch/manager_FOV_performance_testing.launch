@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- Common parameters -->
+  <arg name="n_beams" default="64" doc="Number of beams in the lidar sensor"/>
+  <arg name="start_beam" default="16" doc="First beam ID to keep (inclusive)"/>
+  <arg name="end_beam" default="48" doc="Last beam ID to keep (exclusive)"/>
+  <arg name="debug" default="true" doc="Enable debug logging"/>
+
+  <!-- Manager node (from your existing setup) -->
+  <node
+    type="manager.py"
+    pkg="adeye"
+    name="manager"
+    respawn="false"
+    output="screen"
+  />
+
+  <rosparam>
+    use_sim_time: false
+  </rosparam>
+
+  <!-- Original timestamp update - remains unchanged -->
+  <node pkg="adeye"
+        type="lidar_timestamp_update.py"
+        name="lidar_timestamp_update">
+    <remap from="/os_cloud_node/points" to="/os_cloud_node/points"/>
+  </node>
+
+  <!-- ROI filtering node -->
+  <node pkg="my_lidar_pkg"
+        type="cloud_ROI.py"
+        name="cloud_roi_node"
+        output="screen">
+    <param name="n_beams" value="$(arg n_beams)"/>
+    <param name="start_beam" value="$(arg start_beam)"/>
+    <param name="end_beam" value="$(arg end_beam)"/>
+    <param name="debug" value="$(arg debug)"/>
+  </node>
+
+  <!-- Duplicate timestamp update for the ROI points -->
+  <node pkg="adeye"
+        type="lidar_timestamp_update.py"
+        name="lidar_timestamp_update_roi">
+    <remap from="/os_cloud_node/points" to="/os_cloud_node/ROI_points"/>
+    <remap from="/points_raw" to="/points_raw_roi"/>
+    <remap from="/initialpose" to="/initialpose_dummy"/> <!-- Avoid double publishing initialpose -->
+  </node>
+
+  <!-- Original voxel grid filter config and other includes -->
+  <include file="$(find points_downsampler)/launch/points_downsample.launch" />
+
+  <!-- Static transform publisher for map -->
+  <node
+    pkg="tf"
+    type="static_transform_publisher"
+    name="link1_broadcaster"
+    args="101 -1 0 0 0 -0.1097783 0.9939561 map map_temp 100"
+  />
+
+  <!-- Relay node -->
+  <node
+    pkg="topic_tools"
+    type="relay"
+    name="relay_velocity"
+    args="/current_velocity_phy /current_velocity"
+  />
+
+  <!-- Include your other launch files -->
+  <include file="$(find adeye)/launch/my_goal.launch"/>
+</launch>

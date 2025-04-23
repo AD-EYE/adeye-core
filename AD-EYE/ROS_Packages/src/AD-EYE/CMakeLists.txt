@@ -6,6 +6,7 @@ set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 ## Find catkin macros and libraries
 find_package(catkin REQUIRED COMPONENTS
   roscpp
+  rospy
   grid_map_core
   grid_map_ros
   grid_map_msgs
@@ -21,6 +22,7 @@ find_package(catkin REQUIRED COMPONENTS
   op_ros_helpers
   tf2_ros
   adeye_utils
+  ouster_os
 )
 
 
@@ -41,6 +43,7 @@ catkin_package(
     op_ros_helpers
     tf2_ros
     adeye_utils
+    ouster_ros
   DEPENDS
 )
 
@@ -367,5 +370,11 @@ catkin_install_python(PROGRAMS src/camera_broadcaster.py
 )
 
 catkin_install_python(PROGRAMS src/zed_driver.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+
+catkin_install_python(PROGRAMS
+  src/FOV_shrinker.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
