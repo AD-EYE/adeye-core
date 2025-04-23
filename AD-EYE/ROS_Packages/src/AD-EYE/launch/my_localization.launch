@@ -34,7 +34,7 @@
     <!-- Points Downsampler -->
     <node pkg="rostopic" type="rostopic" name="config_voxel_grid_filter_rostopic"
           args="pub -l /config/voxel_grid_filter autoware_config_msgs/ConfigVoxelGridFilter
-        '{voxel_leaf_size: 2.0 , measurement_range: 200.0}' "
+        '{voxel_leaf_size: 1 , measurement_range: 200.0}' "
     />
     <include file="$(find points_downsampler)/launch/points_downsample.launch" />
 
@@ -49,7 +49,7 @@
 
     <!-- ndt_matching --> <!-- METHOD TYPE: pcl_generic=0, pcl_anh=1, pcl_anh_gpu=2, pcl_openmp=3 -->
     <include file="$(find lidar_localizer)/launch/ndt_matching.launch">
-        <arg name="method_type" value="0" />
+        <arg name="method_type" value="2" />
         <arg name="use_gnss" value="1" />
         <arg name="use_odom" value="false" />
         <arg name="use_imu" value="1" />

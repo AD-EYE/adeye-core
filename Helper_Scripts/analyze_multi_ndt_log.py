@@ -103,7 +103,7 @@ def extract_voxel_size(folder_name):
     Extract the voxel size from the folder name using the pattern "voxel_leaf_X".
     Returns the voxel size as a float, or None if not found.
     """
-    match = re.search(r'voxel_leaf_([0-9\.]+)', folder_name)
+    match = re.search(r'px2_voxel_leaf_([0-9\.]+)', folder_name)
     if match:
         return float(match.group(1))
     else:
@@ -134,7 +134,7 @@ def main():
                 if args.keyword and args.keyword not in d:
                     continue
                 # Check if the expected log file exists in the folder
-                log_file = os.path.join(full_path, "ndt_matching-13-stdout.log")
+                log_file = os.path.join(full_path, "ndt_matching-11-stdout.log")
                 if os.path.exists(log_file):
                     folders_to_parse.append(full_path)
 
@@ -145,7 +145,7 @@ def main():
     aggregated_data = []  # To store aggregated metrics for plotting
 
     for folder in folders_to_parse:
-        log_file = os.path.join(folder, "ndt_matching-13-stdout.log")
+        log_file = os.path.join(folder, "ndt_matching-11-stdout.log")
         df = parse_log_file(log_file)
         if df.empty:
             continue
