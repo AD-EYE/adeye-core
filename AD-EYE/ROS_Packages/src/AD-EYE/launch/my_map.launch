@@ -1,8 +1,8 @@
 <!-- -->
 <launch>
     <arg name="world_name" default="W18_Test_Track"/>
-    <arg name="PointCloud_Files_Folder" value="/home/adeye/experiments/$(arg world_name)/Pointcloud_Files/"/>
-    <arg name="VectorMap_Files_Folder" value="/home/adeye/experiments/$(arg world_name)/Vector_Map_Files/"/>
+    <arg name="PointCloud_Files_Folder" value="/home/adeye/experiments/W18_Test_Track/Pointcloud_Files/"/>
+    <arg name="VectorMap_Files_Folder" value="/home/adeye/experiments/W18_Test_Track/Vector_Map_Files/"/>
 
     <include file="/home/adeye/experiments/$(arg world_name)/map_params.launch" />
 
