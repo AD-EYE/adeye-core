@@ -18,7 +18,7 @@
     <!-- Point Cloud Map Filter -->
     <node pkg="rostopic" type="rostopic" name="config_voxel_grid_filter_rostopic"
         args="pub -l /config/map_voxel_grid_filter autoware_config_msgs/ConfigVoxelGridFilter
-        '{voxel_leaf_size: 1 , measurement_range: 200.0}' "
+        '{voxel_leaf_size: 0.25 , measurement_range: 200.0}' "
     />
 
     <node pkg="points_downsampler" name="map_voxel_grid_filter" type="voxel_grid_filter">
