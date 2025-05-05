@@ -5,7 +5,7 @@ from sensor_msgs.msg import PointCloud2
 from geometry_msgs.msg import PoseWithCovarianceStamped
 
 def callback(msg):
-    # Update the header timestamp with the current ROS time
+    # Update the header timestamp with the currentlidar_timestamp_update ROS time
     msg.header.stamp = rospy.Time.now()
     pub.publish(msg)
 
