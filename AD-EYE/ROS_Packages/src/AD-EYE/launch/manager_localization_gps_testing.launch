@@ -13,12 +13,17 @@
         use_sim_time: true
     </rosparam>
 
+    <node
+        pkg="adeye"
+        type="lidar_timestamp_update.py"
+        name="lidar_timestamp_update"
+    />
 
     <node
         pkg="tf"
         type="static_transform_publisher"
         name="link1_broadcaster"
-        args="0 0 -20.75 0 0 0 1 map map_temp 100"
+        args="23 58 0 0 0 -0.679 0.734 map map_temp 100"
     />
 
 
