@@ -32,6 +32,7 @@ if __name__ == '__main__':
 
     pub = rospy.Publisher('/move_base_simple/goal', PoseStamped, queue_size=1, latch=True)
 
+
     time.sleep(5)
 
     pub.publish(get_goal(x, y, z, qx, qy, qz, qw))

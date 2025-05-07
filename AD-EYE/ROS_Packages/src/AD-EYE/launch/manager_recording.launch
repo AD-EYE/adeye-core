@@ -12,7 +12,7 @@
         <param name="baud" value="9600"/>
     </node>
 
-    <include file="$(find ouster_ros)/launch/driver.launch">
+    <include file="$(find ouster_ros)/ouster.launch">
         <arg name="sensor_hostname" value="os-122132000155.local"/>
     </include>
 
