@@ -190,7 +190,7 @@ class Manager:
     INITIALIZING_DEFAULT_FEATURES = [
         # "Recording",
         "Map",
-        #"Sensing",
+        "Sensing",
         "Localization",
         # "Fake_Localization",
         #"Detection",
@@ -204,7 +204,7 @@ class Manager:
     ENABLED_DEFAULT_FEATURES = [
         # "Recording",
         "Map",
-        #"Sensing",
+        "Sensing",
         "Localization",
         # "Fake_Localization",
         #"Detection",
@@ -218,7 +218,7 @@ class Manager:
     ENGAGED_DEFAULT_FEATURES = [
         # "Recording",
         "Map",
-        #"Sensing",
+        "Sensing",
         "Localization",
         # "Fake_Localization",
         #"Detection",
@@ -232,8 +232,8 @@ class Manager:
     FAULT_DEFAULT_FEATURES = [
         # "Recording",
         "Map",
-        #"Sensing",
-        # "Localization",
+        "Sensing",
+         "Localization",
         # "Fake_Localization",
         # "Detection",
          "Mission_Planning",
@@ -246,7 +246,7 @@ class Manager:
     INITIALIZING_ALLOWED_FEATURES = [
         # "Recording",
         "Map",
-        #"Sensing",
+        "Sensing",
         "Localization",
         # "Fake_Localization",
         #"Detection",
@@ -260,7 +260,7 @@ class Manager:
     ENABLED_ALLOWED_FEATURES = [
         # "Recording",
         "Map",
-        #"Sensing",
+        "Sensing",
         "Localization",
         # "Fake_Localization",
         #"Detection",
@@ -274,7 +274,7 @@ class Manager:
     ENGAGED_ALLOWED_FEATURES = [
         # "Recording",
         "Map",
-        #"Sensing",
+        "Sensing",
         "Localization",
         # "Fake_Localization",
         #"Detection",
@@ -288,8 +288,8 @@ class Manager:
     FAULT_ALLOWED_FEATURES = [
         # "Recording",
         "Map",
-        #"Sensing",
-        # "Localization",
+        "Sensing",
+         "Localization",
         # "Fake_Localization",
         # "Detection",
          "Mission_Planning",
