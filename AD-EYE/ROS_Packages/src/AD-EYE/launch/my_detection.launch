@@ -70,10 +70,10 @@
     </node>
 
     <!-- imm_ukf_pda_track visualizer -->
-    <!--<node pkg="detected_objects_visualizer" type="visualize_detected_objects" name="lidar_detected_objects_visualizer" output="screen">
+    <node pkg="detected_objects_visualizer" type="visualize_detected_objects" name="lidar_detected_objects_visualizer" output="screen">
         <param name="objects_src_topic" value="/detection/lidar_tracker/objects"/>
         <remap from="/objects_markers"       to="/detection/lidar_tracker/objects_markers" />
-    </node>-->
+    </node>
 
 
     <!-- objectsFrameAdapter -->
@@ -133,19 +133,19 @@
     </include>
 
     <!-- feat_proj -->
-    <!--<include file="$(find trafficlight_recognizer)/launch/feat_proj.launch">
+    <include file="$(find trafficlight_recognizer)/launch/feat_proj.launch">
         <arg name="camera_id" value="/tl_camera"/>
         <arg name="camera_info_src" value="/camera_info"/>
-        <arg name="use_path_info" value="false"/>
-    </include>-->
+        <arg name="use_path_info" value="false"/> <!-- USE VectorMap Server to publish only TrafficSignals on current lane-->
+    </include>
 
     <!-- traffic_light_recognition -->
-    <!--<include file="$(find trafficlight_recognizer)/launch/traffic_light_recognition.launch">
+    <include file="$(find trafficlight_recognizer)/launch/traffic_light_recognition.launch">
         <arg name="camera_id" default="/"/>
         <arg name="image_src" default="/tl/image_raw"/>
         <arg name="light_src" default="/light_color" />
         <arg name="camera_light_src" default="/camera_light_color" />
         <arg name="ams_light_src" default="/ams_light_color" />
-    </include>-->
+    </include>
 
 </launch>

@@ -11,27 +11,29 @@
             output="screen"
     />
 
-<!--
+
     <include file="$(find can_vehicle)/launch/vic.launch"/>
--->
+
+    <!-- uncommend for playing back rosbags and publishing initial pose-->
+    <!--<node pkg="adeye" type="lidar_timestamp_update.py" name="lidar_timestamp_update">
+    </node>-->
 
     <!--<include file="$(find lidar_localizer)/launch/ndt_matching_monitor.launch"/>-->
-<!--
+
     <node pkg="nmea_navsat_driver" type="nmea_serial_driver" name="navsat_driver" respawn="true">
         <param name="port" value="/dev/ttyACM0"/>
         <param name="baud" value="9600"/>
-    </node>-->
+    </node>
 <!--
     <node pkg="adeye" type="camera_gmsl_publisher" name="camera_gmsl_publisher" respawn="true"/>
 
 -->
-<!--
     <include file="$(find ouster_ros)/ouster.launch">
         <arg name="sensor_hostname" value="os-122132000155.local"/>
         <arg name="viz" value="false"/>
         <arg name="metadata" value="/home/adeye/ouster-metadata.json"/>
     </include>
--->
+
 <!--
 
     <node
