@@ -1,0 +1,64 @@
+<!-- -->
+<launch>
+
+    <node
+        type="manager.py"
+        pkg="adeye"
+        name="manager"
+        respawn="false"
+        output="screen"
+    />
+
+    <rosparam>
+        use_sim_time: false
+    </rosparam>
+
+    <node
+        pkg="adeye"
+        type="lidar_timestamp_update.py"
+        name="lidar_timestamp_update"
+    />
+
+    <node
+        pkg="tf"
+        type="static_transform_publisher"
+        name="link1_broadcaster"
+        args="101 -1 0 0 0 -0.1097783 0.9939561 map map_temp 100"
+    />
+
+    <node
+        pkg="topic_tools"
+        type="relay"
+        name="relay_velocity"
+        args="/current_velocity_phy /current_velocity"
+    />
+
+    <include file="$(find adeye)/launch/my_goal.launch"/>
+
+<!--    <node
+            type="vehicle_controller"
+            pkg="adeye"
+            name="vehicle_controller_sim"
+            respawn="false"
+            output="screen"
+    >
+        <param name="topic_velocity_current" value="/estimate_twist"/>
+        <param name="topic_acceleration_request" value="/vehicle_acceleration_requested"/>
+        <param name="topic_steering_request" value="/steering_angle_command"/>
+    </node>
+-->
+<!--
+    <node
+            type="vehicle_controller"
+            pkg="adeye"
+            name="vehicle_controller_phy"
+            respawn="false"
+            output="screen"
+    >
+        <param name="topic_velocity_current" value="/current_velocity_phy"/>
+        <param name="topic_acceleration_request" value="/acceleration_requested_phy"/>
+        <param name="topic_steering_request" value="/steering_requested_phy"/>
+    </node>
+-->
+
+</launch>

@@ -124,7 +124,7 @@ class ManagerFeaturesHandler:
     # Ordered dictionary object                 = Feature(Feature_name,                    launch_file_name,              start_delay, stop_delay)
     features["Recording"] = Feature("Recording", "", 0, 0)
     features["Map"] = Feature("Map", "my_map.launch", 8, 0)
-    features["Sensing"] = Feature("Sensing", "my_sensing.launch", 0, 0)
+    features["Sensing"] = Feature("Sensing", "my_sensing.launch", 10, 0)
     features["Localization"] = Feature("Localization", "my_localization.launch", 8, 5)
     features["Fake_Localization"] = Feature("Fake_Localization", "my_fake_localization.launch", 0, 0)
     features["Detection"] = Feature("Detection", "my_detection.launch", 0, 5)
@@ -193,11 +193,11 @@ class Manager:
         "Sensing",
         "Localization",
         # "Fake_Localization",
-        "Detection",
+        #"Detection",
         "Mission_Planning",
-        # "Motion_Planning",
-        "Switch",
-        "SSMP",
+        "Motion_Planning",
+        #"Switch",
+        #"SSMP",
         # "Rviz",
         # "Experiment_specific_recording"
     ]
@@ -207,11 +207,11 @@ class Manager:
         "Sensing",
         "Localization",
         # "Fake_Localization",
-        "Detection",
+        #"Detection",
         "Mission_Planning",
-        # "Motion_Planning",
-        "Switch",
-        "SSMP",
+        "Motion_Planning",
+        #"Switch",
+        #"SSMP",
         # "Rviz",
         # "Experiment_specific_recording"
     ]
@@ -221,11 +221,11 @@ class Manager:
         "Sensing",
         "Localization",
         # "Fake_Localization",
-        "Detection",
+        #"Detection",
         "Mission_Planning",
         "Motion_Planning",
-        "Switch",
-        "SSMP",
+        #"Switch",
+        #"SSMP",
         # "Rviz",
         # "Experiment_specific_recording"
     ]
@@ -233,13 +233,13 @@ class Manager:
         # "Recording",
         "Map",
         "Sensing",
-        # "Localization",
+         "Localization",
         # "Fake_Localization",
         # "Detection",
-        # "Mission_Planning",
-        # "Motion_Planning",
-        "Switch",
-        "SSMP",
+         "Mission_Planning",
+         "Motion_Planning",
+        #"Switch",
+        #"SSMP",
         # "Rviz",
         # "Experiment_specific_recording"
     ]
@@ -249,11 +249,11 @@ class Manager:
         "Sensing",
         "Localization",
         # "Fake_Localization",
-        "Detection",
+        #"Detection",
         "Mission_Planning",
-        # "Motion_Planning",
-        "Switch",
-        "SSMP",
+        "Motion_Planning",
+        #"Switch",
+        #"SSMP",
         # "Rviz",
         # "Experiment_specific_recording"
     ]
@@ -263,11 +263,11 @@ class Manager:
         "Sensing",
         "Localization",
         # "Fake_Localization",
-        "Detection",
+        #"Detection",
         "Mission_Planning",
-        # "Motion_Planning",
-        "Switch",
-        "SSMP",
+        "Motion_Planning",
+        #"Switch",
+        #"SSMP",
         # "Rviz",
         # "Experiment_specific_recording"
     ]
@@ -277,11 +277,11 @@ class Manager:
         "Sensing",
         "Localization",
         # "Fake_Localization",
-        "Detection",
+        #"Detection",
         "Mission_Planning",
         "Motion_Planning",
-        "Switch",
-        "SSMP",
+        #"Switch",
+        #"SSMP",
         # "Rviz",
         # "Experiment_specific_recording"
     ]
@@ -289,13 +289,13 @@ class Manager:
         # "Recording",
         "Map",
         "Sensing",
-        # "Localization",
+         "Localization",
         # "Fake_Localization",
         # "Detection",
-        # "Mission_Planning",
-        # "Motion_Planning",
-        "Switch",
-        "SSMP",
+         "Mission_Planning",
+         "Motion_Planning",
+        #"Switch",
+        #"SSMP",
         # "Rviz",
         # "Experiment_specific_recording"
     ]

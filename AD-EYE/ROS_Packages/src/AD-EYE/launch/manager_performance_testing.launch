@@ -1,0 +1,69 @@
+<!-- -->
+<launch>
+
+    <node
+        type="manager.py"
+        pkg="adeye"
+        name="manager"
+        respawn="false"
+        output="screen"
+    />
+
+    <rosparam>
+        use_sim_time: false
+    </rosparam>
+
+    <node
+        pkg="tf"
+        type="static_transform_publisher"
+        name="link1_broadcaster"
+        args="101 -1 0 0 0 -0.1097783 0.9939561 map map_temp 100"
+    />
+
+    <node
+        pkg="topic_tools"
+        type="relay"
+        name="relay_velocity"
+        args="/current_velocity_phy /current_velocity"
+    />
+
+    <include file="$(find adeye)/launch/my_goal.launch"/>
+
+<!--
+    <include file="$(find can_vehicle)/launch/vic.launch"/>
+-->
+
+
+    <node pkg="nmea_navsat_driver" type="nmea_serial_driver" name="navsat_driver" respawn="true">
+        <param name="port" value="/dev/ttyACM0"/>
+        <param name="baud" value="9600"/>
+    </node>
+
+<!--
+    <node pkg="adeye" type="camera_gmsl_publisher" name="camera_gmsl_publisher" respawn="true"/>
+-->
+
+    <include file="$(find ouster_ros)/ouster.launch">
+        <arg name="sensor_hostname" value="os-122132000155.local"/>
+        <arg name="viz" value="false"/>
+        <arg name="metadata" value="/home/adeye/ouster-metadata.json"/>
+    </include>
+
+<!--
+    <node
+            type="vehicle_controller"
+            pkg="adeye"
+            name="vehicle_controller_phy"
+            respawn="false"
+            output="screen"
+    >
+        <param name="topic_velocity_current" value="/current_velocity_phy"/>
+        <param name="topic_acceleration_request" value="/acceleration_requested_phy"/>
+        <param name="topic_steering_request" value="/steering_requested_phy"/>
+    </node>
+-->
+
+   <node pkg="topic_tools" type="relay" name="points_raw_relay" output="log" args="/os_cloud_node/points /points_raw"/>
+
+
+</launch>

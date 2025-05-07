@@ -34,7 +34,7 @@
     <!-- Points Downsampler -->
     <node pkg="rostopic" type="rostopic" name="config_voxel_grid_filter_rostopic"
           args="pub -l /config/voxel_grid_filter autoware_config_msgs/ConfigVoxelGridFilter
-        '{voxel_leaf_size: 0.2 , measurement_range: 200.0}' "
+        '{voxel_leaf_size: 1.0 , measurement_range: 200.0}' "
     />
     <include file="$(find points_downsampler)/launch/points_downsample.launch" />
 
@@ -54,16 +54,13 @@
         <arg name="use_odom" value="false" />
         <arg name="use_imu" value="1" />
         <arg name="imu_upside_down" value="false" />
-        <arg name="imu_topic" value="/ouster/imu" />
+        <arg name="imu_topic" value="/os_cloud_node/imu" />
         <arg name="queue_size" value="1" />
         <arg name="offset" value="linear" />
         <arg name="get_height" value="true" />
         <arg name="use_local_transform" value="false" />
         <arg name="sync" value="false" />
         <arg name="use_scan_stamp" value="false" />
-    </include>
-
-    <include file="$(find gnss_localizer)/launch/fix2tfpose.launch">
     </include>
 
     <!-- Pose Connect -->
