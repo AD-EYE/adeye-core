@@ -10,9 +10,9 @@ def callback(msg):
     pub.publish(msg)
 
     global iter
-    #if iter < 10:
-    #    pub_init.publish(initial_pose)
-    #    iter += 1
+    if iter < 10:
+        pub_init.publish(initial_pose)
+        iter += 1
 
 if __name__ == '__main__':
 
@@ -27,22 +27,31 @@ if __name__ == '__main__':
     """ initial_pose = PoseWithCovarianceStamped()
     initial_pose.header.stamp = rospy.Time.now()
     initial_pose.header.frame_id = "/map"
-    initial_pose.pose.pose.position.x = 121.8
+    initial_pose.pose.pose.position.x = 121.823
     initial_pose.pose.pose.position.y = - 15.9
     initial_pose.pose.pose.position.z = -2.9
     initial_pose.pose.pose.orientation.w = 0.5464
     initial_pose.pose.pose.orientation.z = -0.8369 """
 
     # Start point for in front of Brazilia, straight on Brinellvagen
-    initial_pose = PoseWithCovarianceStamped()
+    """ initial_pose = PoseWithCovarianceStamped()
     initial_pose.header.stamp = rospy.Time.now()
     initial_pose.header.frame_id = "/map"
     initial_pose.pose.pose.position.x = 84.137
     initial_pose.pose.pose.position.y = -11.501
     initial_pose.pose.pose.position.z = -1.99
     initial_pose.pose.pose.orientation.w = 0.998204
-    initial_pose.pose.pose.orientation.z = -0.052536
+    initial_pose.pose.pose.orientation.z = -0.052536"""
 
+   # Start point for W18 mariehall 
+    initial_pose = PoseWithCovarianceStamped()
+    initial_pose.header.stamp = rospy.Time.now()
+    initial_pose.header.frame_id = "/map_temp"
+    initial_pose.pose.pose.position.x = 100
+    initial_pose.pose.pose.position.y = 100
+    initial_pose.pose.pose.position.z = 50
+    initial_pose.pose.pose.orientation.w = 0.734
+    initial_pose.pose.pose.orientation.z = -0.679
 
     # Start point for w16 map and demo-t2.bag
     """     initial_pose = PoseWithCovarianceStamped()
