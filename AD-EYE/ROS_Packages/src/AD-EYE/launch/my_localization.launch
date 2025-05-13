@@ -58,7 +58,7 @@
         <arg name="queue_size" value="1" />
         <arg name="offset" value="linear" />
         <arg name="get_height" value="true" />
-        <arg name="use_local_transform" value="false" />
+        <arg name="use_local_transform" value="true" />
         <arg name="sync" value="false" />
         <arg name="use_scan_stamp" value="false" />
     </include>
