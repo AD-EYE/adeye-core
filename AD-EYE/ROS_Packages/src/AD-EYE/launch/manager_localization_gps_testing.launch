@@ -1,6 +1,7 @@
 <!-- -->
 <launch>
 
+    <!--Launching the main manager node--> 
     <node
         type="manager.py"
         pkg="adeye"
@@ -9,19 +10,19 @@
         output="screen"
     />
 
+    <!--use_sim_time param : True for simulation , false otherwise--> 
     <rosparam>
         use_sim_time: true
     </rosparam>
-
-    <!--
+    
+    <!--Defining the starting position of the car-->
     <node
         pkg="adeye"
         type="lidar_timestamp_update.py"
         name="lidar_timestamp_update"
     />
-    -->
 
-    
+    <!--Aligning the Point cloud map with the Vector map-->  
     <node
         pkg="tf"
         type="static_transform_publisher"
@@ -29,7 +30,7 @@
         args="23 58 0 0 0 -0.679 0.734 map map_temp 100"
     />
     
-
+    <!--Launching the relay velocity node-->
     <node
         pkg="topic_tools"
         type="relay"
