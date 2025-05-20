@@ -181,7 +181,7 @@ class ManagerFeaturesHandler:
 #
 #Checks state of the state machine and updates current features accordingly
 #
-#Checks if the list of active features has changed
+#Checks if the list of active features has chafnged
 #
 #Publishes the state machine state (for GUI)
 #
@@ -193,11 +193,11 @@ class Manager:
         "Sensing",
         "Localization",
         # "Fake_Localization",
-        #"Detection",
+        # "Detection",
         "Mission_Planning",
-        "Motion_Planning",
-        #"Switch",
-        #"SSMP",
+        # "Motion_Planning",
+        # "Switch",
+        # "SSMP",
         # "Rviz",
         # "Experiment_specific_recording"
     ]
@@ -207,11 +207,11 @@ class Manager:
         "Sensing",
         "Localization",
         # "Fake_Localization",
-        #"Detection",
+        # "Detection",
         "Mission_Planning",
-        "Motion_Planning",
-        #"Switch",
-        #"SSMP",
+        # "Motion_Planning",
+        # "Switch",
+        # "SSMP",
         # "Rviz",
         # "Experiment_specific_recording"
     ]
@@ -221,11 +221,11 @@ class Manager:
         "Sensing",
         "Localization",
         # "Fake_Localization",
-        #"Detection",
+        # "Detection",
         "Mission_Planning",
-        "Motion_Planning",
-        #"Switch",
-        #"SSMP",
+        # "Motion_Planning",
+        # "Switch",
+        # "SSMP",
         # "Rviz",
         # "Experiment_specific_recording"
     ]
@@ -233,13 +233,13 @@ class Manager:
         # "Recording",
         "Map",
         "Sensing",
-         "Localization",
+        "Localization",
         # "Fake_Localization",
         # "Detection",
-         "Mission_Planning",
-         "Motion_Planning",
-        #"Switch",
-        #"SSMP",
+        "Mission_Planning",
+        # "Motion_Planning",
+        # "Switch",
+        # "SSMP",
         # "Rviz",
         # "Experiment_specific_recording"
     ]
@@ -249,11 +249,11 @@ class Manager:
         "Sensing",
         "Localization",
         # "Fake_Localization",
-        #"Detection",
+        # "Detection",
         "Mission_Planning",
-        "Motion_Planning",
-        #"Switch",
-        #"SSMP",
+        # "Motion_Planning",
+        # "Switch",
+        # "SSMP",
         # "Rviz",
         # "Experiment_specific_recording"
     ]
@@ -263,11 +263,11 @@ class Manager:
         "Sensing",
         "Localization",
         # "Fake_Localization",
-        #"Detection",
+        # "Detection",
         "Mission_Planning",
-        "Motion_Planning",
-        #"Switch",
-        #"SSMP",
+        # "Motion_Planning",
+        # "Switch",
+        # "SSMP",
         # "Rviz",
         # "Experiment_specific_recording"
     ]
@@ -277,11 +277,11 @@ class Manager:
         "Sensing",
         "Localization",
         # "Fake_Localization",
-        #"Detection",
+        # "Detection",
         "Mission_Planning",
-        "Motion_Planning",
-        #"Switch",
-        #"SSMP",
+        # "Motion_Planning",
+        # "Switch",
+        # "SSMP",
         # "Rviz",
         # "Experiment_specific_recording"
     ]
@@ -289,12 +289,12 @@ class Manager:
         # "Recording",
         "Map",
         "Sensing",
-         "Localization",
+        "Localization",
         # "Fake_Localization",
         # "Detection",
-         "Mission_Planning",
-         "Motion_Planning",
-        #"Switch",
+        "Mission_Planning",
+        # "Motion_Planning",
+        # "Switch",
         #"SSMP",
         # "Rviz",
         # "Experiment_specific_recording"

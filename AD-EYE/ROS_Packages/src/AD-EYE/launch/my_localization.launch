@@ -3,7 +3,7 @@
     <arg name="lidar_frame_id" default="os_sensor" />
 
     <!-- Set localization method: -->
-    <arg name="topic_pose_stamped" default="/ndt_pose"/> <!-- ndt_pose | icp_pose | gnss_pose -->
+    <arg name="topic_pose_stamped" default="/gnss_pose"/> <!-- ndt_pose | icp_pose | gnss_pose -->
 
     <!-- Set args defining tf_transform: base_link to lidar-->
     <arg name="tf_x" default="0.6"/>
@@ -34,9 +34,9 @@
     <!-- Points Downsampler -->
     <node pkg="rostopic" type="rostopic" name="config_voxel_grid_filter_rostopic"
           args="pub -l /config/voxel_grid_filter autoware_config_msgs/ConfigVoxelGridFilter
-        '{voxel_leaf_size: 1.0 , measurement_range: 200.0}' "
+        '{voxel_leaf_size: 0.5 , measurement_range: 200.0}' "
     />
-    <include file="$(find points_downsampler)/launch/points_downsample.launch" />
+    <include file="$(find points_downsampler)/launch/points_downsample.launch"/>
 
     <!-- Set params-->
     <param name="localizer" value="$(arg lidar_frame_id)"/>
@@ -58,10 +58,28 @@
         <arg name="queue_size" value="1" />
         <arg name="offset" value="linear" />
         <arg name="get_height" value="true" />
-        <arg name="use_local_transform" value="false" />
+        <arg name="use_local_transform" value="true" />
         <arg name="sync" value="false" />
         <arg name="use_scan_stamp" value="false" />
     </include>
+
+    <!-- Include EKF Localizer 
+    <include file="$(find ekf_localizer)/launch/ekf_localizer.launch">
+        <arg name="input_pose_name" value="$(arg topic_pose_stamped)"/>
+    </include> -->
+
+    <!-- ndt_matching_monitor -->
+   <include file="$(find lidar_localizer)/launch/ndt_matching_monitor.launch">
+        <arg name="iteration_threshold_warn" default="10000000" />
+        <arg name="iteration_threshold_stop" default="10000000" />
+        <arg name="score_delta_threshold" default="100.0" />
+        <arg name="min_stable_samples" default="1.0" />
+        <arg name="fatal_time_threshold" default="100.0" />
+    </include> 
+   
+
+    <!--<include file="$(find gnss_localizer)/launch/fix2tfpose.launch">
+    </include>-->
 
     <!-- Pose Connect -->
     <node pkg="topic_tools" type="relay" name="pose_relay" output="log" args="$(arg topic_pose_stamped) /current_pose"/>
