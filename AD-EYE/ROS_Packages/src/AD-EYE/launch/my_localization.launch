@@ -79,4 +79,6 @@
     <!-- Pose Connect -->
     <node pkg="topic_tools" type="relay" name="pose_relay" output="log" args="$(arg topic_pose_stamped) /current_pose"/>
 
+    <node pkg="adeye" type="ndt_pose_back_transformer" name="ndt_pose_back_transformer" />
+
 </launch>

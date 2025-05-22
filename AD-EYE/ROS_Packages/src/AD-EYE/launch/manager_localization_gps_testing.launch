@@ -12,7 +12,7 @@
 
     <!--use_sim_time param : True for simulation , false otherwise--> 
     <rosparam>
-        use_sim_time: true
+        use_sim_time: false
     </rosparam>
     
     <!--Defining the starting position of the car-->

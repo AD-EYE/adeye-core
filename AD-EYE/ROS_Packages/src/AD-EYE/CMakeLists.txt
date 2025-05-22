@@ -146,6 +146,11 @@ add_executable(
   src/vehicle_controller.cpp
 )
 
+add_executable(
+  ndt_pose_back_transformer
+  src/ndt_pose_back_transformer.cpp
+)
+
 target_link_libraries(
   GridMapCreator
   ${catkin_LIBRARIES}
@@ -228,6 +233,11 @@ target_link_libraries(
   vehicle_controller
   ${catkin_LIBRARIES}
   PID
+)
+
+target_link_libraries(
+  ndt_pose_back_transformer
+  ${catkin_LIBRARIES}
 )
 
 add_dependencies(controlSwitch

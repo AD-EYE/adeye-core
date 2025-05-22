@@ -1,12 +1,12 @@
 <!-- -->
 <launch>
-    <arg name="x" default="327.967956543" />
-    <arg name="y" default="-201.989898682" />
+    <arg name="x" default="9.5" />
+    <arg name="y" default="47.6" />
     <arg name="z" default="0" />
     <arg name="qx" default="0" />
     <arg name="qy" default="0" />
-    <arg name="qz" default="-0.46320822878" />
-    <arg name="qw" default="0.886249477738" />
+    <arg name="qz" default="0.72270764325" />
+    <arg name="qw" default="0.69115386303" />
 <node
     pkg="rostopic"
     type="rostopic"
