@@ -43,11 +43,17 @@
     <node pkg="adeye" type="camera_gmsl_publisher" name="camera_gmsl_publisher" respawn="true"/>
 -->
 
-<!--     <include file="$(find ouster_ros)/ouster.launch">
+    <include file="$(find ouster_ros)/ouster.launch">
         <arg name="sensor_hostname" value="os-122132000155.local"/>
         <arg name="viz" value="false"/>
         <arg name="metadata" value="/home/adeye/ouster-metadata.json"/>
-    </include> -->
+    </include>
+
+        <!-- Set parameters directly for the os_cloud_node -->
+    <param name="/os_cloud_node/enable_FOV_filter" value="false"/>
+    <!-- <param name="/os_cloud_node/start_beam" value="38"/>
+    <param name="/os_cloud_node/end_beam" value="58"/> -->
+    <param name="/os_cloud_node/debug_mode" value="true"/>
 
 
 <!--    <node
