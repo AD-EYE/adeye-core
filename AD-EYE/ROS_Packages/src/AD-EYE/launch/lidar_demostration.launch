@@ -7,6 +7,11 @@
   <arg name="sensor_hostname" default="os-122132000155.local" doc="hostname or IP of the sensor"/>
   <arg name="viz" default="false" doc="whether to run rviz"/>
   <arg name="metadata" default="/home/adeye/ouster-metadata.json" doc="path to metadata file"/>
+  <arg name="lidar_frame_id" default="os_sensor" doc="frame id for the lidar"/>
+
+  <!-- Voxel grid filter parameters -->
+  <arg name="voxel_leaf_size" default="0.1" doc="voxel grid leaf size for downsampling"/>
+  <arg name="measurement_range" default="200.0" doc="maximum measurement range for filtering"/>
 
   <!-- Include the main ouster launch file with custom parameters -->
   <include file="$(find ouster_ros)/ouster.launch">
@@ -17,14 +22,29 @@
   </include>
 
   <!-- Set custom parameters for the os_cloud_node -->
-  <param name="/os_cloud_node/enable_FOV_filter" value="true"/>
+  <param name="/os_cloud_node/enable_FOV_filter" value="false"/>
 
   <!-- Optional beam filtering parameters (currently commented out) -->
-  <!-- <param name="/os_cloud_node/start_beam" value="38"/>
-  <param name="/os_cloud_node/end_beam" value="48"/> -->
+  <!-- <param name="/os_cloud_node/start_beam" value="38"/> -->
+  <!-- <param name="/os_cloud_node/end_beam" value="58"/> -->
 
   <!-- Enable debug mode -->
   <param name="/os_cloud_node/debug_mode" value="true"/>
+
+  <!-- Points Downsampler - Autoware voxel grid filter -->
+  <node pkg="rostopic" type="rostopic" name="config_voxel_grid_filter_rostopic"
+        args="pub -l /config/voxel_grid_filter autoware_config_msgs/ConfigVoxelGridFilter
+        '{voxel_leaf_size: $(arg voxel_leaf_size), measurement_range: $(arg measurement_range)}'"
+        output="screen"/>
+
+  <include file="$(find points_downsampler)/launch/points_downsample.launch">
+    <arg name="points_topic" value="/os_cloud_node/points"/>
+    <arg name="sync" value="false"/>
+    <arg name="output_log" value="true"/>
+  </include>
+
+  <!-- Set lidar frame parameter -->
+  <param name="localizer" value="$(arg lidar_frame_id)"/>
 
   <!-- Static transform publishers for coordinate frames -->
   <!-- World to base_link transform -->
