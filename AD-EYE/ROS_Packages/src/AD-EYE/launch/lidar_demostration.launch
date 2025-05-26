@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- Custom Ouster LiDAR Launch File -->
+
+  <!-- Launch arguments -->
+  <arg name="tf_prefix" default="" doc="namespace for tf transforms"/>
+  <arg name="sensor_hostname" default="os-122132000155.local" doc="hostname or IP of the sensor"/>
+  <arg name="viz" default="false" doc="whether to run rviz"/>
+  <arg name="metadata" default="/home/adeye/ouster-metadata.json" doc="path to metadata file"/>
+
+  <!-- Include the main ouster launch file with custom parameters -->
+  <include file="$(find ouster_ros)/ouster.launch">
+    <arg name="sensor_hostname" value="$(arg sensor_hostname)"/>
+    <arg name="viz" value="$(arg viz)"/>
+    <arg name="metadata" value="$(arg metadata)"/>
+    <arg name="tf_prefix" value="$(arg tf_prefix)"/>
+  </include>
+
+  <!-- Set custom parameters for the os_cloud_node -->
+  <param name="/os_cloud_node/enable_FOV_filter" value="true"/>
+
+  <!-- Optional beam filtering parameters (currently commented out) -->
+  <!-- <param name="/os_cloud_node/start_beam" value="38"/>
+  <param name="/os_cloud_node/end_beam" value="48"/> -->
+
+  <!-- Enable debug mode -->
+  <param name="/os_cloud_node/debug_mode" value="true"/>
+
+  <!-- Static transform publishers for coordinate frames -->
+  <!-- World to base_link transform -->
+  <node pkg="tf" type="static_transform_publisher" name="world_to_base_tf_publisher"
+        args="0 0 0 0 0 0 world base_link 100" if="$(eval tf_prefix == '')"/>
+
+  <!-- Base_link to sensor transform -->
+  <node pkg="tf" type="static_transform_publisher" name="ouster_tf_publisher"
+        args="0 0 0 0 0 0 base_link os_sensor 100" if="$(eval tf_prefix == '')"/>
+
+  <!-- If a tf_prefix is specified, use that in the transforms -->
+  <node pkg="tf" type="static_transform_publisher" name="world_to_base_tf_publisher_prefixed"
+        args="0 0 0 0 0 0 world $(arg tf_prefix)/base_link 100" unless="$(eval tf_prefix == '')"/>
+
+  <node pkg="tf" type="static_transform_publisher" name="ouster_tf_publisher_prefixed"
+        args="0 0 0 0 0 0 $(arg tf_prefix)/base_link $(arg tf_prefix)/os_sensor 100" unless="$(eval tf_prefix == '')"/>
+
+
+
+</launch>

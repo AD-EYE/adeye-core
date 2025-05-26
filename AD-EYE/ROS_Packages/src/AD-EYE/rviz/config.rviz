@@ -604,7 +604,7 @@ Visualization Manager:
                   Size (Pixels): 4
                   Size (m): 0.00999999978
                   Style: Points
-                  Topic: /filtered_points
+                  Topic: /os_cloud_node/points
                   Unreliable: false
                   Use Fixed Frame: true
                   Use rainbow: true
