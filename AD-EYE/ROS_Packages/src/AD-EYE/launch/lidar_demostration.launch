@@ -22,7 +22,7 @@
   </include>
 
   <!-- Set custom parameters for the os_cloud_node -->
-  <param name="/os_cloud_node/enable_FOV_filter" value="false"/>
+  <param name="/os_cloud_node/enable_FOV_filter" value="true"/>
 
   <!-- Optional beam filtering parameters (currently commented out) -->
   <!-- <param name="/os_cloud_node/start_beam" value="38"/> -->
@@ -30,6 +30,20 @@
 
   <!-- Enable debug mode -->
   <param name="/os_cloud_node/debug_mode" value="true"/>
+
+  <!-- Additional cloud node for full FOV visualization -->
+  <node pkg="ouster_ros" type="os_cloud_node" name="os_cloud_node_full_fov" output="screen" required="false">
+    <remap from="~/os_config" to="/os_node/os_config"/>
+    <remap from="~/lidar_packets" to="/os_node/lidar_packets"/>
+    <remap from="~/imu_packets" to="/os_node/imu_packets"/>
+    <remap from="~/points" to="/os_cloud_node/full_fov"/>
+    <param name="~/tf_prefix" value="$(arg tf_prefix)"/>
+    <!-- Ensure full FOV for this node -->
+    <param name="~/enable_FOV_filter" value="false"/>
+    <!-- No beam filtering for full FOV -->
+    <!-- <param name="~/start_beam" value="0"/> -->
+    <!-- <param name="~/end_beam" value="128"/> -->
+  </node>
 
   <!-- Points Downsampler - Autoware voxel grid filter -->
   <node pkg="rostopic" type="rostopic" name="config_voxel_grid_filter_rostopic"
