@@ -1,39 +1,45 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>adeye</name>
-  <version>0.0.0</version>
-  <description>The AD-EYE package</description>
+<name>adeye</name>
+<version>0.0.0</version>
+<description>The AD-EYE package</description>
+<maintainer email="adeye@md.kth.se">AD-EYE team</maintainer>
+<license>See AD-EYE_Core/LICENSE.md</license>
+<url type="website">http://www.adeye.se</url>
+<buildtool_depend>catkin</buildtool_depend>
 
-  <maintainer email="adeye@md.kth.se">AD-EYE team</maintainer>
-  <license>See AD-EYE_Core/LICENSE.md</license>
-  <url type="website">http://www.adeye.se</url>
+<!-- Build dependencies -->
+<build_depend>sensor_msgs</build_depend>
+<build_depend>visualization_msgs</build_depend>
+<build_depend>pcl_ros</build_depend>
+<build_depend>pcl_conversions</build_depend>
+<build_depend>jsk_recognition_msgs</build_depend>
+<build_depend>tf</build_depend>
+<build_depend>eigen3</build_depend>
 
+<!-- Runtime dependencies (removed redundant ones) -->
+<depend>roscpp</depend>
+<depend>grid_map_core</depend>
+<depend>grid_map_ros</depend>
+<depend>grid_map_msgs</depend>
+<depend>geometry_msgs</depend>
+<depend>nav_msgs</depend>
+<depend>std_msgs</depend>
+<depend>planner_utils</depend>
+<depend>autoware_msgs</depend>
+<depend>op_planner</depend>
+<depend>op_ros_helpers</depend>
+<depend>tf2_ros</depend>
+<depend>adeye_utils</depend>
+<depend>rospy</depend>
 
-  <buildtool_depend>catkin</buildtool_depend>
+<!-- Execution dependencies -->
+<exec_depend>sensor_msgs</exec_depend>
+<exec_depend>topic_tools</exec_depend>
+<exec_depend>visualization_msgs</exec_depend>
+<exec_depend>pcl_ros</exec_depend>
+<exec_depend>pcl_conversions</exec_depend>
+<exec_depend>jsk_recognition_msgs</exec_depend>
 
-  <!-- Add dependencies for build time -->
-
-  <build_depend>sensor_msgs</build_depend>
-
-  <depend>roscpp</depend>
-  <depend>grid_map_core</depend>
-  <depend>grid_map_ros</depend>
-  <depend>grid_map_msgs</depend>
-  <depend>geometry_msgs</depend>
-  <depend>nav_msgs</depend>
-  <depend>std_msgs</depend>
-  <depend>planner_utils</depend>
-  <depend>autoware_msgs</depend>
-  <depend>op_planner</depend>
-  <depend>op_ros_helpers</depend>
-  <depend>tf2_ros</depend>
-  <depend>adeye_utils</depend>
-  <depend>rospy</depend>
-  <exec_depend>sensor_msgs</exec_depend>
-  <exec_depend>topic_tools</exec_depend>
-
-
-
-
-  <export></export>
+<export></export>
 </package>

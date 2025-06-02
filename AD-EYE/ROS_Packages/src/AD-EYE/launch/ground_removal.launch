@@ -1,0 +1,160 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- Integrated Ouster LiDAR Launch File with Ground Removal -->
+
+  <!-- Launch arguments for Ouster LiDAR -->
+  <arg name="tf_prefix" default="" doc="namespace for tf transforms"/>
+  <arg name="sensor_hostname" default="os-122132000155.local" doc="hostname or IP of the sensor"/>
+  <arg name="viz" default="false" doc="whether to run rviz"/>
+  <arg name="metadata" default="/home/adeye/ouster-metadata.json" doc="path to metadata file"/>
+  <arg name="lidar_frame_id" default="os_sensor" doc="frame id for the lidar"/>
+
+  <!-- Voxel grid filter parameters -->
+  <arg name="voxel_leaf_size" default="0.1" doc="voxel grid leaf size for downsampling"/>
+  <arg name="measurement_range" default="200.0" doc="maximum measurement range for filtering"/>
+
+  <!-- Ground Removal Parameters -->
+  <arg name="enable_ground_removal" default="true" doc="Enable ground removal processing"/>
+  <arg name="output_frame" default="base_link" doc="Output frame for processed point clouds"/>
+  <arg name="enable_visualization" default="true" doc="Enable RViz visualization"/>
+
+  <!-- Algorithm selection -->
+  <arg name="enable_pmf_filter" default="true" doc="Enable Progressive Morphological Filter (primary method)"/>
+  <arg name="enable_ransac_fallback" default="true" doc="Enable RANSAC fallback if PMF fails"/>
+  <arg name="enable_preprocessing" default="true" doc="Enable ROI-based preprocessing"/>
+
+  <!-- Progressive Morphological Filter Parameters -->
+  <!-- These are the key parameters for ground removal effectiveness -->
+  <arg name="pmf_max_window_size" default="20" doc="Maximum window size for morphological operations (10-30)"/>
+  <arg name="pmf_slope" default="1.0" doc="Slope threshold for terrain variation (0.5-2.0)"/>
+  <arg name="pmf_initial_distance" default="0.5" doc="Initial height threshold above ground (0.1-1.0)"/>
+  <arg name="pmf_max_distance" default="3.0" doc="Maximum height threshold above ground (1.0-5.0)"/>
+  <arg name="pmf_cell_size" default="1.0" doc="Cell size for morphological operations (0.5-2.0)"/>
+
+  <!-- RANSAC Parameters (fallback method) -->
+  <arg name="ransac_distance_threshold" default="0.2" doc="RANSAC distance threshold for plane fitting"/>
+  <arg name="ransac_max_iterations" default="100" doc="Maximum RANSAC iterations"/>
+
+  <!-- ROI Parameters for preprocessing -->
+  <arg name="roi_min_x" default="-50.0" doc="Minimum X boundary for processing"/>
+  <arg name="roi_max_x" default="50.0" doc="Maximum X boundary for processing"/>
+  <arg name="roi_min_y" default="-50.0" doc="Minimum Y boundary for processing"/>
+  <arg name="roi_max_y" default="50.0" doc="Maximum Y boundary for processing"/>
+  <arg name="roi_min_z" default="-3.0" doc="Minimum Z boundary (should include expected ground level)"/>
+  <arg name="roi_max_z" default="5.0" doc="Maximum Z boundary for processing"/>
+
+  <!-- ================================= -->
+  <!-- OUSTER LIDAR SETUP SECTION       -->
+  <!-- ================================= -->
+
+
+
+  <!-- Static transform publishers for coordinate frames -->
+  <!-- World to base_link transform -->
+  <node pkg="tf" type="static_transform_publisher" name="world_to_base_tf_publisher"
+        args="0 0 0 0 0 0 world base_link 100" if="$(eval tf_prefix == '')"/>
+
+  <!-- Base_link to sensor transform -->
+  <node pkg="tf" type="static_transform_publisher" name="ouster_tf_publisher"
+        args="0 0 0 0 0 0 base_link os_sensor 100" if="$(eval tf_prefix == '')"/>
+
+  <!-- If a tf_prefix is specified, use that in the transforms -->
+  <node pkg="tf" type="static_transform_publisher" name="world_to_base_tf_publisher_prefixed"
+        args="0 0 0 0 0 0 world $(arg tf_prefix)/base_link 100" unless="$(eval tf_prefix == '')"/>
+
+  <node pkg="tf" type="static_transform_publisher" name="ouster_tf_publisher_prefixed"
+        args="0 0 0 0 0 0 $(arg tf_prefix)/base_link $(arg tf_prefix)/os_sensor 100" unless="$(eval tf_prefix == '')"/>
+
+  <!-- ================================= -->
+  <!-- GROUND REMOVAL SECTION           -->
+  <!-- ================================= -->
+
+  <!-- Ground Removal Node (subscribes to /filtered_points from voxel downsampler) -->
+  <group if="$(arg enable_ground_removal)">
+    <node pkg="adeye" name="ground_removal" type="ground_removal" output="screen">
+
+      <!-- Input/Output Configuration -->
+      <!-- Input is /filtered_points from the voxel downsampler above -->
+      <param name="input_topic" value="/os_cloud_node/points"/>
+      <param name="output_frame" value="$(arg output_frame)"/>
+
+      <!-- Algorithm Selection -->
+      <param name="enable_pmf_filter" value="$(arg enable_pmf_filter)"/>
+      <param name="enable_ransac_fallback" value="$(arg enable_ransac_fallback)"/>
+      <param name="enable_preprocessing" value="$(arg enable_preprocessing)"/>
+
+      <!-- Progressive Morphological Filter Parameters -->
+      <param name="pmf_max_window_size" value="$(arg pmf_max_window_size)"/>
+      <param name="pmf_slope" value="$(arg pmf_slope)"/>
+      <param name="pmf_initial_distance" value="$(arg pmf_initial_distance)"/>
+      <param name="pmf_max_distance" value="$(arg pmf_max_distance)"/>
+      <param name="pmf_cell_size" value="$(arg pmf_cell_size)"/>
+
+      <!-- RANSAC Parameters -->
+      <param name="ransac_distance_threshold" value="$(arg ransac_distance_threshold)"/>
+      <param name="ransac_max_iterations" value="$(arg ransac_max_iterations)"/>
+
+      <!-- ROI Parameters -->
+      <param name="roi_min_x" value="$(arg roi_min_x)"/>
+      <param name="roi_max_x" value="$(arg roi_max_x)"/>
+      <param name="roi_min_y" value="$(arg roi_min_y)"/>
+      <param name="roi_max_y" value="$(arg roi_max_y)"/>
+      <param name="roi_min_z" value="$(arg roi_min_z)"/>
+      <param name="roi_max_z" value="$(arg roi_max_z)"/>
+    </node>
+
+    <!-- Optional: Point cloud monitoring -->
+    <group>
+      <node pkg="rostopic" type="rostopic" name="ground_points_monitor"
+            args="hz /ground_removal/ground_points" output="screen" required="false"/>
+
+      <node pkg="rostopic" type="rostopic" name="non_ground_points_monitor"
+            args="hz /ground_removal/non_ground_points" output="screen" required="false"/>
+    </group>
+
+    <!-- RViz Configuration for Ground Removal Visualization -->
+    <group if="$(arg enable_visualization)">
+      <node name="rviz_ground_removal" pkg="rviz" type="rviz"
+            args="-d $(find adeye)/config/ground_removal.rviz"
+            output="screen" required="false"/>
+    </group>
+  </group>
+
+  <!-- ================================= -->
+  <!-- INFORMATION AND USAGE            -->
+  <!-- ================================= -->
+
+  <!--
+  DATA FLOW:
+  1. Ouster LiDAR produces raw point cloud → /os_cloud_node/points
+  2. Voxel downsampler filters the data → /filtered_points
+  3. Ground removal processes /filtered_points → /ground_removal/ground_points + /ground_removal/non_ground_points
+
+  OUTPUTS:
+  - /ground_removal/ground_points: Clean ground points (green in RViz)
+  - /ground_removal/non_ground_points: Objects and obstacles (red in RViz)
+  - /ground_removal/markers: Statistics and visualization
+
+  PARAMETER TUNING GUIDE:
+
+  For different environments:
+  - Urban roads: pmf_max_window_size=15, pmf_slope=0.7, pmf_max_distance=2.0
+  - Highway: pmf_max_window_size=25, pmf_slope=1.0, pmf_max_distance=3.0
+  - Off-road: pmf_max_window_size=10, pmf_slope=1.5, pmf_max_distance=4.0
+  - Parking lots: pmf_max_window_size=20, pmf_slope=0.5, pmf_max_distance=1.5
+
+  USAGE EXAMPLES:
+  # Basic usage
+  roslaunch adeye ground_removal_integrated.launch
+
+  # For urban environment
+  roslaunch adeye ground_removal_integrated.launch pmf_slope:=0.7 pmf_max_distance:=2.0
+
+  # For rough terrain
+  roslaunch adeye ground_removal_integrated.launch pmf_slope:=1.5 pmf_max_distance:=4.0
+
+  # Without visualization
+  roslaunch adeye ground_removal_integrated.launch enable_visualization:=false
+  -->
+
+</launch>

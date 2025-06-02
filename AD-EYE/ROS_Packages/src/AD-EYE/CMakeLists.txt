@@ -22,8 +22,16 @@ find_package(catkin REQUIRED COMPONENTS
   op_ros_helpers
   tf2_ros
   adeye_utils
+  sensor_msgs
+  visualization_msgs
+  pcl_ros
+  pcl_conversions
+  jsk_recognition_msgs
+
 )
 
+find_package(PCL REQUIRED)
+find_package(Eigen3 REQUIRED)
 
 catkin_package(
   INCLUDE_DIRS
@@ -42,7 +50,14 @@ catkin_package(
     op_ros_helpers
     tf2_ros
     adeye_utils
+    sensor_msgs
+    visualization_msgs
+    pcl_ros
+    pcl_conversions
+    jsk_recognition_msgs
   DEPENDS
+    PCL
+
 )
 
 ###########
@@ -55,7 +70,10 @@ include_directories(
   include
   ${catkin_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIR}
+  ${PCL_INCLUDE_DIRS}
 )
+
+add_definitions(${PCL_DEFINITIONS})
 
 
 add_library(
@@ -320,6 +338,7 @@ add_dependencies(
 )
 
 
+
 add_library(SafetyFaultMonitors
         src/safety_fault_monitors/safety_fault_monitor.cpp
         src/safety_fault_monitors/active_nodes_checker.cpp
@@ -355,6 +374,53 @@ target_link_libraries(pedestranDetector
 add_dependencies(pedestranDetector
   ${catkin_EXPORTED_TARGETS}
 )
+
+add_executable(
+  pedestrian_detector
+  src/pedestrian_detector.cpp
+)
+
+add_executable(
+  enhanced_pedestrian_detector
+  src/enhanced_pedestrian_detector.cpp
+)
+
+target_link_libraries(
+  pedestrian_detector
+  ${catkin_LIBRARIES}
+  ${PCL_LIBRARIES}
+)
+
+target_link_libraries(
+  enhanced_pedestrian_detector
+  ${catkin_LIBRARIES}
+  ${PCL_LIBRARIES}
+)
+
+add_dependencies(pedestrian_detector
+  ${catkin_EXPORTED_TARGETS}
+)
+
+add_dependencies(enhanced_pedestrian_detector
+  ${catkin_EXPORTED_TARGETS}
+)
+
+add_executable(
+  ground_removal
+  src/ground_removal.cpp
+)
+
+
+target_link_libraries(
+  ground_removal
+  ${catkin_LIBRARIES}
+  ${PCL_LIBRARIES}
+)
+
+add_dependencies(ground_removal
+  ${catkin_EXPORTED_TARGETS}
+)
+
 
 # Mark executables and/or libraries for installation
 install(

@@ -1,0 +1,153 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- Custom Ouster LiDAR Launch File with Enhanced Pedestrian Detection -->
+
+  <!-- Launch arguments -->
+  <arg name="tf_prefix" default="" doc="namespace for tf transforms"/>
+  <arg name="sensor_hostname" default="os-122132000155.local" doc="hostname or IP of the sensor"/>
+  <arg name="viz" default="false" doc="whether to run rviz"/>
+  <arg name="metadata" default="/home/adeye/ouster-metadata.json" doc="path to metadata file"/>
+  <arg name="lidar_frame_id" default="os_sensor" doc="frame id for the lidar"/>
+
+  <!-- Voxel grid filter parameters -->
+  <arg name="voxel_leaf_size" default="0.1" doc="voxel grid leaf size for downsampling"/>
+  <arg name="measurement_range" default="200.0" doc="maximum measurement range for filtering"/>
+
+  <!-- Pedestrian Detection Parameters -->
+  <arg name="enable_pedestrian_detection" default="true" doc="Enable pedestrian detection"/>
+  <arg name="pedestrian_input_topic" default="/filtered_points" doc="Input topic for pedestrian detection"/>
+  <arg name="pedestrian_viz" default="true" doc="Launch RViz for pedestrian visualization"/>
+  <arg name="pedestrian_min_height" default="1.0" doc="Minimum pedestrian height (relaxed)"/>
+  <arg name="pedestrian_max_height" default="2.5" doc="Maximum pedestrian height (relaxed)"/>
+  <arg name="pedestrian_roi_max_x" default="25.0" doc="Maximum detection distance"/>
+  <arg name="pedestrian_roi_max_y" default="12.0" doc="Maximum Y detection range"/>
+
+  <!-- Include the main ouster launch file with custom parameters -->
+  <include file="$(find ouster_ros)/ouster.launch">
+    <arg name="sensor_hostname" value="$(arg sensor_hostname)"/>
+    <arg name="viz" value="$(arg viz)"/>
+    <arg name="metadata" value="$(arg metadata)"/>
+    <arg name="tf_prefix" value="$(arg tf_prefix)"/>
+  </include>
+
+  <!-- Set custom parameters for the os_cloud_node -->
+  <param name="/os_cloud_node/enable_FOV_filter" value="true"/>
+
+  <!-- Optional beam filtering parameters (currently commented out) -->
+  <!-- <param name="/os_cloud_node/start_beam" value="38"/> -->
+  <!-- <param name="/os_cloud_node/end_beam" value="58"/> -->
+
+  <!-- Enable debug mode -->
+  <param name="/os_cloud_node/debug_mode" value="true"/>
+
+  <!-- Additional cloud node for full FOV visualization -->
+  <node pkg="ouster_ros" type="os_cloud_node" name="os_cloud_node_full_fov" output="screen" required="false">
+    <remap from="~/os_config" to="/os_node/os_config"/>
+    <remap from="~/lidar_packets" to="/os_node/lidar_packets"/>
+    <remap from="~/imu_packets" to="/os_node/imu_packets"/>
+    <remap from="~/points" to="/os_cloud_node/full_fov"/>
+    <param name="~/tf_prefix" value="$(arg tf_prefix)"/>
+    <!-- Ensure full FOV for this node -->
+    <param name="~/enable_FOV_filter" value="false"/>
+    <!-- No beam filtering for full FOV -->
+    <!-- <param name="~/start_beam" value="0"/> -->
+    <!-- <param name="~/end_beam" value="128"/> -->
+  </node>
+
+  <!-- Points Downsampler - Autoware voxel grid filter -->
+  <node pkg="rostopic" type="rostopic" name="config_voxel_grid_filter_rostopic"
+        args="pub -l /config/voxel_grid_filter autoware_config_msgs/ConfigVoxelGridFilter
+        '{voxel_leaf_size: $(arg voxel_leaf_size), measurement_range: $(arg measurement_range)}'"
+        output="screen"/>
+
+  <include file="$(find points_downsampler)/launch/points_downsample.launch">
+    <arg name="points_topic" value="/os_cloud_node/points"/>
+    <arg name="sync" value="false"/>
+    <arg name="output_log" value="true"/>
+  </include>
+
+  <!-- Set lidar frame parameter -->
+  <param name="localizer" value="$(arg lidar_frame_id)"/>
+
+  <!-- Static transform publishers for coordinate frames -->
+  <!-- World to base_link transform -->
+  <node pkg="tf" type="static_transform_publisher" name="world_to_base_tf_publisher"
+        args="0 0 0 0 0 0 world base_link 100" if="$(eval tf_prefix == '')"/>
+
+  <!-- Base_link to sensor transform -->
+  <node pkg="tf" type="static_transform_publisher" name="ouster_tf_publisher"
+        args="0 0 0 0 0 0 base_link os_sensor 100" if="$(eval tf_prefix == '')"/>
+
+  <!-- If a tf_prefix is specified, use that in the transforms -->
+  <node pkg="tf" type="static_transform_publisher" name="world_to_base_tf_publisher_prefixed"
+        args="0 0 0 0 0 0 world $(arg tf_prefix)/base_link 100" unless="$(eval tf_prefix == '')"/>
+
+  <node pkg="tf" type="static_transform_publisher" name="ouster_tf_publisher_prefixed"
+        args="0 0 0 0 0 0 $(arg tf_prefix)/base_link $(arg tf_prefix)/os_sensor 100" unless="$(eval tf_prefix == '')"/>
+
+  <!-- ============================= -->
+  <!-- ENHANCED PEDESTRIAN DETECTION -->
+  <!-- ============================= -->
+
+  <!-- Enhanced Pedestrian Detection Node -->
+  <group if="$(arg enable_pedestrian_detection)">
+    <node pkg="adeye" name="enhanced_pedestrian_detector" type="enhanced_pedestrian_detector" output="screen">
+
+      <!-- Input/Output Configuration -->
+      <param name="input_topic" value="$(arg pedestrian_input_topic)"/>
+      <param name="output_frame" value="$(arg lidar_frame_id)"/>
+
+      <!-- Detection Parameters -->
+      <param name="enable_ground_removal" value="true"/>
+      <param name="ground_threshold" value="0.2"/>
+      <param name="cluster_tolerance" value="0.5"/>
+      <param name="min_cluster_size" value="15"/>  <!-- Slightly more permissive -->
+      <param name="max_cluster_size" value="500"/> <!-- Slightly more permissive -->
+
+      <!-- Enhanced Pedestrian Constraints (relaxed for better detection) -->
+      <param name="min_height" value="$(arg pedestrian_min_height)"/>
+      <param name="max_height" value="$(arg pedestrian_max_height)"/>
+      <param name="min_width" value="0.3"/>
+      <param name="max_width" value="0.8"/>
+      <param name="max_depth" value="0.7"/>
+      <param name="min_aspect_ratio" value="1.2"/>
+      <param name="max_aspect_ratio" value="5.0"/>
+      <param name="min_point_density" value="30.0"/>
+
+      <!-- ROI Parameters -->
+      <param name="roi_min_x" value="-2.0"/>
+      <param name="roi_max_x" value="$(arg pedestrian_roi_max_x)"/>
+      <param name="roi_min_y" value="-$(arg pedestrian_roi_max_y)"/>
+      <param name="roi_max_y" value="$(arg pedestrian_roi_max_y)"/>
+      <param name="roi_min_z" value="-0.5"/>
+      <param name="roi_max_z" value="2.5"/>
+
+      <!-- Enhanced Tracking Parameters -->
+      <param name="tracking_history_size" value="5"/>
+      <param name="max_tracking_distance" value="2.0"/>
+      <param name="velocity_smoothing_factor" value="0.3"/>
+      <param name="position_smoothing_factor" value="0.3"/>
+      <param name="max_tracking_age" value="10"/>
+    </node>
+
+    <!-- RViz for Enhanced Pedestrian Visualization (optional) -->
+    <!-- <group if="$(arg pedestrian_viz)">
+      <node name="rviz_enhanced_pedestrian_detection" pkg="rviz" type="rviz"
+            args="-d $(find adeye)/config/enhanced_pedestrian_detection.rviz"
+            output="screen" required="false"/>
+    </group> -->
+  </group>
+
+  <!-- Additional monitoring nodes (optional) -->
+  <group if="$(arg enable_pedestrian_detection)">
+    <!-- Monitor detection performance -->
+    <node pkg="rostopic" type="rostopic" name="pedestrian_detection_monitor"
+          args="hz /pedestrian_detection/bounding_boxes" output="screen" required="false"/>
+
+    <!-- Log detection statistics -->
+    <node pkg="rosbag" type="record" name="pedestrian_detection_recorder"
+          args="-o /tmp/pedestrian_detection /pedestrian_detection/bounding_boxes /pedestrian_detection/markers"
+          output="screen" required="false" if="false"/>  <!-- Set to true to enable recording -->
+  </group>
+
+</launch>
