@@ -24,7 +24,6 @@
   <arg name="enable_preprocessing" default="true" doc="Enable ROI-based preprocessing"/>
 
   <!-- Progressive Morphological Filter Parameters -->
-  <!-- These are the key parameters for ground removal effectiveness -->
   <arg name="pmf_max_window_size" default="20" doc="Maximum window size for morphological operations (10-30)"/>
   <arg name="pmf_slope" default="1.0" doc="Slope threshold for terrain variation (0.5-2.0)"/>
   <arg name="pmf_initial_distance" default="0.5" doc="Initial height threshold above ground (0.1-1.0)"/>
@@ -88,28 +87,22 @@
   <group if="$(arg enable_ground_removal)">
     <node pkg="adeye" name="ground_removal" type="ground_removal" output="screen">
 
-      <!-- Input/Output Configuration -->
-      <!-- Input is /filtered_points from the voxel downsampler above -->
       <param name="input_topic" value="/filtered_points"/>
       <param name="output_frame" value="$(arg output_frame)"/>
 
-      <!-- Algorithm Selection -->
       <param name="enable_pmf_filter" value="$(arg enable_pmf_filter)"/>
       <param name="enable_ransac_fallback" value="$(arg enable_ransac_fallback)"/>
       <param name="enable_preprocessing" value="$(arg enable_preprocessing)"/>
 
-      <!-- Progressive Morphological Filter Parameters -->
       <param name="pmf_max_window_size" value="$(arg pmf_max_window_size)"/>
       <param name="pmf_slope" value="$(arg pmf_slope)"/>
       <param name="pmf_initial_distance" value="$(arg pmf_initial_distance)"/>
       <param name="pmf_max_distance" value="$(arg pmf_max_distance)"/>
       <param name="pmf_cell_size" value="$(arg pmf_cell_size)"/>
 
-      <!-- RANSAC Parameters -->
       <param name="ransac_distance_threshold" value="$(arg ransac_distance_threshold)"/>
       <param name="ransac_max_iterations" value="$(arg ransac_max_iterations)"/>
 
-      <!-- ROI Parameters -->
       <param name="roi_min_x" value="$(arg roi_min_x)"/>
       <param name="roi_max_x" value="$(arg roi_max_x)"/>
       <param name="roi_min_y" value="$(arg roi_min_y)"/>
@@ -117,15 +110,6 @@
       <param name="roi_min_z" value="$(arg roi_min_z)"/>
       <param name="roi_max_z" value="$(arg roi_max_z)"/>
     </node>
-
-    <!-- Optional: Point cloud monitoring -->
-    <group>
-      <node pkg="rostopic" type="rostopic" name="ground_points_monitor"
-            args="hz /ground_removal/ground_points" output="screen" required="false"/>
-
-      <node pkg="rostopic" type="rostopic" name="non_ground_points_monitor"
-            args="hz /ground_removal/non_ground_points" output="screen" required="false"/>
-    </group>
 
     <!-- RViz Configuration for Ground Removal Visualization -->
     <group if="$(arg enable_visualization)">
