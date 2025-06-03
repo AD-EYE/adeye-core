@@ -77,5 +77,9 @@
         args="0 0 0 0 0 0 $(arg tf_prefix)/base_link $(arg tf_prefix)/os_sensor 100" unless="$(eval tf_prefix == '')"/>
 
 
+ <!-- camera -->
+ <!-- <node pkg="adeye" type="camera_gmsl_publisher" name="camera_gmsl_publisher" respawn="true" args="-resolution-ratio=0.31" /> -->
+
+
 
 </launch>

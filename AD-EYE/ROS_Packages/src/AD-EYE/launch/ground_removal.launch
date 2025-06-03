@@ -49,6 +49,21 @@
 
 
 
+  <!-- Points Downsampler - Autoware voxel grid filter -->
+  <node pkg="rostopic" type="rostopic" name="config_voxel_grid_filter_rostopic"
+        args="pub -l /config/voxel_grid_filter autoware_config_msgs/ConfigVoxelGridFilter
+        '{voxel_leaf_size: $(arg voxel_leaf_size), measurement_range: $(arg measurement_range)}'"
+        output="screen"/>
+
+  <include file="$(find points_downsampler)/launch/points_downsample.launch">
+    <arg name="points_topic" value="/os_cloud_node/points"/>
+    <arg name="sync" value="false"/>
+    <arg name="output_log" value="true"/>
+  </include>
+
+  <!-- Set lidar frame parameter -->
+  <param name="localizer" value="$(arg lidar_frame_id)"/>
+
   <!-- Static transform publishers for coordinate frames -->
   <!-- World to base_link transform -->
   <node pkg="tf" type="static_transform_publisher" name="world_to_base_tf_publisher"
@@ -75,7 +90,7 @@
 
       <!-- Input/Output Configuration -->
       <!-- Input is /filtered_points from the voxel downsampler above -->
-      <param name="input_topic" value="/os_cloud_node/points"/>
+      <param name="input_topic" value="/filtered_points"/>
       <param name="output_frame" value="$(arg output_frame)"/>
 
       <!-- Algorithm Selection -->
