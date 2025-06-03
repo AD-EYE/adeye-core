@@ -23,12 +23,6 @@
     <arg name="tf_prefix" value="$(arg tf_prefix)"/>
   </include>
 
-  <!-- enable/disable FOV shrinker -->
-  <param name="/os_cloud_node/enable_FOV_filter" value="true"/>
-  <param name="/os_cloud_node/debug_mode" value="false"/>
-  <!-- optional beam filtering parameters  -->
-  <!-- <param name="/os_cloud_node/start_beam" value="38"/> -->
-  <!-- <param name="/os_cloud_node/end_beam" value="58"/> -->
 
     <!-- ground removal parameters -->
   <arg name="enable_ground_removal" default="true" doc="Enable ground removal processing"/>
@@ -56,7 +50,12 @@
   <arg name="roi_max_z" default="5.0" doc="Maximum Z boundary for processing"/>
 
   <!--                              end of parameters                                   -->
-
+  <!-- enable/disable FOV shrinker -->
+  <param name="/os_cloud_node/enable_FOV_filter" value="true"/>
+  <param name="/os_cloud_node/debug_mode" value="true"/>
+  <!-- optional beam filtering parameters  -->
+  <!-- <param name="/os_cloud_node/start_beam" value="38"/> -->
+  <!-- <param name="/os_cloud_node/end_beam" value="58"/> -->
   <!-- node for full FOV visualization -->
   <node pkg="ouster_ros" type="os_cloud_node" name="os_cloud_node_full_fov" output="screen" required="false">
     <remap from="~/os_config" to="/os_node/os_config"/>
@@ -127,13 +126,13 @@
       <param name="roi_max_z" value="$(arg roi_max_z)"/>
     </node>
   <!-- RViz Configuration for Ground Removal Visualization -->
-    <group if="$(arg enable_visualization)">
+    <!-- <group if="$(arg enable_visualization)">
       <node name="rviz_lidar_demostration" pkg="rviz" type="rviz"
             args="-d $(find adeye)/rviz/lidar_demostration.rviz"
             output="screen" required="false"/>
-    </group>
+    </group> -->
   </group>
  <!-- camera -->
- <!-- <node pkg="adeye" type="camera_gmsl_publisher" name="camera_gmsl_publisher" respawn="true" args="-resolution-ratio=0.31" /> -->
+ <node pkg="adeye" type="camera_gmsl_publisher" name="camera_gmsl_publisher" respawn="true" args="-resolution-ratio=0.31" />
 
 </launch>
