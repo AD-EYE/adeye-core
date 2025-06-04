@@ -1,9 +1,5 @@
 <?xml version="1.0"?>
 <launch>
-
-  <!-- ================================= -->
-  <!-- PARAMETER SETUP      -->
-  <!-- ================================= -->
   <!-- Launch arguments -->
   <arg name="tf_prefix" default="" doc="namespace for tf transforms"/>
   <arg name="sensor_hostname" default="os-122132000155.local" doc="hostname or IP of the sensor"/>
@@ -15,16 +11,41 @@
   <arg name="voxel_leaf_size" default="0.1" doc="voxel grid leaf size for downsampling"/>
   <arg name="measurement_range" default="200.0" doc="maximum measurement range for filtering"/>
 
-  <!-- ouster lidar parameters -->
-  <include file="$(find ouster_ros)/ouster.launch">
-    <arg name="sensor_hostname" value="$(arg sensor_hostname)"/>
-    <arg name="viz" value="$(arg viz)"/>
-    <arg name="metadata" value="$(arg metadata)"/>
-    <arg name="tf_prefix" value="$(arg tf_prefix)"/>
-  </include>
+  <!-- EXPLICIT OUSTER NODES (replaces ouster.launch include) -->
+  <!-- Main driver node -->
+  <node pkg="ouster_ros" type="os_node" name="os_node" output="screen">
+    <param name="sensor_hostname" value="$(arg sensor_hostname)"/>
+    <param name="metadata" value="$(arg metadata)"/>
+    <param name="tf_prefix" value="$(arg tf_prefix)"/>
+  </node>
 
+  <!-- Filtered cloud node (FOV shrinking enabled) → /os_cloud_node/points -->
+  <node pkg="ouster_ros" type="os_cloud_node" name="os_cloud_node" output="screen">
+    <remap from="~/os_config" to="/os_node/os_config"/>
+    <remap from="~/lidar_packets" to="/os_node/lidar_packets"/>
+    <remap from="~/imu_packets" to="/os_node/imu_packets"/>
+    <param name="~/tf_prefix" value="$(arg tf_prefix)"/>
+    <param name="~/enable_FOV_filter" value="true"/>
+    <param name="~/debug_mode" value="true"/>
+    <!-- optional beam filtering parameters  -->
+    <!-- <param name="~/start_beam" value="38"/> -->
+    <!-- <param name="~/end_beam" value="58"/> -->
+  </node>
 
-    <!-- ground removal parameters -->
+  <!-- Full FOV cloud node (FOV shrinking disabled) → /os_cloud_node/full_fov -->
+  <node pkg="ouster_ros" type="os_cloud_node" name="os_cloud_node_full_fov" output="screen" required="false">
+    <remap from="~/os_config" to="/os_node/os_config"/>
+    <remap from="~/lidar_packets" to="/os_node/lidar_packets"/>
+    <remap from="~/imu_packets" to="/os_node/imu_packets"/>
+    <remap from="~/points" to="/os_cloud_node/full_fov"/>
+    <param name="~/tf_prefix" value="$(arg tf_prefix)"/>
+    <param name="~/enable_FOV_filter" value="false"/>
+    <!-- No beam filtering for full FOV -->
+    <!-- <param name="~/start_beam" value="0"/> -->
+    <!-- <param name="~/end_beam" value="128"/> -->
+  </node>
+
+  <!-- ground removal parameters -->
   <arg name="enable_ground_removal" default="true" doc="Enable ground removal processing"/>
   <arg name="output_frame" default="base_link" doc="Output frame for processed point clouds"/>
   <arg name="enable_visualization" default="true" doc="Enable RViz visualization"/>
@@ -50,25 +71,6 @@
   <arg name="roi_max_z" default="5.0" doc="Maximum Z boundary for processing"/>
 
   <!--                              end of parameters                                   -->
-  <!-- enable/disable FOV shrinker -->
-  <param name="/os_cloud_node/enable_FOV_filter" value="true"/>
-  <param name="/os_cloud_node/debug_mode" value="true"/>
-  <!-- optional beam filtering parameters  -->
-  <!-- <param name="/os_cloud_node/start_beam" value="38"/> -->
-  <!-- <param name="/os_cloud_node/end_beam" value="58"/> -->
-  <!-- node for full FOV visualization -->
-  <node pkg="ouster_ros" type="os_cloud_node" name="os_cloud_node_full_fov" output="screen" required="false">
-    <remap from="~/os_config" to="/os_node/os_config"/>
-    <remap from="~/lidar_packets" to="/os_node/lidar_packets"/>
-    <remap from="~/imu_packets" to="/os_node/imu_packets"/>
-    <remap from="~/points" to="/os_cloud_node/full_fov"/>
-    <param name="~/tf_prefix" value="$(arg tf_prefix)"/>
-    <!-- Ensure full FOV for this node -->
-    <param name="~/enable_FOV_filter" value="false"/>
-    <!-- No beam filtering for full FOV -->
-    <!-- <param name="~/start_beam" value="0"/> -->
-    <!-- <param name="~/end_beam" value="128"/> -->
-  </node>
 
   <!-- autoware voxel grid filter -->
   <node pkg="rostopic" type="rostopic" name="config_voxel_grid_filter_rostopic"
@@ -126,13 +128,13 @@
       <param name="roi_max_z" value="$(arg roi_max_z)"/>
     </node>
   <!-- RViz Configuration for Ground Removal Visualization -->
-    <!-- <group if="$(arg enable_visualization)">
+    <group if="$(arg enable_visualization)">
       <node name="rviz_lidar_demostration" pkg="rviz" type="rviz"
             args="-d $(find adeye)/rviz/lidar_demostration.rviz"
             output="screen" required="false"/>
-    </group> -->
+    </group>
   </group>
  <!-- camera -->
- <node pkg="adeye" type="camera_gmsl_publisher" name="camera_gmsl_publisher" respawn="true" args="-resolution-ratio=0.31" />
+ <!-- <node pkg="adeye" type="camera_gmsl_publisher" name="camera_gmsl_publisher" respawn="true" /> -->
 
 </launch>
