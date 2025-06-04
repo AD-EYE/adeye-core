@@ -128,13 +128,13 @@
       <param name="roi_max_z" value="$(arg roi_max_z)"/>
     </node>
   <!-- RViz Configuration for Ground Removal Visualization -->
-    <group if="$(arg enable_visualization)">
+    <!-- <group if="$(arg enable_visualization)">
       <node name="rviz_lidar_demostration" pkg="rviz" type="rviz"
             args="-d $(find adeye)/rviz/lidar_demostration.rviz"
             output="screen" required="false"/>
-    </group>
+    </group> -->
   </group>
  <!-- camera -->
- <!-- <node pkg="adeye" type="camera_gmsl_publisher" name="camera_gmsl_publisher" respawn="true" /> -->
+ <node pkg="adeye" type="camera_gmsl_publisher" name="camera_gmsl_publisher" respawn="true" />
 
 </launch>
