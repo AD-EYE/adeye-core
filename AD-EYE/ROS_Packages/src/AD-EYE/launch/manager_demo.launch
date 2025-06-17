@@ -32,6 +32,7 @@
         <arg name="sensor_hostname" value="os-122132000155.local"/>
         <arg name="viz" value="false"/>
         <arg name="metadata" value="/home/adeye/ouster-metadata.json"/>
+        <arg name="fov_shrinker" value="true"/>
     </include>
 
 <!--
