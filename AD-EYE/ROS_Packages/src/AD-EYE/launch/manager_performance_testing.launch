@@ -10,15 +10,17 @@
     />
 
     <rosparam>
-        use_sim_time: false
+        use_sim_time: true
     </rosparam>
 
+    <!--
     <node
         pkg="tf"
         type="static_transform_publisher"
         name="link1_broadcaster"
         args="101 -1 0 0 0 -0.1097783 0.9939561 map map_temp 100"
     />
+    -->
 
     <node
         pkg="topic_tools"
@@ -33,21 +35,24 @@
     <include file="$(find can_vehicle)/launch/vic.launch"/>
 -->
 
-
+<!--
     <node pkg="nmea_navsat_driver" type="nmea_serial_driver" name="navsat_driver" respawn="true">
         <param name="port" value="/dev/ttyACM0"/>
         <param name="baud" value="9600"/>
     </node>
+-->
 
 <!--
     <node pkg="adeye" type="camera_gmsl_publisher" name="camera_gmsl_publisher" respawn="true"/>
 -->
 
+<!--
     <include file="$(find ouster_ros)/ouster.launch">
         <arg name="sensor_hostname" value="os-122132000155.local"/>
         <arg name="viz" value="false"/>
         <arg name="metadata" value="/home/adeye/ouster-metadata.json"/>
     </include>
+-->
 
 <!--
     <node
