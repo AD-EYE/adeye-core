@@ -146,6 +146,11 @@ add_executable(
   src/vehicle_controller.cpp
 )
 
+add_executable(
+  ctrl_cmd_republisher
+  src/ctrl_cmd_republisher.cpp
+)
+
 target_link_libraries(
   GridMapCreator
   ${catkin_LIBRARIES}
@@ -230,6 +235,11 @@ target_link_libraries(
   PID
 )
 
+target_link_libraries(
+  ctrl_cmd_republisher
+  ${catkin_LIBRARIES}
+ )
+
 add_dependencies(controlSwitch
   ${catkin_EXPORTED_TARGETS}
 )
@@ -283,6 +293,10 @@ add_dependencies(goalViewer
 # )
 
 add_dependencies(vehicle_controller
+  ${catkin_EXPORTED_TARGETS}
+)
+
+add_dependencies(ctrl_cmd_republisher
   ${catkin_EXPORTED_TARGETS}
 )
 

@@ -20,6 +20,12 @@
     />
 
     <node
+        pkg="adeye"
+        type="ctrl_cmd_republisher"
+        name="ctrl_cmd_republisher"
+    />
+
+    <node
         pkg="tf"
         type="static_transform_publisher"
         name="link1_broadcaster"
@@ -47,7 +53,7 @@
         <param name="topic_steering_request" value="/steering_angle_command"/>
     </node>
 -->
-<!--
+
     <node
             type="vehicle_controller"
             pkg="adeye"
@@ -57,8 +63,8 @@
     >
         <param name="topic_velocity_current" value="/current_velocity_phy"/>
         <param name="topic_acceleration_request" value="/acceleration_requested_phy"/>
-        <param name="topic_steering_request" value="/steering_requested_phy"/>
+        <param name="topic_steering_request" value="/off_steering_requested_phy"/>
     </node>
--->
+
 
 </launch>
