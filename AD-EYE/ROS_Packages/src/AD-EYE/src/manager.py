@@ -196,7 +196,7 @@ class Manager:
         #"Detection",
         "Mission_Planning",
         "Motion_Planning",
-        #"Switch",
+        "Switch",
         #"SSMP",
         # "Rviz",
         # "Experiment_specific_recording"
@@ -210,7 +210,7 @@ class Manager:
         #"Detection",
         "Mission_Planning",
         "Motion_Planning",
-        #"Switch",
+        "Switch",
         #"SSMP",
         # "Rviz",
         # "Experiment_specific_recording"
@@ -224,7 +224,7 @@ class Manager:
         #"Detection",
         "Mission_Planning",
         "Motion_Planning",
-        #"Switch",
+        "Switch",
         #"SSMP",
         # "Rviz",
         # "Experiment_specific_recording"
@@ -238,7 +238,7 @@ class Manager:
         # "Detection",
          "Mission_Planning",
          "Motion_Planning",
-        #"Switch",
+        "Switch",
         #"SSMP",
         # "Rviz",
         # "Experiment_specific_recording"
@@ -252,7 +252,7 @@ class Manager:
         #"Detection",
         "Mission_Planning",
         "Motion_Planning",
-        #"Switch",
+        "Switch",
         #"SSMP",
         # "Rviz",
         # "Experiment_specific_recording"
@@ -266,7 +266,7 @@ class Manager:
         #"Detection",
         "Mission_Planning",
         "Motion_Planning",
-        #"Switch",
+        "Switch",
         #"SSMP",
         # "Rviz",
         # "Experiment_specific_recording"
@@ -280,7 +280,7 @@ class Manager:
         #"Detection",
         "Mission_Planning",
         "Motion_Planning",
-        #"Switch",
+        "Switch",
         #"SSMP",
         # "Rviz",
         # "Experiment_specific_recording"
@@ -294,7 +294,7 @@ class Manager:
         # "Detection",
         "Mission_Planning",
         "Motion_Planning",
-        #"Switch",
+        "Switch",
         #"SSMP",
         # "Rviz",
         # "Experiment_specific_recording"
