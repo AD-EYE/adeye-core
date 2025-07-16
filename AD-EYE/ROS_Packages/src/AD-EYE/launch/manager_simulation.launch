@@ -1,16 +1,12 @@
 <!-- -->
 <launch>
-
+    <!-- /// PARAMETERS /// -->    
+    
     <arg name="lidar_source" default="Simulation"/>
     <arg name="gnss_source" default="Simulation"/>
-    <arg name="camera_source" default="Simulation"/>
-
-    <param name="sensing/lidar_source" value="$(arg lidar_source)" />
+    <arg name="camera_source" default="Simulation"/>    <param name="sensing/lidar_source" value="$(arg lidar_source)" />
     <param name="sensing/gnss_source" value="$(arg gnss_source)" />
-    <param name="sensing/camera_source" value="$(arg gnss_source)" />
-
-
-    <arg name="test_automation" default="false"/>
+    <param name="sensing/camera_source" value="$(arg gnss_source)" />    <arg name="test_automation" default="false"/>
     <rosparam>
         use_sim_time: true
     </rosparam>
@@ -18,15 +14,23 @@
         <rosparam>
             test_automation: true
         </rosparam>
-    </group>
+    </group>    
+    
+    <!-- /// NODES /// -->    
+    
+    <!-- manager -->
     <node
             type="manager.py"
             pkg="adeye"
             name="manager"
             respawn="false"
             output="screen"
-    />
-
+    />    
+    
+    <!-- point_cloud_broadcaster -->
+    <node pkg="adeye" type="point_cloud_broadcaster.py" name="point_cloud_broadcaster"/>    
+    
+    <!-- vehicle_controller -->
     <node
             type="vehicle_controller"
             pkg="adeye"
