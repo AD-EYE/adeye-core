@@ -4,15 +4,17 @@
 
 ros::Publisher pub;
 
+const double g_MAX_STEERING_ANGLE {0.85};
+
 void ctrlCmdCallback(const autoware_msgs::ControlCommandStamped::ConstPtr& control_cmd)
 {
     std_msgs::Float64 steering_cmd;
     float command = control_cmd->cmd.steering_angle;
 
-    if (command < -0.85)
-        command = -0.85;
-    if (command > 0.85)
-        command = 0.85;
+    if (command < -g_MAX_STEERING_ANGLE)
+        command = -g_MAX_STEERING_ANGLE;
+    if (command > g_MAX_STEERING_ANGLE)
+        command = g_MAX_STEERING_ANGLE;
 
     steering_cmd.data = command;
 
