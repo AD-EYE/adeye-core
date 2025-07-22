@@ -48,22 +48,6 @@
     
 
     <node
-        pkg="rostopic"
-        type="rostopic"
-        name="initial_checks_faker"
-        args='pub /initial_checks std_msgs/Bool "data: true" -r 1'
-        output="screen"
-    />
-
-    <node
-        pkg="rostopic"
-        type="rostopic"
-        name="activation_request_faker"
-        args='pub /activation_request std_msgs/Bool "data: true" -r 1'
-        output="screen"
-    />
-
-    <node
         pkg="adeye"
         type="ctrl_cmd_republisher"
         name="ctrl_cmd_republisher"
@@ -81,14 +65,6 @@
         <param name="topic_steering_request" value="/old_steering_requested_phy"/>
     </node>
 
-    <node
-            type="sample_goal_publisher.py"
-            pkg="adeye"
-            name="goal_publisher"
-            respawn="false"
-            output="screen"
-    />
-
-    <node pkg="topic_tools" type="relay" name="points_raw_relay" output="log" args="/ouster/points /points_raw"/>
+    <node pkg="topic_tools" type="relay" name="points_raw_relay" output="log" args="/os_cloud_node/points /points_raw"/>
 
 </launch>
