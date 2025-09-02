@@ -238,7 +238,7 @@ target_link_libraries(
 target_link_libraries(
   ctrl_cmd_republisher
   ${catkin_LIBRARIES}
- )
+)
 
 add_dependencies(controlSwitch
   ${catkin_EXPORTED_TARGETS}
@@ -300,7 +300,8 @@ add_dependencies(ctrl_cmd_republisher
   ${catkin_EXPORTED_TARGETS}
 )
 
-# Add the executable, libraries and dependencies for sensor monitor node
+################################################################################
+# Adding the executable, libraries and dependencies for sensor monitor node
 add_executable(
   sensorMonitor
   src/sensor_monitor.cpp
@@ -314,9 +315,29 @@ target_link_libraries(
 add_dependencies(sensorMonitor
   ${catkin_EXPORTED_TARGETS}
 )
+################################################################################
 
 
+################################################################################
+# Adding the executable, libraries and dependencies for Localization_Fusion node
+add_executable(
+  LocalizationFusion
+  src/Localization_Fusion.cpp
+)
 
+target_link_libraries(
+  LocalizationFusion
+  ${catkin_LIBRARIES}
+)
+
+add_dependencies(LocalizationFusion
+  ${catkin_EXPORTED_TARGETS}
+)
+################################################################################
+
+
+################################################################################
+# Adding the executable, libraries and dependencies for ExperimentC node
 add_executable(
   ExperimentC
   src/experimentC.cpp
@@ -331,6 +352,7 @@ add_dependencies(
   ExperimentC
   ${catkin_EXPORTED_TARGETS}
 )
+################################################################################
 
 
 add_library(SafetyFaultMonitors
@@ -362,7 +384,7 @@ add_dependencies(
 
 # Mark executables and/or libraries for installation
 install(
-  TARGETS GridMapCreator flattening controlSwitch safetySupervisor collisionDetector radar_broadcaster objectsFrameAdapter cameraObjectListFuse lidarRadarFuse safetyChannelPerception ExperimentC
+  TARGETS GridMapCreator flattening controlSwitch safetySupervisor collisionDetector radar_broadcaster objectsFrameAdapter cameraObjectListFuse lidarRadarFuse safetyChannelPerception LocalizationFusion ExperimentC 
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

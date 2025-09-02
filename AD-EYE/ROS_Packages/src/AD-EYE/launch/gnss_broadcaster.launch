@@ -1,5 +1,6 @@
 <!-- -->
 <launch>
     <node type="gnss_broadcaster.py" pkg="adeye" name="gnss_broadcaster" respawn="true" output="screen">
+            <param name="map_origin" value="17.952907 59.361246" />
     </node>
 </launch>
