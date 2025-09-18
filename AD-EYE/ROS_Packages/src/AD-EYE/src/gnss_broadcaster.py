@@ -31,6 +31,8 @@ class GnssBroadcaster:
 
         self.publish_initial_pose = True
 
+        self.listener = tf.TransformListener()
+
     ##A Method to publish the position of the ego car as a PoseStamped message to the /gnss_pose topic.
     #@param self The object pointer
     #@param msg A Pose message received from /gnss_pose_simulink
@@ -44,7 +46,12 @@ class GnssBroadcaster:
         x_p, y_p = self.world_to_map_transform(self.standard_parallel, self.map_origin[0], self.map_origin[1], fix.longitude, fix.latitude)
         # print('Coords : (' + str(x_p) + " " + str(y_p) + "), Distance to the maps origin : " + str(sqrt(x_p**2 + y_p**2)) + 'm')
 
-        self.pose.header.frame_id = "map"
+        # Check if dedicated GPS frame exists
+        # If so, assume GPS position is in this frame
+        if self.listener.canTransform("/map", "/gps_loc", rospy.Time(0)):
+            self.pose.header.frame_id = "gps_loc"
+        else:
+            self.pose.header.frame_id = "map"
         self.pose.header.stamp = rospy.Time.now()
         self.pose.pose.position.x = x_p #+ 60
         self.pose.pose.position.y = y_p #+ 50
@@ -54,6 +61,16 @@ class GnssBroadcaster:
         self.pose.pose.orientation.y = quaternion[1]
         self.pose.pose.orientation.z = quaternion[2]
         self.pose.pose.orientation.w = quaternion[3]
+
+        # If we have the GPS frame, align GPS coordinates with PCL map
+        if self.listener.canTransform("/map", "/gps_loc", rospy.Time(0)):
+            try:
+                self.listener.lookupTransform("/map", "/gps_loc", rospy.Time(0))
+                self.pose = self.listener.transformPose("/map", self.pose)
+            except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+                rospy.logwarn("TF Exception, GNSS pose not published")
+                return
+
         self.gnss_pub.publish(self.pose)
 
         if self.publish_initial_pose:
