@@ -3,14 +3,18 @@
 import os  # to record rosbags using the command line, os is used to manage SIGINT
 import subprocess  # for recording feature
 import time  # to put timestamp in rosbag names
+import re
 from enum import Enum  # to make enumeration (in particular the features enumeration)
 
 import rospkg  # to find path to AD-EYE package
 import rospy  # for ROS
 from std_msgs.msg import Bool
 from std_msgs.msg import Int32
+from std_msgs.msg import String
 from std_msgs.msg import Int32MultiArray
 from std_msgs.msg import Int8
+from autoware_msgs.msg import VehicleStatus, VehicleCmd, ControlCommand
+
 
 from FeatureControl import FeatureControl  # handles start and stop of features
 from collections import OrderedDict  # to have the features ordered
@@ -27,7 +31,16 @@ class ManagerStateMachine:
         ENGAGED_STATE = 2
         FAULT_STATE = 3
 
-    current_state = States.INITIALIZING_STATE  # this is the current state of the state machine
+    class VehicleStates:
+        lamps = 0
+        speed_gui = 0.0
+        steer_gui = 0.0
+        steer_being_kept = 0.0
+        hl_gui = 0
+        wheel_gui = 1
+        accelerate_gui = 0.0
+
+    current_state = States.INITIALIZING_STATE  # this is the current state of the state machine INITIALIZING_STATE
 
     ## The constructor
     #
@@ -36,7 +49,16 @@ class ManagerStateMachine:
         # Set up subscriber for registering state switch commands
         rospy.Subscriber("/initial_checks", Bool, self.initialChecksCallback)
         rospy.Subscriber("/activation_request", Bool, self.activationRequestCallback)
-        rospy.Subscriber("/fault", Bool, self.faultCallback)
+        rospy.Subscriber("/state_cmd", String, self.emergencyCallback)
+        rospy.Subscriber("/vehicle_status", VehicleStatus, self.vehicleStatusCallback)
+        rospy.Subscriber("/vehicle_commands", String, self.vehicleCommandCallback)
+        #rospy.Subscriber("/vehicle_cmd", VehicleCmd, self.steerCmdCallback)
+
+
+        self.send_state_pub = rospy.Publisher('/vehicle_status', VehicleStatus, queue_size=1)
+        self.send_wheel_state_pub = rospy.Publisher('/vehicle_cmd', VehicleCmd, queue_size=1)
+        self.send_vehicle_commands_pub = rospy.Publisher('/vehicle_commands', String, queue_size=1)
+
 
     ##Method getState
     #
@@ -80,17 +102,205 @@ class ManagerStateMachine:
         else:
             self.printRefusedRequest()
 
-    ##Method faultCallback
+    ##Method emergencyCallback
     #
-    # Callback to switch to the fault state from any state, listens to /fault
+    # Callback to switch to the fault state from any state, listens to /state_cmd
     #@param self The object pointer
-    #@param msg A Boolean from the /fault topic
-    def faultCallback(self, msg):
-        if msg.data:
+    #@param msg A String from the /state_cmd topic
+    def emergencyCallback(self, msg):
+        if msg.data == "emergency":
             rospy.loginfo("Entering Fault state")
             self.current_state = self.States.FAULT_STATE
+        elif msg.data == "return_to_ready":
+            rospy.loginfo("Entering Enabled state from Fault")
+            self.current_state = self.States.ENABLED_STATE
+        elif msg.data == "return_from_emergency":
+            rospy.loginfo("Entering Initializing state from Fault")
+            self.current_state = self.States.INITIALIZING_STATE
         else:
-            self.printRefusedRequest()
+            pass
+
+    ##Method vehicleStatusCallback
+    #
+    # Callback to update hazard lights and set speed to zero when in fault state, listens to /vehicle_status
+    #@param self The object pointer
+    #@param msg A VehicleStatus from the /vehicle_status topic
+    def vehicleStatusCallback(self, msg):
+        if self.current_state == self.States.FAULT_STATE:
+            """
+             Update hazard lamp
+            if msg.lamp != 1:
+                msg.lamp = 1
+                self.send_state_pub.publish(msg)
+                rospy.loginfo("Set lamp to emergency")
+                self.VehicleStates.lamps = msg.lamp
+            else:
+                pass
+                 """
+            if self.VehicleStates.wheel_gui == 0:
+                # Update current speed (m/s)
+                if msg.speed != self.VehicleStates.speed_gui:
+                    # Checking if speed is effectively zero (allowing a small threshold for floating point errors)
+                    if self.VehicleStates.speed_gui <= 0.1:
+                        msg.speed = 0.0 # Explicitly set speed to zero
+                        self.send_state_pub.publish(msg)
+                        rospy.loginfo("Set speed to zero because of wheel lock from GUI:")
+                        rospy.loginfo(msg.speed)
+            elif self.VehicleStates.wheel_gui == 1:
+                    if msg.speed != self.VehicleStates.speed_gui:
+                        msg.speed = self.VehicleStates.speed_gui
+                        self.send_state_pub.publish(msg)            # If resumed, update speed
+                        rospy.loginfo("Wheel lock turned off from GUI, resuming normal speed calculations:")
+                        rospy.loginfo(msg.speed)
+
+            if self.VehicleStates.speed_gui == 0:
+                if msg.speed != 0.0:
+                    msg.speed = 0.0 # Explicitly set speed to zero
+                    self.send_state_pub.publish(msg)
+                    rospy.loginfo("Set speed to zero because of explicit wheel lock from GUI:")
+                    rospy.loginfo(msg.speed)
+
+            if self.VehicleStates.hl_gui == 1:
+                # Update hazard lamp
+                if msg.lamp != 1:
+                    msg.lamp = 1
+                    self.send_state_pub.publish(msg)
+                    rospy.loginfo("Set lamp to emergency from GUI")
+            elif self.VehicleStates.hl_gui == 0:
+                # Update hazard lamp
+                if msg.lamp != 0:
+                    msg.lamp = 0
+                    self.send_state_pub.publish(msg)
+                    rospy.loginfo("Set lamp to normal from GUI")
+
+
+            if self.VehicleStates.wheel_gui == 0:
+            # Update current steering angle (radians) if speed if zero
+                if msg.speed == 0.0 and self.VehicleStates.steer_being_kept == 0.0:
+                    self.VehicleStates.steer_being_kept = self.VehicleStates.steer_gui
+                    msg.angle = self.VehicleStates.steer_being_kept  # If stopped, get the last steering angle
+                    self.send_state_pub.publish(msg)
+                    rospy.loginfo("Getting last wheel angle:")
+                    rospy.loginfo(msg.angle)
+                elif msg.speed == 0.0 and self.VehicleStates.steer_being_kept != 0.0:
+                    if  self.VehicleStates.steer_gui != self.VehicleStates.steer_being_kept:
+                        self.VehicleStates.steer_gui = self.VehicleStates.steer_being_kept
+                        msg.angle = self.VehicleStates.steer_being_kept
+                        self.send_state_pub.publish(msg)
+                        self.send_vehicle_commands_pub.publish("STEERING_command=" + str(self.VehicleStates.steer_being_kept))
+                        rospy.loginfo("Still keeping wheel in place from GUI")
+                        rospy.loginfo(msg.angle)
+            elif self.VehicleStates.wheel_gui == 1:
+                    if msg.angle != self.VehicleStates.steer_gui:
+                        msg.angle = self.VehicleStates.steer_gui  # If resumed, update steering angle
+                        self.send_state_pub.publish(msg)
+                        rospy.loginfo("Stopped keeping wheel in place from GUI")
+                        rospy.loginfo(msg.angle)
+                        self.VehicleStates.steer_being_kept = 0.0
+
+        elif self.current_state == self.States.ENABLED_STATE or self.current_state == self.States.INITIALIZING_STATE:
+             # Update hazard lamp
+            if msg.lamp == 1:
+                msg.lamp = 0
+                self.send_state_pub.publish(msg)
+                rospy.loginfo("Set lamp to normal because of enabled or initialized state")
+                self.VehicleStates.lamps = msg.lamp
+
+            if msg.speed != self.VehicleStates.speed_gui:
+                    msg.speed = self.VehicleStates.speed_gui
+                    rospy.loginfo("Controlling speed from GUI")
+                    rospy.loginfo(msg.speed)
+            if msg.angle != self.VehicleStates.steer_gui:
+                        msg.angle = self.VehicleStates.steer_gui  # If resumed, update steering angle
+                        self.send_state_pub.publish(msg)
+                        rospy.loginfo("Controlling steer from GUI")
+                        rospy.loginfo(msg.angle)
+
+        """
+        else:
+             self.printRefusedRequest()
+        """
+
+    ##Method steerCmdCallback
+    #
+    # Callback to lock the steering wheel position when in fault state, listens to /vehicle_cmd
+    #@param self The object pointer
+    #@param msg A SteerCmd from the /vehicle_cmd topic
+    """ def steerCmdCallback(self, msg):
+        if self.current_state == self.States.FAULT_STATE:
+            # Update current steering angle (radians)
+            if self.VehicleStates.steer != msg.steer and self.VehicleStates.speed == 0.0:
+                self.VehicleStates.steer = msg.steer
+                msg.steer = self.VehicleStates.steer  # If stopped, maintain the last steering angle
+                self.send_wheel_state_pub.publish(msg)
+                rospy.loginfo("Keeping wheel in place")
+        el
+
+            if self.VehicleStates.wheel_gui == 0:
+            # Update current steering angle (radians) if speed if zero
+                if self.VehicleStates.steer_gui != msg.ControlCommand.steering_angle and self.VehicleStates.speed_gui == 0.0:
+                    msg.ControlCommand.steering_angle = self.VehicleStates.steer_gui  # If stopped, maintain the last steering angle
+                    self.send_wheel_state_pub.publish(msg)
+                    rospy.loginfo("Keeping wheel in place on from GUI")
+                    rospy.loginfo(msg.ControlCommand.steering_angle)
+                else:
+                    rospy.loginfo("Still keeping wheel in place on from GUI")
+                    rospy.loginfo(msg.ControlCommand.steering_angle)
+            elif self.VehicleStates.wheel_gui == 1:
+                    msg.ControlCommand.steering_angle = self.VehicleStates.steer_gui  # If resumed, update steering angle
+                    self.send_wheel_state_pub.publish(msg)
+                    rospy.loginfo("Stop keeping wheel in place from GUI")
+                    rospy.loginfo(msg.ControlCommand.steering_angle) """
+       # else:
+         #   self.printRefusedRequest()
+
+    ##Method vehicleCommandCallback
+    #
+    # Callback to lock the steering wheel position or turn on hazard lights from GUI, listens to /vehicle_commands
+    #@param self The object pointer
+    #@param msg A String from the /vehicle_commands topic
+    def vehicleCommandCallback(self, msg):
+        if msg.data == "HL_command=1":
+            # Update hazard lights from gui
+            if self.VehicleStates.hl_gui != 1:
+                self.VehicleStates.hl_gui = 1
+                rospy.loginfo("Hazard lights on from GUI")
+        elif msg.data == "HL_command=0":
+            # Update hazard lights from gui
+            if self.VehicleStates.hl_gui != 0:
+                self.VehicleStates.hl_gui = 0
+                rospy.loginfo("Hazard lights off from GUI")
+        elif msg.data == "WLOCK_command=0":
+            # Update wheel lock from gui
+            if self.VehicleStates.wheel_gui != 0:
+                self.VehicleStates.wheel_gui = 0
+                rospy.loginfo("Wheel lock on from GUI")
+        elif msg.data == "WLOCK_command=1":
+            # Update wheel lock from gui
+            if self.VehicleStates.wheel_gui != 1:
+                self.VehicleStates.wheel_gui = 1
+                rospy.loginfo("Wheel lock off from GUI")
+        if msg.data.find("ACCELERATE_command=") != -1:
+            # Update accelerate from gui
+            a = re.findall(r'(-?\d+\.?\d*)', msg.data)
+            rospy.loginfo(a)
+            b = float(a[0])
+            if self.VehicleStates.speed_gui != b:
+                self.VehicleStates.speed_gui = b
+                rospy.loginfo("Setting accelerate from GUI")
+                rospy.loginfo(self.VehicleStates.speed_gui)
+
+        if msg.data.find("STEERING_command=") != -1:
+            a = re.findall(r'(-?\d+\.?\d*)', msg.data)
+            rospy.loginfo(a)
+            b = float(a[0])
+            if self.VehicleStates.steer_gui != b:
+                self.VehicleStates.steer_gui = b
+                # Update steer from gui
+                rospy.loginfo("Setting steer from GUI")
+                rospy.loginfo(self.VehicleStates.steer_gui)
+
+
 
 ## Feature wrapper for convenience of the ManagerFeaturesHandler class.
 class Feature:
@@ -215,7 +425,7 @@ class Manager:
         # "Rviz",
         # "Experiment_specific_recording"
     ]
-    ENGAGED_DEFAULT_FEATURES = [
+    ENGAGED_DEFAULT_FEATURES =[
         # "Recording",
         "Map",
         "Sensing",
@@ -327,6 +537,7 @@ class Manager:
         self.switch_request_pub = rospy.Publisher('/safety_channel/switch_request', Int32, queue_size=1)  # for GUI
 
 
+
     ##The main loop
     #@param self The object pointer
     def run(self):
@@ -392,16 +603,29 @@ class Manager:
         if state != self.current_state:  # the state has changed since last iteration
             self.current_state = state
             if state == self.manager_state_machine.States.INITIALIZING_STATE:
+                msg = Int32()
+                msg.data = 0
+                self.switch_request_pub.publish(msg)
                 self.current_features = self.INITIALIZING_DEFAULT_FEATURES
+                #self.send_state.publish("emergency")
             elif state == self.manager_state_machine.States.ENABLED_STATE:
-                self.current_features = self.ENABLED_DEFAULT_FEATURES
-            elif state == self.manager_state_machine.States.ENGAGED_STATE:
-                self.current_features = self.ENGAGED_DEFAULT_FEATURES
-            elif state == self.manager_state_machine.States.FAULT_STATE:
                 msg = Int32()
                 msg.data = 1
+                self.switch_request_pub.publish(msg)
+                self.current_features = self.ENABLED_DEFAULT_FEATURES
+                #self.send_state.publish("emergency")
+            elif state == self.manager_state_machine.States.ENGAGED_STATE:
+                msg = Int32()
+                msg.data = 2
+                self.switch_request_pub.publish(msg)
+                self.current_features = self.ENGAGED_DEFAULT_FEATURES
+                #self.send_state.publish("emergency")
+            elif state == self.manager_state_machine.States.FAULT_STATE:
+                msg = Int32()
+                msg.data = 3
                 self.switch_request_pub.publish(msg)  # when we enter fault state we first force the switch to safety channel
                 self.current_features = self.FAULT_DEFAULT_FEATURES
+
 
     ##A method that checks if a feature is now in the list of features that should be active but was not in the previous iteration
     #@param self The object pointer
