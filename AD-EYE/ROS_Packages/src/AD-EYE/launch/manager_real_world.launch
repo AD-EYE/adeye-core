@@ -32,10 +32,10 @@
             output="screen"
     />
 
-    <!--<node pkg="nmea_navsat_driver" type="nmea_serial_driver" name="navsat_driver" respawn="true">
+    <node pkg="nmea_navsat_driver" type="nmea_serial_driver" name="navsat_driver" respawn="true">
         <param name="port" value="/dev/ttyACM0"/>
         <param name="baud" value="9600"/>
-    </node>-->
+    </node>
 
     <include file="$(find ouster_ros)/ouster.launch">
         <arg name="sensor_hostname" value="os-122132000155.local"/>
@@ -43,16 +43,21 @@
         <arg name="metadata" value="/home/adeye/ouster-metadata.json"/>
     </include>
 
-    
+
     <!--<node pkg="adeye" type="camera_gmsl_publisher" name="camera_gmsl_publisher" respawn="true"/>-->
-    
+
 
     <node
         pkg="adeye"
         type="ctrl_cmd_republisher"
         name="ctrl_cmd_republisher"
     />
-
+    <node
+        pkg="topic_tools"
+        type="relay"
+        name="relay_velocity"
+        args="/current_velocity_phy /current_velocity"
+    />
     <node
             type="vehicle_controller"
             pkg="adeye"
@@ -60,7 +65,7 @@
             respawn="false"
             output="screen"
     >
-        <param name="topic_velocity_current" value="/current_velocity"/>
+        <param name="topic_velocity_current" value="/current_velocity_phy"/>
         <param name="topic_acceleration_request" value="/acceleration_requested_phy"/>
         <param name="topic_steering_request" value="/old_steering_requested_phy"/>
     </node>
