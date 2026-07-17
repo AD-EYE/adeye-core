@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 
-import re
-import rospy
-import math
 import datetime
+import math
+import os
 import random
+import threading
+
+import rospy
 from std_msgs.msg import String
 from autoware_msgs.msg import VehicleStatus, VehicleCmd
 
@@ -13,7 +15,30 @@ class FaultInjectionManager:
 
     def __init__(self, manager_state_machine):
 
-        self.fault_log = open("/tmp/adeye_fault_log.txt", "a")
+        log_dir = rospy.get_param(
+            "~fault_log_dir",
+            os.path.join(
+                os.path.expanduser("~"),
+                ".ros",
+                "adeye",
+                "fault_logs",
+            ),
+        )
+
+        if not os.path.isdir(log_dir):
+            try:
+                os.makedirs(log_dir)
+            except OSError:
+                if not os.path.isdir(log_dir):
+                    raise
+
+        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+        filename = "adeye_fault_log_{}_{}.txt".format(timestamp, os.getpid())
+        self.fault_log_path = os.path.join(log_dir, filename)
+        self.fault_log = open(self.fault_log_path, "a")
+        rospy.on_shutdown(self.fault_log.close)
+        self.VehicleStates = self.VehicleStates()
+        self._republishing_lock = threading.Lock()
 
         self.fault_debug_pub = rospy.Publisher(
             "/adeye/fault_log", String, queue_size=50
@@ -31,34 +56,45 @@ class FaultInjectionManager:
         )
 
     class VehicleStates:
-        lamps = 0
-        speed_gui = 0.0
-        steer_gui = 0.0
-        # changed from 0.0
-        steer_being_kept = None
-        hl_gui = 0
-        wheel_gui = 1
-        accelerate_gui = 0.0
+        def __init__(self):
+            self.lamps = 0
+            self.speed_gui = 0.0
+            self.steer_gui = 0.0
+            self.steer_being_kept = None
+            self.hl_gui = 0
+            self.wheel_gui = 1
+            self.accelerate_gui = 0.0
 
-        # Steering faults
-        steer_offset_gui = 0.0
-        steer_freeze_gui = 0
-        steer_frozen_value = None
-        steer_saturation_gui = 0.0
-        steer_oscillation_gui = 0.0
-        steer_random_gui = 0
+            # Steering faults
+            self.steer_offset_gui = 0.0
+            self.steer_freeze_gui = 0
+            self.steer_frozen_value = None
+            self.steer_saturation_gui = 0.0
+            self.steer_oscillation_gui = 0.0
+            self.steer_random_gui = 0
 
-        # Accelerating faults
-        accelerate_offset_gui = 0.0
-        accelerate_freeze_gui = 0
-        accelerate_frozen_value = None
-        accelerate_saturation_gui = 0.0
-        accelerate_oscillation_gui = 0.0
-        accelerate_runaway_gui = 0
+            # Accelerating faults
+            self.accelerate_offset_gui = 0.0
+            self.accelerate_freeze_gui = 0
+            self.accelerate_frozen_value = None
+            self.accelerate_saturation_gui = 0.0
+            self.accelerate_oscillation_gui = 0.0
+            self.accelerate_runaway_gui = 0
 
-        current_speed = 0.0
-        current_angle = 0.0
-        current_lamp = 0
+            self.current_speed = 0.0
+            self.current_angle = 0.0
+            self.current_lamp = 0
+
+    @staticmethod
+    def _parse_command_value(command, prefix):
+        if not command.startswith(prefix):
+            return None
+
+        try:
+            return float(command[len(prefix) :])
+        except ValueError:
+            rospy.logwarn("Invalid value for command: %s", command)
+            return None
 
     def logFaultDebug(self, fault, value):
 
@@ -168,13 +204,8 @@ class FaultInjectionManager:
                 self.VehicleStates.wheel_gui = 1
                 rospy.loginfo("Wheel lock off from GUI")
 
-        if msg.data.find("ACCELERATE_command=") != -1:
-
-            a = re.findall(r"(-?\d+\.?\d*)", msg.data)
-
-            rospy.loginfo(a)
-
-            b = float(a[0])
+        b = self._parse_command_value(msg.data, "ACCELERATE_command=")
+        if b is not None:
 
             if self.VehicleStates.speed_gui != b:
 
@@ -183,13 +214,8 @@ class FaultInjectionManager:
                 rospy.loginfo("Setting accelerate from GUI")
                 rospy.loginfo(self.VehicleStates.speed_gui)
 
-        if msg.data.find("STEERING_command=") != -1:
-
-            a = re.findall(r"(-?\d+\.?\d*)", msg.data)
-
-            rospy.loginfo(a)
-
-            b = float(a[0])
+        b = self._parse_command_value(msg.data, "STEERING_command=")
+        if b is not None:
 
             if self.VehicleStates.steer_gui != b:
 
@@ -198,13 +224,8 @@ class FaultInjectionManager:
                 rospy.loginfo("Setting steer from GUI")
                 rospy.loginfo(self.VehicleStates.steer_gui)
 
-        if msg.data.find("STEEROFFSET_command=") != -1:
-
-            a = re.findall(r"(-?\d+\.?\d*)", msg.data)
-
-            rospy.loginfo(a)
-
-            b = float(a[0])
+        b = self._parse_command_value(msg.data, "STEEROFFSET_command=")
+        if b is not None:
 
             if self.VehicleStates.steer_offset_gui != b:
 
@@ -224,13 +245,8 @@ class FaultInjectionManager:
         if msg.data == "STEERRANDOM_command=0":
             self.VehicleStates.steer_random_gui = 0
 
-        if msg.data.find("STEERSAT_command=") != -1:
-
-            a = re.findall(r"(-?\d+\.?\d*)", msg.data)
-
-            rospy.loginfo(a)
-
-            b = float(a[0])
+        b = self._parse_command_value(msg.data, "STEERSAT_command=")
+        if b is not None:
 
             if self.VehicleStates.steer_saturation_gui != b:
 
@@ -240,13 +256,8 @@ class FaultInjectionManager:
 
                 rospy.loginfo(self.VehicleStates.steer_saturation_gui)
 
-        if msg.data.find("STEEROSC_command=") != -1:
-
-            a = re.findall(r"(-?\d+\.?\d*)", msg.data)
-
-            rospy.loginfo(a)
-
-            b = float(a[0])
+        b = self._parse_command_value(msg.data, "STEEROSC_command=")
+        if b is not None:
 
             if self.VehicleStates.steer_oscillation_gui != b:
 
@@ -258,13 +269,8 @@ class FaultInjectionManager:
 
         # Acceleration offset
 
-        if msg.data.find("ACCELOFFSET_command=") != -1:
-
-            a = re.findall(r"(-?\d+\.?\d*)", msg.data)
-
-            rospy.loginfo(a)
-
-            b = float(a[0])
+        b = self._parse_command_value(msg.data, "ACCELOFFSET_command=")
+        if b is not None:
 
             if self.VehicleStates.accelerate_offset_gui != b:
 
@@ -292,13 +298,8 @@ class FaultInjectionManager:
 
         # Acceleration saturation
 
-        if msg.data.find("ACCELSAT_command=") != -1:
-
-            a = re.findall(r"(-?\d+\.?\d*)", msg.data)
-
-            rospy.loginfo(a)
-
-            b = float(a[0])
+        b = self._parse_command_value(msg.data, "ACCELSAT_command=")
+        if b is not None:
 
             if self.VehicleStates.accelerate_saturation_gui != b:
 
@@ -310,13 +311,8 @@ class FaultInjectionManager:
 
         # Acceleration oscillation
 
-        if msg.data.find("ACCELOSC_command=") != -1:
-
-            a = re.findall(r"(-?\d+\.?\d*)", msg.data)
-
-            rospy.loginfo(a)
-
-            b = float(a[0])
+        b = self._parse_command_value(msg.data, "ACCELOSC_command=")
+        if b is not None:
 
             if self.VehicleStates.accelerate_oscillation_gui != b:
 
@@ -381,17 +377,6 @@ class FaultInjectionManager:
                 modified = True
 
                 self.logFault("HAZARD_LIGHTS", "ON")
-
-        else:
-
-            if msg.lamp_cmd.l != 0 or msg.lamp_cmd.r != 0:
-
-                msg.lamp_cmd.l = 0
-                msg.lamp_cmd.r = 0
-
-                modified = True
-
-                self.logFault("HAZARD_LIGHTS", "OFF")
 
         #######################################################################
         # Wheel lock
@@ -465,20 +450,23 @@ class FaultInjectionManager:
         if self.VehicleStates.steer_saturation_gui > 0:
 
             limit = self.VehicleStates.steer_saturation_gui
+            saturated = False
 
             if msg.ctrl_cmd.steering_angle > limit:
 
                 msg.ctrl_cmd.steering_angle = limit
 
                 modified = True
+                saturated = True
 
             elif msg.ctrl_cmd.steering_angle < -limit:
 
                 msg.ctrl_cmd.steering_angle = -limit
 
                 modified = True
+                saturated = True
 
-            if modified:
+            if saturated:
 
                 self.logFault(
                     "STEERING_SATURATION",
@@ -523,7 +511,6 @@ class FaultInjectionManager:
                 "STEERING_RANDOM",
                 msg.ctrl_cmd.steering_angle,
             )
-
 
         #######################################################################
         # Acceleration offset
@@ -607,16 +594,12 @@ class FaultInjectionManager:
         #######################################################################
 
         if self.VehicleStates.accelerate_oscillation_gui != 0.0:
-
-            msg.ctrl_cmd.linear_acceleration += (
-                self.VehicleStates.accelerate_oscillation_gui
-                * math.sin(rospy.get_time())
+            oscillation = self.VehicleStates.accelerate_oscillation_gui * math.sin(
+                rospy.get_time()
             )
 
-            msg.accel_cmd.accel += (
-                self.VehicleStates.accelerate_oscillation_gui
-                * math.sin(rospy.get_time())
-            )
+            msg.ctrl_cmd.linear_acceleration += oscillation
+            msg.accel_cmd.accel += oscillation
 
             modified = True
 
@@ -630,9 +613,13 @@ class FaultInjectionManager:
         #######################################################################
 
         if modified:
+            with self._republishing_lock:
+                self.republishing_vehicle_cmd = True
+                try:
+                    self.send_wheel_state_pub.publish(msg)
+                finally:
+                    self.republishing_vehicle_cmd = False
 
-            self.republishing_vehicle_cmd = True
-
-            self.send_wheel_state_pub.publish(msg)
-
-            self.republishing_vehicle_cmd = False
+    def vehicleCmdFaultCallback(self, msg):
+        """Maintain compatibility with the callback name used by manager.py."""
+        self.vehicleCmdFaultInjectionCallback(msg)

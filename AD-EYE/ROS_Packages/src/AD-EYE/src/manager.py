@@ -16,7 +16,7 @@ from autoware_msgs.msg import VehicleStatus, VehicleCmd, ControlCommand
 
 
 from FeatureControl import FeatureControl  # handles start and stop of features
-from FaultInjectionManager import FaultInjectionManager
+from fault_injections.FaultInjectionManager import FaultInjectionManager
 from collections import OrderedDict  # to have the features ordered
 
 

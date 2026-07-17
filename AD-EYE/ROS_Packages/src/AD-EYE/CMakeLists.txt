@@ -383,3 +383,11 @@ catkin_install_python(PROGRAMS src/camera_broadcaster.py
 catkin_install_python(PROGRAMS src/zed_driver.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
+
+catkin_install_python(PROGRAMS
+  src/fault_injections/fault_test.py
+  src/fault_injections/fault_test_all.py
+  src/fault_injections/steering_saturation_experiment.py
+  src/fault_injections/SensorFaultInjectionManager.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)

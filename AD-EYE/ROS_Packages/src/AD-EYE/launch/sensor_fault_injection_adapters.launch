@@ -1,0 +1,33 @@
+<launch>
+  <!--
+    Starts only the fault injector and the replacement GNSS/LiDAR adapters.
+    Do not run the original gnss_broadcaster or points_raw relay at the same
+    time, because /gnss_pose and /points_raw must each have one publisher.
+  -->
+
+  <arg name="gnss_input_topic" default="/fix" />
+  <arg name="lidar_input_topic" default="/os_cloud_node/points" />
+
+  <node pkg="adeye"
+        type="SensorFaultInjectionManager.py"
+        name="sensor_fault_injection_manager"
+        output="screen">
+    <param name="gnss_input_topic" value="$(arg gnss_input_topic)" />
+    <param name="gnss_output_topic" value="/adeye/fault_injection/fix" />
+    <param name="lidar_input_topic" value="$(arg lidar_input_topic)" />
+    <param name="lidar_output_topic" value="/adeye/fault_injection/points" />
+  </node>
+
+  <!-- Existing broadcaster, unchanged, now receives the faulty GNSS fix. -->
+  <group>
+    <remap from="/fix" to="/adeye/fault_injection/fix" />
+    <include file="$(find adeye)/launch/gnss_broadcaster.launch" />
+  </group>
+
+  <!-- Existing Ouster data, now faulted, becomes Autoware's points_raw input. -->
+  <node pkg="topic_tools"
+        type="relay"
+        name="fault_injected_points_raw_relay"
+        output="screen"
+        args="/adeye/fault_injection/points /points_raw" />
+</launch>

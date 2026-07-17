@@ -1,0 +1,35 @@
+<launch>
+  <!--
+    Simulation wrapper. It leaves manager_simulation.launch unchanged and
+    redirects its PointCloud2 output through SensorFaultInjectionManager.
+  -->
+
+  <arg name="enable_gnss_broadcaster" default="false" />
+
+  <group>
+    <remap from="/points_raw"
+           to="/adeye/fault_injection/points_unmodified" />
+    <include file="$(find adeye)/launch/manager_simulation.launch" />
+  </group>
+
+  <node pkg="adeye"
+        type="SensorFaultInjectionManager.py"
+        name="sensor_fault_injection_manager"
+        output="screen">
+    <param name="lidar_input_topic"
+           value="/adeye/fault_injection/points_unmodified" />
+    <param name="lidar_output_topic" value="/points_raw" />
+    <param name="gnss_input_topic" value="/fix" />
+    <param name="gnss_output_topic"
+           value="/adeye/fault_injection/fix" />
+  </node>
+
+  <!--
+    Enable only when the simulator publishes sensor_msgs/NavSatFix on /fix and
+    the standard_parallel and map_origin parameters are configured.
+  -->
+  <group if="$(arg enable_gnss_broadcaster)">
+    <remap from="/fix" to="/adeye/fault_injection/fix" />
+    <include file="$(find adeye)/launch/gnss_broadcaster.launch" />
+  </group>
+</launch>

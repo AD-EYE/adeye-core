@@ -4,6 +4,12 @@ import rospy
 from std_msgs.msg import String
 
 
+try:
+    read_input = raw_input
+except NameError:
+    read_input = input
+
+
 class FaultTester:
 
     def __init__(self):
@@ -59,6 +65,12 @@ class FaultTester:
             "ACCELRUNAWAY_command=0",
             "WLOCK_command=1",
             "HL_command=0",
+            "GNSS_EAST_BIAS_M_command=0",
+            "GNSS_NORTH_BIAS_M_command=0",
+            "GNSS_DROPOUT_command=0",
+            "GNSS_NO_FIX_command=0",
+            "LIDAR_DROP_EVERY_N_command=0",
+            "LIDAR_TIMESTAMP_OFFSET_S_command=0",
         ]
 
         for cmd in commands:
@@ -66,10 +78,23 @@ class FaultTester:
 
         rospy.sleep(2)
 
+    def localization_input_loss_test(self, duration=5):
+
+        rospy.logwarn("Starting GNSS and LiDAR input-loss test")
+        self.pub.publish("GNSS_DROPOUT_command=1")
+        self.pub.publish("LIDAR_DROP_EVERY_N_command=1")
+
+        try:
+            rospy.sleep(duration)
+        finally:
+            self.pub.publish("GNSS_DROPOUT_command=0")
+            self.pub.publish("LIDAR_DROP_EVERY_N_command=0")
+            rospy.logwarn("GNSS and LiDAR input-loss test reset")
+
 
 def ask_float(text, default):
 
-    value = input(text)
+    value = read_input(text)
 
     if value == "":
         return default
@@ -108,12 +133,24 @@ if __name__ == "__main__":
         print("13  Emergency state")
         print("14  Reset all faults")
         print("15  Run all tests")
+        print("")
+        print("16  GNSS east bias")
+        print("17  GNSS north bias")
+        print("18  GNSS dropout")
+        print("19  GNSS no-fix status")
+        print("20  LiDAR periodic scan dropout")
+        print("21  LiDAR timestamp offset")
+        print("22  Localization input loss (GNSS + LiDAR)")
         print(" 0  Exit")
         print("==========================================")
 
-        choice = input("Selection: ")
+        try:
+            choice = int(read_input("Selection: "))
+        except ValueError:
+            print("Selection must be an integer from 0 to 22.")
+            continue
 
-        if choice == "0":
+        if choice == 0:
             break
 
         elif choice == 1:
@@ -296,6 +333,72 @@ if __name__ == "__main__":
                 tester.run_fault(name, on, off, t)
 
             tester.emergency_test()
+
+        elif choice == 16:
+
+            value = ask_float("East bias in meters (default 2): ", 2)
+
+            tester.run_fault(
+                "GNSS East Bias",
+                "GNSS_EAST_BIAS_M_command={}".format(value),
+                "GNSS_EAST_BIAS_M_command=0",
+            )
+
+        elif choice == 17:
+
+            value = ask_float("North bias in meters (default 2): ", 2)
+
+            tester.run_fault(
+                "GNSS North Bias",
+                "GNSS_NORTH_BIAS_M_command={}".format(value),
+                "GNSS_NORTH_BIAS_M_command=0",
+            )
+
+        elif choice == 18:
+
+            tester.run_fault(
+                "GNSS Dropout",
+                "GNSS_DROPOUT_command=1",
+                "GNSS_DROPOUT_command=0",
+            )
+
+        elif choice == 19:
+
+            tester.run_fault(
+                "GNSS No-Fix Status",
+                "GNSS_NO_FIX_command=1",
+                "GNSS_NO_FIX_command=0",
+            )
+
+        elif choice == 20:
+
+            value = int(ask_float("Drop every nth scan (default 5): ", 5))
+
+            if value <= 0:
+                print("The scan interval must be a positive integer.")
+            else:
+                tester.run_fault(
+                    "LiDAR Periodic Scan Dropout",
+                    "LIDAR_DROP_EVERY_N_command={}".format(value),
+                    "LIDAR_DROP_EVERY_N_command=0",
+                    10,
+                )
+
+        elif choice == 21:
+
+            value = ask_float("Timestamp offset in seconds (default 0.1): ", 0.1)
+
+            tester.run_fault(
+                "LiDAR Timestamp Offset",
+                "LIDAR_TIMESTAMP_OFFSET_S_command={}".format(value),
+                "LIDAR_TIMESTAMP_OFFSET_S_command=0",
+                10,
+            )
+
+        elif choice == 22:
+
+            duration = ask_float("Duration in seconds (default 5): ", 5)
+            tester.localization_input_loss_test(duration)
 
         else:
 
