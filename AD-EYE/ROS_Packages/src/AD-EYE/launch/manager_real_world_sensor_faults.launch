@@ -1,0 +1,35 @@
+<launch>
+  <!--
+    Physical-vehicle fault-test wrapper. It leaves manager_real_world.launch
+    unchanged and routes its final LiDAR output through the sensor injector.
+
+    Do not start manager_real_world.launch separately: it is included below.
+    The included real-world launch configures manager.py to use the typed CAN
+    speed and steering topics rather than the CAN diagnostic /vehicle_status.
+  -->
+
+  <arg name="gnss_input_topic" default="/fix" />
+
+  <group>
+    <remap from="/points_raw"
+           to="/adeye/fault_injection/points_unmodified" />
+    <include file="$(find adeye)/launch/manager_real_world.launch" />
+  </group>
+
+  <node pkg="adeye"
+        type="SensorFaultInjectionManager.py"
+        name="sensor_fault_injection_manager"
+        output="screen">
+    <param name="gnss_input_topic" value="$(arg gnss_input_topic)" />
+    <param name="gnss_output_topic" value="/adeye/fault_injection/fix" />
+    <param name="lidar_input_topic"
+           value="/adeye/fault_injection/points_unmodified" />
+    <param name="lidar_output_topic" value="/points_raw" />
+  </node>
+
+  <!-- Existing GNSS conversion, now consuming the faulted NavSatFix stream. -->
+  <group>
+    <remap from="/fix" to="/adeye/fault_injection/fix" />
+    <include file="$(find adeye)/launch/gnss_broadcaster.launch" />
+  </group>
+</launch>

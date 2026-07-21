@@ -25,11 +25,12 @@ class FaultTester:
 
         self.pub.publish(command_on)
 
-        rospy.sleep(duration)
-
-        if command_off is not None:
-            self.pub.publish(command_off)
-            rospy.sleep(2)
+        try:
+            rospy.sleep(duration)
+        finally:
+            if command_off is not None:
+                self.pub.publish(command_off)
+                rospy.sleep(2)
 
         rospy.loginfo("Finished: " + name)
         rospy.loginfo("====================================")
@@ -39,12 +40,12 @@ class FaultTester:
         rospy.loginfo("Emergency ON")
         self.state_pub.publish("emergency")
 
-        rospy.sleep(5)
-
-        rospy.loginfo("Emergency OFF")
-        self.state_pub.publish("return_to_ready")
-
-        rospy.sleep(2)
+        try:
+            rospy.sleep(5)
+        finally:
+            rospy.loginfo("Emergency OFF")
+            self.state_pub.publish("return_to_ready")
+            rospy.sleep(2)
 
     def reset(self):
 
@@ -122,17 +123,17 @@ if __name__ == "__main__":
         print(" 4  Steering freeze")
         print(" 5  Steering saturation")
         print(" 6  Steering oscillation")
-        print(" 7  Steering random")
+        print(" 7  Steering random (simulation only)")
         print("")
         print(" 8  Acceleration offset")
         print(" 9  Acceleration freeze")
         print("10  Acceleration saturation")
         print("11  Acceleration oscillation")
-        print("12  Runaway acceleration")
+        print("12  Runaway acceleration (simulation only)")
         print("")
         print("13  Emergency state")
         print("14  Reset all faults")
-        print("15  Run all tests")
+        print("15  Run all tests (simulation only)")
         print("")
         print("16  GNSS east bias")
         print("17  GNSS north bias")

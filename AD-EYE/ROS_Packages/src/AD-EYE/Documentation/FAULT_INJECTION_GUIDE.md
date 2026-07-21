@@ -9,28 +9,27 @@ change, what to observe in Autoware, and how to run and reset them.
 > a reviewed speed limit. `Steering random`, `runaway acceleration`, and the
 > combined localization-input-loss test are simulation-only tests unless a
 > separate safety case explicitly approves them.
+>
+> **Current physical-test status:** the direct physical route is implemented,
+> but it is not yet approved for non-zero actuator injection. Complete
+> `REAL_CAR_BLOCKERS_TODO.md` first, especially steering-unit verification,
+> ros2can acknowledgement, feedback freshness, direct-command protection, and
+> final output limits.
 
 ## Fault locations
 
-Vehicle-command faults are intended to affect commands after Autoware generates
-`/vehicle_cmd`:
+Vehicle-command faults use one of two routes, selected by the launch file:
 
 ```text
-Autoware controller -> /vehicle_cmd -> FaultInjectionManager -> vehicle
+Simulation:       Autoware -> /vehicle_cmd -> FaultInjectionManager -> /vehicle_cmd
+Physical vehicle: GUI -> /vehicle_commands -> direct actuator publishers -> ros2can
 ```
 
-The current implementation subscribes to and republishes on the same
-`/vehicle_cmd` topic. This means an Autoware command publisher remains normal,
-but the vehicle interface can potentially receive both the original and the
-modified message. Before relying on a vehicle-command result, verify that the
-vehicle interface consumes the manager's modified command. A fully isolated
-actuator-fault test requires a dedicated input topic and a dedicated output
-topic; that routing is not implemented by the current launch files.
-
-These faults therefore test whether vehicle-status and safety functions detect
-a difference between the requested command and the affected command. Treat
-physical-vehicle results as invalid if the original command can bypass the
-manager to the vehicle interface.
+The simulation path retains the legacy same-topic `/vehicle_cmd` republisher;
+it is not the physical actuator path. The physical route applies supported
+faults in the sole publishers of `/steering_requested_phy` and
+`/acceleration_requested_phy`, immediately before ros2can forwards them to
+CAN.
 
 Sensor faults are applied before Autoware consumes GNSS or LiDAR data:
 
@@ -154,20 +153,86 @@ roslaunch adeye manager_simulation_sensor_faults.launch \
 
 ### Physical vehicle
 
-The physical sensor drivers are started separately. Use
-`sensor_fault_injection_adapters.launch` only in place of the normal GNSS
-broadcaster and normal `/points_raw` relay:
+Use the physical-vehicle fault-test wrapper instead of starting
+`manager_real_world.launch` directly:
 
 ```bash
-roslaunch adeye sensor_fault_injection_adapters.launch
+roslaunch adeye manager_real_world_sensor_faults.launch
 ```
 
-Do **not** run another publisher for `/gnss_pose` or `/points_raw` at the same
-time. In particular, the `points_raw_relay` in `manager_real_world.launch`
-must be replaced/disabled by the approved physical-test launch configuration.
-The same one-publisher rule applies to a real LiDAR driver: it must publish to
-the fault-manager input, while only the manager publishes the final
-`/points_raw` consumed by Autoware.
+The wrapper includes `manager_real_world.launch`, redirects its
+`points_raw_relay` output through `SensorFaultInjectionManager`, and starts
+the GNSS broadcaster with the faulted `/fix` input. Do **not** start
+`manager_real_world.launch` or another publisher for `/gnss_pose` or
+`/points_raw` separately. The same one-publisher rule applies to a real LiDAR
+driver: it must publish to the fault-manager input, while only the manager
+publishes the final `/points_raw` consumed by Autoware.
+
+The physical launch configures `manager.py` to use the typed CAN-derived
+feedback topics instead of `/vehicle_status`:
+
+```bash
+rostopic type /current_velocity_phy  # geometry_msgs/TwistStamped
+rostopic type /sending_angle          # std_msgs/Float32
+```
+
+`/current_velocity_phy.twist.linear.x` supplies the speed used by the wheel
+lock, while `/sending_angle.data` supplies the current steering angle.
+`/vehicle_status` may remain a CAN diagnostic `std_msgs/String` topic; the
+physical manager does not subscribe to or publish on it, so it no longer
+creates a message-type conflict. The simulation launch continues to use
+`autoware_msgs/VehicleStatus` on `/vehicle_status`.
+
+#### Physical actuator-fault routing
+
+The physical launch uses the existing GUI topic `/vehicle_commands` as the
+fault-control input. It does not create another command topic. The legacy
+simulation `/vehicle_cmd` subscription is commented beside its replacement in
+`manager.py` and remains available when `actuator_fault_path:=vehicle_cmd` is
+used.
+
+On the physical path, the existing actuator publishers apply the applicable
+faults before ros2can receives them:
+
+```text
+/vehicle_commands -> ctrl_cmd_republisher -> /steering_requested_phy -> ros2can
+/vehicle_commands -> vehicle_controller   -> /acceleration_requested_phy -> ros2can
+```
+
+This retains one publisher per direct actuator topic. Do not start a second
+publisher for either topic during a physical test:
+
+```bash
+rostopic info /steering_requested_phy
+rostopic info /acceleration_requested_phy
+```
+
+The physical path implements steering offset, freeze, saturation, and
+oscillation (options 3--6), plus acceleration offset, freeze, saturation, and
+oscillation (options 8--11). `STEERRANDOM_command=1` and
+`ACCELRUNAWAY_command=1` are deliberately ignored on this path and remain
+simulation-only.
+
+The configured limits and five-second timeout are safeguards, not evidence
+that the vehicle interface has accepted or returned to a normal command. In
+particular, acceleration timeout recovery still requires physical validation.
+Follow `REAL_WORLD_FAULT_INJECTION.md` and the blocker checklist before using
+any non-zero actuator command.
+
+`ctrl_cmd_republisher.cpp` contains two adjacent configurations for the unit
+that ros2can expects on `/steering_requested_phy`. The degrees setting is
+active; the radians setting is immediately above it and commented out:
+
+```cpp
+// const bool kSteeringRequestedPhyUsesRadians = true;
+const bool kSteeringRequestedPhyUsesRadians = false;
+```
+
+Autoware `/ctrl_cmd` steering uses radians. With the active degrees setting,
+the node converts it to degrees before applying GUI steering-fault values. If
+vehicle-interface validation later shows that ros2can expects radians, swap
+the two lines and use radians for steering-fault values. Do not run a non-zero
+steering fault on the physical vehicle until that unit has been verified.
 
 ### Terminal menu
 
@@ -209,10 +274,10 @@ subscribers with:
 rostopic info /vehicle_cmd
 ```
 
-For an actuator-fault test, determine from the vehicle-interface configuration
-whether it receives only the manager's modified command. If this cannot be
-demonstrated, restrict options 2--12 and 15 to simulation or change the launch
-routing before a physical test.
+For a physical actuator-fault test, verify that the direct actuator topics
+have one publisher each, as documented in
+[Physical actuator-fault routing](#physical-actuator-fault-routing). Options
+7, 12, 15, and 22 remain simulation-only.
 
 For options 16--19, confirm that `/fix` has a source and that the GNSS fault
 path is complete:
@@ -242,8 +307,8 @@ limits.
 
 | Menu | Fault and command | What it changes | What it demonstrates / observe | Reset |
 | --- | --- | --- | --- | --- |
-| 1 | Hazard lights: `HL_command=1` | Sets both lamp commands on the affected `VehicleCmd`. | HMI/indicator path and fault logging. This is not a steering or braking fault. | `HL_command=0` |
-| 2 | Wheel lock: `WLOCK_command=0` | When measured speed is below `0.1`, holds steering at the captured value and sets linear velocity to zero. | Low-speed loss of steering/drive authority and recovery. Do not request while moving. | `WLOCK_command=1` |
+| 1 | Hazard lights: `HL_command=1` | Simulation: sets both lamps on the affected `VehicleCmd`. Physical: ros2can handles the existing GUI command directly. | HMI/indicator path and fault logging. This is not a steering or braking fault. | `HL_command=0` |
+| 2 | Wheel lock: `WLOCK_command=0` | Simulation: when measured speed is below `0.1`, holds steering at the captured value and sets linear velocity to zero. Physical: ros2can handles the existing GUI command directly. | Low-speed loss of steering/drive authority and recovery. Do not request while moving. | `WLOCK_command=1` |
 | 3 | Steering offset: `STEEROFFSET_command=<value>` | Adds a constant value to each requested steering angle. | Path-tracking error caused by steering bias. Observe `/vehicle_cmd`, vehicle path, and tracking error. | `STEEROFFSET_command=0` |
 | 4 | Steering freeze: `STEERFREEZE_command=1` | Captures the first steering value after activation and reuses it. | Stuck steering actuator during changing curvature. Observe command/actual steering divergence. | `STEERFREEZE_command=0` |
 | 5 | Steering saturation: `STEERSAT_command=<limit>` | Clips steering to the range `[-limit, +limit]`. | Loss of steering authority during a curve. Observe path deviation and recovery after reset. | `STEERSAT_command=0` |
@@ -269,6 +334,13 @@ Run it with:
 
 ```bash
 rosrun adeye steering_saturation_experiment.py
+```
+
+For a physical-car test, use the CAN speed source explicitly:
+
+```bash
+rosrun adeye steering_saturation_experiment.py \
+  _vehicle_status_source:=can_topics
 ```
 
 Use it for a gentle low-speed curved path, first in simulation. Observe the
@@ -321,11 +393,18 @@ command field, the vehicle status, path tracking, and the safety response in
 Foxglove or RViz. Option 13 should also cause a change on `manager/state` and
 may trigger `/safety_channel/switch_request`.
 
-Because the current vehicle-command path shares `/vehicle_cmd` between the
-original and republished messages, a changed message on this topic alone does
-not prove that the vehicle interface used the modified one. Confirm the
-vehicle-interface routing before treating an actuator-fault result as valid,
-especially on a physical vehicle.
+In simulation, the legacy path shares `/vehicle_cmd` between the original and
+republished messages, so that topic alone does not prove which command was
+used. On the physical path, observe the direct actuator topics instead:
+
+```bash
+rostopic echo /steering_requested_phy
+rostopic echo /acceleration_requested_phy
+```
+
+Their values must change in the expected direction while the fault is active.
+They prove delivery to ros2can, not a complete physical safety case; also
+record the vehicle response and the independent safety-system response.
 
 ### GNSS faults (options 16--19)
 
@@ -431,7 +510,14 @@ rostopic echo -n 1 /ndt_pose
 
 Fault logs are written by `FaultInjectionManager` under
 `~/.ros/adeye/fault_logs` by default. The directory can be overridden with the
-private ROS parameter `~fault_log_dir`.
+private ROS parameter `~fault_log_dir`. Logs contain fault commands,
+transitions, value changes, and bounded heartbeat records rather than one line
+per incoming vehicle command. By default, a log rotates at 10 MiB, rotated
+logs are gzip-compressed, and only the newest 20 files are retained. The
+private parameters `~fault_log_max_bytes`, `~fault_log_keep_files`,
+`~fault_log_heartbeat_s`, `~fault_log_value_change_min_interval_s`, and
+`~fault_log_compress_rotated` can change this behaviour. Set
+`~fault_log_max_bytes:=0` to disable rotation.
 
 ## Interpretation
 

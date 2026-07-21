@@ -30,7 +30,14 @@
             name="manager"
             respawn="false"
             output="screen"
-    />
+    >
+        <!-- CAN interface publishes speed and steering on typed topics. -->
+        <param name="vehicle_status_source" value="can_topics" />
+        <param name="vehicle_speed_topic" value="/current_velocity_phy" />
+        <param name="vehicle_steering_angle_topic" value="/sending_angle" />
+        <!-- AD-EYE fault-injection change: physical direct actuator routing. -->
+        <param name="actuator_fault_path" value="physical_topics" />
+    </node>
 
     <!--<node pkg="nmea_navsat_driver" type="nmea_serial_driver" name="navsat_driver" respawn="true">
         <param name="port" value="/dev/ttyACM0"/>
@@ -51,7 +58,13 @@
         pkg="adeye"
         type="ctrl_cmd_republisher"
         name="ctrl_cmd_republisher"
-    />
+    >
+        <!-- AD-EYE fault-injection change: conservative physical limits. -->
+        <param name="fault_timeout_s" value="5.0" />
+        <param name="max_steering_offset" value="1.0" />
+        <param name="max_steering_saturation" value="10.0" />
+        <param name="max_steering_oscillation" value="0.5" />
+    </node>
 
     <node
             type="vehicle_controller"
@@ -63,6 +76,11 @@
         <param name="topic_velocity_current" value="/current_velocity"/>
         <param name="topic_acceleration_request" value="/acceleration_requested_phy"/>
         <param name="topic_steering_request" value="/old_steering_requested_phy"/>
+        <!-- AD-EYE fault-injection change: conservative physical limits. -->
+        <param name="fault_timeout_s" value="5.0" />
+        <param name="max_acceleration_offset" value="0.2" />
+        <param name="max_acceleration_saturation" value="0.5" />
+        <param name="max_acceleration_oscillation" value="0.1" />
     </node>
 
     <node pkg="topic_tools" type="relay" name="points_raw_relay" output="log" args="/os_cloud_node/points /points_raw"/>

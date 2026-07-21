@@ -5,6 +5,11 @@ Autoware consumes them. It listens for commands on `/vehicle_commands` and does
 not modify `FaultInjectionManager.py`, `gnss_broadcaster.py`, or
 `point_cloud_broadcaster.py`.
 
+It reports a stale or absent raw GNSS/LiDAR input after
+`~sensor_input_timeout_s` seconds (default: two seconds). This watchdog only
+logs the condition; it does not request a manager safe state or prove that
+Autoware responded safely.
+
 ## Commands
 
 | Command | Effect |
@@ -26,6 +31,12 @@ GNSS receiver must still be launched separately.
 
 ```bash
 roslaunch adeye sensor_fault_injection_adapters.launch
+```
+
+For the complete physical manager setup, prefer:
+
+```bash
+roslaunch adeye manager_real_world_sensor_faults.launch
 ```
 
 The launch file creates this route:
@@ -84,6 +95,14 @@ time. For example:
 Use separate buttons for each reset command. A localization-input-loss test is
 the pair `GNSS_DROPOUT_command=1` and `LIDAR_DROP_EVERY_N_command=1`; reset
 both commands when the experiment ends.
+
+## Safety limits and physical use
+
+GNSS bias and LiDAR timestamp-offset values currently accept any finite
+number. Treat them as simulation-first faults: define reviewed limits before a
+physical test, record the expected Autoware response, and complete
+`REAL_CAR_BLOCKERS_TODO.md`. Do not assume that a watchdog log is a safety
+response.
 
 Reset after every experiment:
 

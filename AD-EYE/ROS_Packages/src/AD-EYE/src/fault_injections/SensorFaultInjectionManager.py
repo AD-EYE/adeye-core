@@ -5,6 +5,7 @@
 import copy
 import math
 import threading
+import time
 
 import rospy
 from sensor_msgs.msg import NavSatFix, NavSatStatus, PointCloud2
@@ -28,6 +29,14 @@ class SensorFaultInjectionManager:
         self.lidar_drop_every_n = 0
         self.lidar_timestamp_offset_s = 0.0
         self.lidar_message_count = 0
+
+        self.gnss_input_seen = False
+        self.lidar_input_seen = False
+        self.last_gnss_input_time = time.time()
+        self.last_lidar_input_time = time.time()
+        self.sensor_input_timeout_s = rospy.get_param(
+            "~sensor_input_timeout_s", 2.0
+        )
 
         gnss_input_topic = rospy.get_param("~gnss_input_topic", "/fix")
         gnss_output_topic = rospy.get_param(
@@ -56,6 +65,9 @@ class SensorFaultInjectionManager:
         self.lidar_sub = rospy.Subscriber(
             lidar_input_topic, PointCloud2, self.lidar_callback, queue_size=10
         )
+        self.health_timer = rospy.Timer(
+            rospy.Duration(1.0), self.health_watchdog_callback
+        )
 
         rospy.loginfo(
             "Sensor fault injector: GNSS %s -> %s, LiDAR %s -> %s",
@@ -64,6 +76,32 @@ class SensorFaultInjectionManager:
             lidar_input_topic,
             lidar_output_topic,
         )
+
+    def health_watchdog_callback(self, _event):
+        """Report a source outage without treating an intentional fault as one."""
+
+        now = time.time()
+        with self._lock:
+            gnss_seen = self.gnss_input_seen
+            lidar_seen = self.lidar_input_seen
+            gnss_age = now - self.last_gnss_input_time
+            lidar_age = now - self.last_lidar_input_time
+
+        if gnss_age > self.sensor_input_timeout_s:
+            rospy.logerr_throttle(
+                5.0,
+                "Sensor fault injector health: GNSS input has %s for %.1f s",
+                "never arrived" if not gnss_seen else "been stale",
+                gnss_age,
+            )
+
+        if lidar_age > self.sensor_input_timeout_s:
+            rospy.logerr_throttle(
+                5.0,
+                "Sensor fault injector health: LiDAR input has %s for %.1f s",
+                "never arrived" if not lidar_seen else "been stale",
+                lidar_age,
+            )
 
     def command_callback(self, message):
         command = message.data
@@ -116,6 +154,8 @@ class SensorFaultInjectionManager:
 
     def gnss_callback(self, message):
         with self._lock:
+            self.gnss_input_seen = True
+            self.last_gnss_input_time = time.time()
             dropout_enabled = self.gnss_dropout_enabled
             no_fix_enabled = self.gnss_no_fix_enabled
             east_bias_m = self.gnss_east_bias_m
@@ -143,6 +183,8 @@ class SensorFaultInjectionManager:
 
     def lidar_callback(self, message):
         with self._lock:
+            self.lidar_input_seen = True
+            self.last_lidar_input_time = time.time()
             self.lidar_message_count += 1
             message_count = self.lidar_message_count
             drop_every_n = self.lidar_drop_every_n

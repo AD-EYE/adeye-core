@@ -1,17 +1,38 @@
 #!/usr/bin/env python
 
 import datetime
+import glob
+import gzip
 import math
 import os
 import random
+import shutil
 import threading
+import time
 
 import rospy
 from std_msgs.msg import String
-from autoware_msgs.msg import VehicleStatus, VehicleCmd
+from autoware_msgs.msg import VehicleCmd
 
 
 class FaultInjectionManager:
+
+    FAULT_COMMAND_PREFIXES = (
+        "HL_command=",
+        "WLOCK_command=",
+        "STEEROFFSET_command=",
+        "STEERFREEZE_command=",
+        "STEERSAT_command=",
+        "STEEROSC_command=",
+        "STEERRANDOM_command=",
+        "ACCELOFFSET_command=",
+        "ACCELFREEZE_command=",
+        "ACCELSAT_command=",
+        "ACCELOSC_command=",
+        "ACCELRUNAWAY_command=",
+        "GNSS_",
+        "LIDAR_",
+    )
 
     def __init__(self, manager_state_machine):
 
@@ -32,11 +53,31 @@ class FaultInjectionManager:
                 if not os.path.isdir(log_dir):
                     raise
 
-        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S_%f")
-        filename = "adeye_fault_log_{}_{}.txt".format(timestamp, os.getpid())
-        self.fault_log_path = os.path.join(log_dir, filename)
-        self.fault_log = open(self.fault_log_path, "a")
-        rospy.on_shutdown(self.fault_log.close)
+        self.fault_log_dir = log_dir
+        self.fault_log_max_bytes = max(
+            0, int(rospy.get_param("~fault_log_max_bytes", 10 * 1024 * 1024))
+        )
+        self.fault_log_keep_files = max(
+            1, int(rospy.get_param("~fault_log_keep_files", 20))
+        )
+        self.fault_log_heartbeat_s = max(
+            0.0, float(rospy.get_param("~fault_log_heartbeat_s", 5.0))
+        )
+        self.fault_log_value_change_min_interval_s = max(
+            0.0,
+            float(
+                rospy.get_param(
+                    "~fault_log_value_change_min_interval_s", 1.0
+                )
+            ),
+        )
+        self.fault_log_compress_rotated = rospy.get_param(
+            "~fault_log_compress_rotated", True
+        )
+        self._last_fault_log_entries = {}
+        self._open_new_fault_log()
+        self._prune_fault_logs()
+        rospy.on_shutdown(self._close_fault_log)
         self.VehicleStates = self.VehicleStates()
         self._republishing_lock = threading.Lock()
 
@@ -106,7 +147,87 @@ class FaultInjectionManager:
 
         rospy.loginfo(msg)
 
-    def logFault(self, fault, value):
+    def _new_fault_log_path(self):
+        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+        filename = "adeye_fault_log_{}_{}.txt".format(timestamp, os.getpid())
+        return os.path.join(self.fault_log_dir, filename)
+
+    def _open_new_fault_log(self):
+        self.fault_log_path = self._new_fault_log_path()
+        self.fault_log = open(self.fault_log_path, "a")
+
+    def _compress_fault_log(self, path):
+        if not self.fault_log_compress_rotated or not os.path.isfile(path):
+            return
+
+        compressed_path = path + ".gz"
+        try:
+            with open(path, "rb") as source, gzip.open(
+                compressed_path, "wb"
+            ) as target:
+                shutil.copyfileobj(source, target)
+            os.remove(path)
+        except (IOError, OSError) as error:
+            rospy.logwarn("Could not compress fault log %s: %s", path, error)
+
+    def _prune_fault_logs(self):
+        paths = glob.glob(
+            os.path.join(self.fault_log_dir, "adeye_fault_log_*.txt*")
+        )
+        paths.sort(key=os.path.getmtime, reverse=True)
+
+        for path in paths[self.fault_log_keep_files :]:
+            if path != self.fault_log_path:
+                try:
+                    os.remove(path)
+                except OSError as error:
+                    rospy.logwarn("Could not remove old fault log %s: %s", path, error)
+
+    def _rotate_fault_log_if_needed(self):
+        if self.fault_log_max_bytes <= 0:
+            return
+
+        self.fault_log.flush()
+        if os.path.getsize(self.fault_log_path) < self.fault_log_max_bytes:
+            return
+
+        previous_path = self.fault_log_path
+        self.fault_log.close()
+        self._compress_fault_log(previous_path)
+        self._open_new_fault_log()
+        self._prune_fault_logs()
+
+    def _close_fault_log(self):
+        if not self.fault_log.closed:
+            self.fault_log.close()
+
+    def _should_log_fault(self, fault, value, force):
+        now = time.time()
+        value = str(value)
+        previous = self._last_fault_log_entries.get(fault)
+
+        if force or previous is None:
+            self._last_fault_log_entries[fault] = (value, now)
+            return True
+
+        previous_value, previous_time = previous
+        value_changed = value != previous_value
+        elapsed = now - previous_time
+        if value_changed and elapsed >= self.fault_log_value_change_min_interval_s:
+            self._last_fault_log_entries[fault] = (value, now)
+            return True
+
+        if elapsed >= self.fault_log_heartbeat_s:
+            self._last_fault_log_entries[fault] = (value, now)
+            return True
+
+        return False
+
+    def logFault(self, fault, value, force=False):
+        """Log fault transitions plus bounded periodic heartbeat records."""
+
+        if not self._should_log_fault(fault, value, force):
+            return
 
         timestamp = datetime.datetime.now()
 
@@ -114,6 +235,7 @@ class FaultInjectionManager:
 
         self.fault_log.write(line)
         self.fault_log.flush()
+        self._rotate_fault_log_if_needed()
 
         rospy.loginfo(line)
 
@@ -146,16 +268,22 @@ class FaultInjectionManager:
     ##########################################################################
 
     def vehicleStatusCallback(self, msg):
+        """Receive simulation status from autoware_msgs/VehicleStatus."""
 
-        self.VehicleStates.current_speed = msg.speed
-        self.VehicleStates.current_angle = msg.angle
+        self.vehicleSpeedCallback(msg.speed)
+        self.vehicleSteeringAngleCallback(msg.angle)
+
+    def vehicleSpeedCallback(self, speed):
+        """Receive the current longitudinal speed in metres per second."""
+
+        self.VehicleStates.current_speed = speed
         #######################################################################
         # Wheel lock
         #######################################################################
 
         if self.VehicleStates.wheel_gui == 0:
 
-            if abs(msg.speed) < 0.1:
+            if abs(speed) < 0.1:
 
                 if self.VehicleStates.steer_being_kept is None:
 
@@ -174,11 +302,19 @@ class FaultInjectionManager:
 
             self.VehicleStates.steer_being_kept = None
 
+    def vehicleSteeringAngleCallback(self, angle):
+        """Receive the current steering angle from the vehicle interface."""
+
+        self.VehicleStates.current_angle = angle
+
     ##########################################################################
     # VEHICLE COMMAND CALLBACK
     ##########################################################################
 
     def vehicleCommandCallback(self, msg):
+
+        if msg.data.startswith(self.FAULT_COMMAND_PREFIXES):
+            self.logFault("FAULT_COMMAND", msg.data, force=True)
 
         if msg.data == "HL_command=1":
 

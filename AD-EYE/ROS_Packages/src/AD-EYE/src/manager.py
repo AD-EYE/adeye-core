@@ -12,6 +12,8 @@ from std_msgs.msg import Int32
 from std_msgs.msg import String
 from std_msgs.msg import Int32MultiArray
 from std_msgs.msg import Int8
+from std_msgs.msg import Float32
+from geometry_msgs.msg import TwistStamped
 from autoware_msgs.msg import VehicleStatus, VehicleCmd, ControlCommand
 
 
@@ -46,26 +48,71 @@ class ManagerStateMachine:
 
         rospy.Subscriber("/state_cmd", String, self.fault_manager.emergencyCallback)
 
-        rospy.Subscriber(
-            "/vehicle_status", VehicleStatus, self.fault_manager.vehicleStatusCallback
+        vehicle_status_source = rospy.get_param(
+            "~vehicle_status_source", "autoware_status"
         )
+        if vehicle_status_source == "autoware_status":
+            rospy.Subscriber(
+                "/vehicle_status",
+                VehicleStatus,
+                self.fault_manager.vehicleStatusCallback,
+            )
+        elif vehicle_status_source == "can_topics":
+            rospy.Subscriber(
+                rospy.get_param("~vehicle_speed_topic", "/current_velocity_phy"),
+                TwistStamped,
+                self.vehicleSpeedCallback,
+            )
+            rospy.Subscriber(
+                rospy.get_param("~vehicle_steering_angle_topic", "/sending_angle"),
+                Float32,
+                self.vehicleSteeringAngleCallback,
+            )
+        else:
+            raise rospy.ROSException(
+                "Unknown vehicle_status_source: {}".format(vehicle_status_source)
+            )
 
         rospy.Subscriber(
             "/vehicle_commands", String, self.fault_manager.vehicleCommandCallback
         )
-        rospy.Subscriber(
-            "/vehicle_cmd", VehicleCmd, self.fault_manager.vehicleCmdFaultCallback
-        )
+        # ===== AD-EYE fault-injection change: actuator routing selection =====
+        actuator_fault_path = rospy.get_param("~actuator_fault_path", "vehicle_cmd")
+        if actuator_fault_path == "vehicle_cmd":
+            # Legacy simulation path: FaultInjectionManager modifies VehicleCmd.
+            rospy.Subscriber(
+                "/vehicle_cmd", VehicleCmd, self.fault_manager.vehicleCmdFaultCallback
+            )
+        elif actuator_fault_path == "physical_topics":
+            # The original unconditional /vehicle_cmd subscription was:
+            # rospy.Subscriber(
+            #     "/vehicle_cmd", VehicleCmd,
+            #     self.fault_manager.vehicleCmdFaultCallback,
+            # )
+            #
+            # On the physical vehicle, ctrl_cmd_republisher and
+            # vehicle_controller are the single publishers of
+            # /steering_requested_phy and /acceleration_requested_phy. They
+            # apply the GUI fault commands before publishing to ros2can.
+            rospy.loginfo("Using physical actuator fault injection path")
+        else:
+            raise rospy.ROSException(
+                "Unknown actuator_fault_path: {}".format(actuator_fault_path)
+            )
+        # ===== End AD-EYE fault-injection change =====
 
-        self.send_state_pub = rospy.Publisher(
-            "/vehicle_status", VehicleStatus, queue_size=1
-        )
         self.send_wheel_state_pub = rospy.Publisher(
             "/vehicle_cmd", VehicleCmd, queue_size=1
         )
         self.send_vehicle_commands_pub = rospy.Publisher(
             "/vehicle_commands", String, queue_size=1
         )
+
+    def vehicleSpeedCallback(self, message):
+        self.fault_manager.vehicleSpeedCallback(message.twist.linear.x)
+
+    def vehicleSteeringAngleCallback(self, message):
+        self.fault_manager.vehicleSteeringAngleCallback(message.data)
 
     ##Method getState
     #
