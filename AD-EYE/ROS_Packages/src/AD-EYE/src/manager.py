@@ -12,7 +12,7 @@ from std_msgs.msg import Int32
 from std_msgs.msg import String
 from std_msgs.msg import Int32MultiArray
 from std_msgs.msg import Int8
-from std_msgs.msg import Float32
+from std_msgs.msg import Float64
 from geometry_msgs.msg import TwistStamped
 from autoware_msgs.msg import VehicleStatus, VehicleCmd, ControlCommand
 
@@ -65,7 +65,7 @@ class ManagerStateMachine:
             )
             rospy.Subscriber(
                 rospy.get_param("~vehicle_steering_angle_topic", "/sending_angle"),
-                Float32,
+                Float64,
                 self.vehicleSteeringAngleCallback,
             )
         else:

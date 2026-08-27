@@ -73,7 +73,7 @@
             respawn="false"
             output="screen"
     >
-        <param name="topic_velocity_current" value="/current_velocity"/>
+        <param name="topic_velocity_current" value="/current_velocity_phy"/>
         <param name="topic_acceleration_request" value="/acceleration_requested_phy"/>
         <param name="topic_steering_request" value="/old_steering_requested_phy"/>
         <!-- AD-EYE fault-injection change: conservative physical limits. -->

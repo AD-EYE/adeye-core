@@ -27,9 +27,9 @@
     <param name="lidar_output_topic" value="/points_raw" />
   </node>
 
-  <!-- Existing GNSS conversion, now consuming the faulted NavSatFix stream. -->
+  <!-- Existing GNSS conversion, now consuming the faulted NavSatFix stream.
   <group>
     <remap from="/fix" to="/adeye/fault_injection/fix" />
     <include file="$(find adeye)/launch/gnss_broadcaster.launch" />
-  </group>
+  </group> -->
 </launch>
