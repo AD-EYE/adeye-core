@@ -50,9 +50,9 @@
         <arg name="metadata" value="/home/adeye/ouster-metadata.json"/>
     </include>
 
-    
+
     <!--<node pkg="adeye" type="camera_gmsl_publisher" name="camera_gmsl_publisher" respawn="true"/>-->
-    
+
 
     <node
         pkg="adeye"
@@ -83,6 +83,7 @@
         <param name="max_acceleration_oscillation" value="0.1" />
     </node>
 
+    <node pkg="topic_tools" type="relay" name="relay_velocity" args="/current_velocity_phy /current_velocity"/>
     <node pkg="topic_tools" type="relay" name="points_raw_relay" output="log" args="/os_cloud_node/points /points_raw"/>
 
 </launch>
