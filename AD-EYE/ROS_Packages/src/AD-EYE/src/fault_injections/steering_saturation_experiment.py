@@ -4,6 +4,7 @@
 
 import rospy
 from autoware_msgs.msg import VehicleStatus
+from geometry_msgs.msg import TwistStamped
 from std_msgs.msg import String
 
 
@@ -27,12 +28,29 @@ class SteeringSaturationExperiment:
         self.command_pub = rospy.Publisher(
             "/vehicle_commands", String, queue_size=1
         )
-        rospy.Subscriber(
-            "/vehicle_status", VehicleStatus, self.vehicle_status_callback
+        status_source = rospy.get_param(
+            "~vehicle_status_source", "autoware_status"
         )
+        if status_source == "autoware_status":
+            rospy.Subscriber(
+                "/vehicle_status", VehicleStatus, self.vehicle_status_callback
+            )
+        elif status_source == "can_topics":
+            rospy.Subscriber(
+                rospy.get_param("~vehicle_speed_topic", "/current_velocity_phy"),
+                TwistStamped,
+                self.vehicle_speed_callback,
+            )
+        else:
+            raise rospy.ROSException(
+                "Unknown vehicle_status_source: {}".format(status_source)
+            )
 
     def vehicle_status_callback(self, message):
         self.current_speed = message.speed
+
+    def vehicle_speed_callback(self, message):
+        self.current_speed = message.twist.linear.x
 
     def publish_command(self, command):
         rospy.loginfo("Fault command: %s", command)

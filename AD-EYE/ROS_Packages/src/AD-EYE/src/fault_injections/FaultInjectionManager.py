@@ -3,6 +3,7 @@
 import datetime
 import glob
 import gzip
+import json
 import math
 import os
 import random
@@ -84,6 +85,14 @@ class FaultInjectionManager:
         self.fault_debug_pub = rospy.Publisher(
             "/adeye/fault_log", String, queue_size=50
         )
+        self.fault_log_alias_pub = rospy.Publisher(
+            "/fault_log", String, queue_size=50
+        )
+        rospy.Subscriber(
+            "/adeye/physical_fault_status",
+            String,
+            self.physicalFaultStatusCallback,
+        )
 
         self.manager_state_machine = manager_state_machine
         self.republishing_vehicle_cmd = False
@@ -144,6 +153,7 @@ class FaultInjectionManager:
         msg = fault + ": " + str(value)
 
         self.fault_debug_pub.publish(msg)
+        self.fault_log_alias_pub.publish(msg)
 
         rospy.loginfo(msg)
 
@@ -155,6 +165,11 @@ class FaultInjectionManager:
     def _open_new_fault_log(self):
         self.fault_log_path = self._new_fault_log_path()
         self.fault_log = open(self.fault_log_path, "a")
+        self.fault_log.write(
+            str(datetime.datetime.now()) + " | LOGGER_STARTED | writable\n"
+        )
+        self.fault_log.flush()
+        rospy.loginfo("Fault log file is writable: %s", self.fault_log_path)
 
     def _compress_fault_log(self, path):
         if not self.fault_log_compress_rotated or not os.path.isfile(path):
@@ -237,7 +252,26 @@ class FaultInjectionManager:
         self.fault_log.flush()
         self._rotate_fault_log_if_needed()
 
+        topic_message = String()
+        topic_message.data = line.rstrip("\n")
+        self.fault_debug_pub.publish(topic_message)
+        self.fault_log_alias_pub.publish(topic_message)
+
         rospy.loginfo(line)
+
+    def physicalFaultStatusCallback(self, msg):
+        """Persist and publish physical actuator acceptance and timeout state."""
+
+        try:
+            status = json.loads(msg.data)
+            source = str(status.get("source", "unknown"))
+            fault = str(status.get("fault", "unknown"))
+            event = str(status.get("event", "unknown"))
+            log_key = "PHYSICAL_FAULT_STATUS:{}:{}".format(source, fault)
+            self.logFault(log_key, msg.data, force=(event != "active"))
+        except (TypeError, ValueError):
+            rospy.logwarn("Invalid physical fault status JSON: %s", msg.data)
+            self.logFault("PHYSICAL_FAULT_STATUS_INVALID", msg.data, force=True)
 
     ##########################################################################
     # EMERGENCY STATE CALLBACK

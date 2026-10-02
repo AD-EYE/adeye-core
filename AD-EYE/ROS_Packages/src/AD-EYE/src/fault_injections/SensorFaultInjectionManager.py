@@ -37,6 +37,16 @@ class SensorFaultInjectionManager:
         self.sensor_input_timeout_s = rospy.get_param(
             "~sensor_input_timeout_s", 2.0
         )
+        self.max_gnss_bias_m = max(
+            0.0, float(rospy.get_param("~max_gnss_bias_m", 5.0))
+        )
+        self.max_lidar_drop_every_n = max(
+            1, int(rospy.get_param("~max_lidar_drop_every_n", 20))
+        )
+        self.max_lidar_timestamp_offset_s = max(
+            0.0,
+            float(rospy.get_param("~max_lidar_timestamp_offset_s", 0.2)),
+        )
 
         gnss_input_topic = rospy.get_param("~gnss_input_topic", "/fix")
         gnss_output_topic = rospy.get_param(
@@ -109,11 +119,17 @@ class SensorFaultInjectionManager:
         with self._lock:
             value = self._command_value(command, "GNSS_EAST_BIAS_M_command=")
             if value is not None:
-                self.gnss_east_bias_m = value
+                if abs(value) <= self.max_gnss_bias_m:
+                    self.gnss_east_bias_m = value
+                else:
+                    rospy.logwarn("Rejected GNSS east bias outside physical limit: %s", value)
 
             value = self._command_value(command, "GNSS_NORTH_BIAS_M_command=")
             if value is not None:
-                self.gnss_north_bias_m = value
+                if abs(value) <= self.max_gnss_bias_m:
+                    self.gnss_north_bias_m = value
+                else:
+                    rospy.logwarn("Rejected GNSS north bias outside physical limit: %s", value)
 
             if command == "GNSS_DROPOUT_command=1":
                 self.gnss_dropout_enabled = True
@@ -127,13 +143,22 @@ class SensorFaultInjectionManager:
 
             value = self._command_value(command, "LIDAR_DROP_EVERY_N_command=")
             if value is not None:
-                self.lidar_drop_every_n = max(0, int(value))
+                integer_value = int(value)
+                if value != integer_value:
+                    rospy.logwarn("Rejected non-integer LiDAR dropout interval: %s", value)
+                elif integer_value == 0 or 1 <= integer_value <= self.max_lidar_drop_every_n:
+                    self.lidar_drop_every_n = integer_value
+                else:
+                    rospy.logwarn("Rejected LiDAR dropout interval outside physical limit: %s", value)
 
             value = self._command_value(
                 command, "LIDAR_TIMESTAMP_OFFSET_S_command="
             )
             if value is not None:
-                self.lidar_timestamp_offset_s = value
+                if abs(value) <= self.max_lidar_timestamp_offset_s:
+                    self.lidar_timestamp_offset_s = value
+                else:
+                    rospy.logwarn("Rejected LiDAR timestamp offset outside physical limit: %s", value)
 
     @staticmethod
     def _command_value(command, prefix):

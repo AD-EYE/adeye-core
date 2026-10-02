@@ -61,9 +61,12 @@
     >
         <!-- AD-EYE fault-injection change: conservative physical limits. -->
         <param name="fault_timeout_s" value="5.0" />
-        <param name="max_steering_offset" value="1.0" />
-        <param name="max_steering_saturation" value="10.0" />
-        <param name="max_steering_oscillation" value="0.5" />
+        <param name="max_fault_timeout_s" value="300.0" />
+        <param name="max_nominal_command_age_s" value="0.5" />
+        <!-- Radians: 1 deg, 10 deg, and 0.5 deg respectively. -->
+        <param name="max_steering_offset" value="0.017453292519943295" />
+        <param name="max_steering_saturation" value="0.17453292519943295" />
+        <param name="max_steering_oscillation" value="0.008726646259971648" />
     </node>
 
     <node
@@ -78,6 +81,7 @@
         <param name="topic_steering_request" value="/old_steering_requested_phy"/>
         <!-- AD-EYE fault-injection change: conservative physical limits. -->
         <param name="fault_timeout_s" value="5.0" />
+        <param name="max_fault_timeout_s" value="300.0" />
         <param name="max_acceleration_offset" value="0.2" />
         <param name="max_acceleration_saturation" value="0.5" />
         <param name="max_acceleration_oscillation" value="0.1" />
