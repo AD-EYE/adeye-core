@@ -1,13 +1,49 @@
 <!-- -->
 <launch>
 
-    <include file="$(find can_vehicle)/launch/vic.launch"/>
+    <include file="$(find can_vehicle)/launch/vic.launch">
+        <arg name="allow_direct_steering_commands" value="true"/>
+        <arg name="allow_direct_acceleration_commands" value="true"/>
+        <arg name="max_acceleration_command_age_s" value="0.3"/>
+        <arg name="max_steering_command_age_s" value="0.3"/>
+    </include>
 
     <env name="ROSCONSOLE_FORMAT" value="[${severity}] [${time}] [${node}]: ${message}"/>
 
     <arg name="lidar_source" default="RealWorld"/>
     <arg name="gnss_source" default="RealWorld"/>
     <arg name="camera_source" default="RealWorld"/>
+    <!-- Physical-car fault tests use steering and acceleration commands
+         from a rosbag by default. During playback, rename these topics:
+         /acceleration_requested_phy:=/replay/acceleration_requested_phy
+         /steering_requested_phy:=/replay/steering_requested_phy
+         Set either recorded option to false only when that command should
+         come from the running system instead of the rosbag. -->
+    <arg name="use_recorded_acceleration" default="true"/>
+    <arg name="recorded_acceleration_topic" default="/replay/acceleration_requested_phy"/>
+    <arg name="live_acceleration_topic" default="/nominal/acceleration_requested_phy"/>
+    <arg name="recorded_acceleration_rate_hz" default="10.0"/>
+    <arg name="recorded_acceleration_max_age_s" default="0.3"/>
+    <!-- The CAN format supports this range, but that does not make the full
+         range safe for a test. Use limits approved for the vehicle and test. -->
+    <arg name="recorded_acceleration_min" default="-15.0"/>
+    <arg name="recorded_acceleration_max" default="16.99"/>
+    <arg name="recorded_acceleration_max_offset" default="0.2"/>
+    <arg name="recorded_acceleration_max_saturation" default="0.5"/>
+    <arg name="recorded_acceleration_max_oscillation" default="0.1"/>
+    <arg name="recorded_acceleration_oscillation_frequency_hz" default="1.0"/>
+    <arg name="recorded_acceleration_recovery_jerk" default="1.0"/>
+    <arg name="use_recorded_steering" default="true"/>
+    <arg name="live_steering_topic" default="/nominal/steering_requested_phy"/>
+    <arg name="recorded_steering_topic" default="/replay/steering_requested_phy"/>
+    <arg name="steering_proxy_publish_rate_hz" default="20.0"/>
+    <arg name="steering_proxy_max_input_age_s" default="0.3"/>
+    <arg name="steering_proxy_max_angle_rad" default="0.85"/>
+    <arg name="steering_proxy_max_offset_rad" default="0.017453292519943295"/>
+    <arg name="steering_proxy_max_saturation_rad" default="0.17453292519943295"/>
+    <arg name="steering_proxy_max_oscillation_rad" default="0.008726646259971648"/>
+    <arg name="steering_proxy_oscillation_frequency_hz" default="1.0"/>
+    <arg name="steering_proxy_max_recovery_rate_rad_s" default="0.2"/>
 
     <param name="sensing/lidar_source" value="$(arg lidar_source)" />
     <param name="sensing/gnss_source" value="$(arg gnss_source)" />
@@ -31,11 +67,11 @@
             respawn="false"
             output="screen"
     >
-        <!-- CAN interface publishes speed and steering on typed topics. -->
+        <!-- Read the car's actual speed and steering from the CAN interface. -->
         <param name="vehicle_status_source" value="can_topics" />
-        <param name="vehicle_speed_topic" value="/current_velocity_phy" />
+        <param name="vehicle_speed_topic" value="/current_velocity" />
         <param name="vehicle_steering_angle_topic" value="/sending_angle" />
-        <!-- AD-EYE fault-injection change: physical direct actuator routing. -->
+        <!-- Send physical fault-test commands through the car interface. -->
         <param name="actuator_fault_path" value="physical_topics" />
     </node>
 
@@ -58,15 +94,60 @@
         pkg="adeye"
         type="ctrl_cmd_republisher"
         name="ctrl_cmd_republisher"
+        unless="$(arg use_recorded_steering)"
     >
-        <!-- AD-EYE fault-injection change: conservative physical limits. -->
+        <!-- Start with small fault limits for physical-car tests. -->
+        <param name="enable_internal_steering_faults" value="false"/>
+        <param name="steering_output_topic" value="$(arg live_steering_topic)"/>
         <param name="fault_timeout_s" value="5.0" />
         <param name="max_fault_timeout_s" value="300.0" />
         <param name="max_nominal_command_age_s" value="0.5" />
-        <!-- Radians: 1 deg, 10 deg, and 0.5 deg respectively. -->
+        <!-- Steering values below equal 1 degree, 10 degrees and 0.5 degree. -->
         <param name="max_steering_offset" value="0.017453292519943295" />
         <param name="max_steering_saturation" value="0.17453292519943295" />
         <param name="max_steering_oscillation" value="0.008726646259971648" />
+    </node>
+
+    <node
+            pkg="adeye"
+            type="steering_fault_proxy"
+            name="steering_fault_proxy_live"
+            output="screen"
+            unless="$(arg use_recorded_steering)"
+    >
+        <param name="input_topic" value="$(arg live_steering_topic)"/>
+        <param name="output_topic" value="/steering_requested_phy"/>
+        <param name="publish_rate_hz" value="$(arg steering_proxy_publish_rate_hz)"/>
+        <param name="fault_timeout_s" value="5.0"/>
+        <param name="max_fault_timeout_s" value="300.0"/>
+        <param name="max_input_age_s" value="$(arg steering_proxy_max_input_age_s)"/>
+        <param name="max_steering_angle_rad" value="$(arg steering_proxy_max_angle_rad)"/>
+        <param name="max_steering_offset_rad" value="$(arg steering_proxy_max_offset_rad)"/>
+        <param name="max_steering_saturation_rad" value="$(arg steering_proxy_max_saturation_rad)"/>
+        <param name="max_steering_oscillation_rad" value="$(arg steering_proxy_max_oscillation_rad)"/>
+        <param name="oscillation_frequency_hz" value="$(arg steering_proxy_oscillation_frequency_hz)"/>
+        <param name="max_recovery_rate_rad_s" value="$(arg steering_proxy_max_recovery_rate_rad_s)"/>
+    </node>
+
+    <node
+            pkg="adeye"
+            type="steering_fault_proxy"
+            name="steering_fault_proxy_recorded"
+            output="screen"
+            if="$(arg use_recorded_steering)"
+    >
+        <param name="input_topic" value="$(arg recorded_steering_topic)"/>
+        <param name="output_topic" value="/steering_requested_phy"/>
+        <param name="publish_rate_hz" value="$(arg steering_proxy_publish_rate_hz)"/>
+        <param name="fault_timeout_s" value="5.0"/>
+        <param name="max_fault_timeout_s" value="300.0"/>
+        <param name="max_input_age_s" value="$(arg steering_proxy_max_input_age_s)"/>
+        <param name="max_steering_angle_rad" value="$(arg steering_proxy_max_angle_rad)"/>
+        <param name="max_steering_offset_rad" value="$(arg steering_proxy_max_offset_rad)"/>
+        <param name="max_steering_saturation_rad" value="$(arg steering_proxy_max_saturation_rad)"/>
+        <param name="max_steering_oscillation_rad" value="$(arg steering_proxy_max_oscillation_rad)"/>
+        <param name="oscillation_frequency_hz" value="$(arg steering_proxy_oscillation_frequency_hz)"/>
+        <param name="max_recovery_rate_rad_s" value="$(arg steering_proxy_max_recovery_rate_rad_s)"/>
     </node>
 
     <node
@@ -75,11 +156,13 @@
             name="vehicle_controller"
             respawn="false"
             output="screen"
+            unless="$(arg use_recorded_acceleration)"
     >
-        <param name="topic_velocity_current" value="/current_velocity_phy"/>
-        <param name="topic_acceleration_request" value="/acceleration_requested_phy"/>
+        <param name="topic_velocity_current" value="/current_velocity"/>
+        <param name="topic_acceleration_request" value="$(arg live_acceleration_topic)"/>
         <param name="topic_steering_request" value="/old_steering_requested_phy"/>
-        <!-- AD-EYE fault-injection change: conservative physical limits. -->
+        <param name="enable_internal_acceleration_faults" value="false"/>
+        <!-- Start with small fault limits for physical-car tests. -->
         <param name="fault_timeout_s" value="5.0" />
         <param name="max_fault_timeout_s" value="300.0" />
         <param name="max_acceleration_offset" value="0.2" />
@@ -87,7 +170,52 @@
         <param name="max_acceleration_oscillation" value="0.1" />
     </node>
 
-    <node pkg="topic_tools" type="relay" name="relay_velocity" args="/current_velocity_phy /current_velocity"/>
+    <node
+            type="recorded_acceleration_fault_proxy"
+            pkg="adeye"
+            name="acceleration_fault_proxy_live"
+            respawn="false"
+            output="screen"
+            unless="$(arg use_recorded_acceleration)"
+    >
+        <param name="input_topic" value="$(arg live_acceleration_topic)"/>
+        <param name="output_topic" value="/acceleration_requested_phy"/>
+        <param name="publish_rate_hz" value="$(arg recorded_acceleration_rate_hz)"/>
+        <param name="fault_timeout_s" value="5.0"/>
+        <param name="max_fault_timeout_s" value="300.0"/>
+        <param name="max_input_age_s" value="$(arg recorded_acceleration_max_age_s)"/>
+        <param name="min_acceleration" value="$(arg recorded_acceleration_min)"/>
+        <param name="max_acceleration" value="$(arg recorded_acceleration_max)"/>
+        <param name="max_acceleration_offset" value="$(arg recorded_acceleration_max_offset)"/>
+        <param name="max_acceleration_saturation" value="$(arg recorded_acceleration_max_saturation)"/>
+        <param name="max_acceleration_oscillation" value="$(arg recorded_acceleration_max_oscillation)"/>
+        <param name="oscillation_frequency_hz" value="$(arg recorded_acceleration_oscillation_frequency_hz)"/>
+        <param name="max_recovery_jerk" value="$(arg recorded_acceleration_recovery_jerk)"/>
+    </node>
+
+    <node
+            type="recorded_acceleration_fault_proxy"
+            pkg="adeye"
+            name="recorded_acceleration_fault_proxy"
+            respawn="false"
+            output="screen"
+            if="$(arg use_recorded_acceleration)"
+    >
+        <param name="input_topic" value="$(arg recorded_acceleration_topic)"/>
+        <param name="output_topic" value="/acceleration_requested_phy"/>
+        <param name="publish_rate_hz" value="$(arg recorded_acceleration_rate_hz)"/>
+        <param name="fault_timeout_s" value="5.0"/>
+        <param name="max_fault_timeout_s" value="300.0"/>
+        <param name="max_input_age_s" value="$(arg recorded_acceleration_max_age_s)"/>
+        <param name="min_acceleration" value="$(arg recorded_acceleration_min)"/>
+        <param name="max_acceleration" value="$(arg recorded_acceleration_max)"/>
+        <param name="max_acceleration_offset" value="$(arg recorded_acceleration_max_offset)"/>
+        <param name="max_acceleration_saturation" value="$(arg recorded_acceleration_max_saturation)"/>
+        <param name="max_acceleration_oscillation" value="$(arg recorded_acceleration_max_oscillation)"/>
+        <param name="oscillation_frequency_hz" value="$(arg recorded_acceleration_oscillation_frequency_hz)"/>
+        <param name="max_recovery_jerk" value="$(arg recorded_acceleration_recovery_jerk)"/>
+    </node>
+
     <node pkg="topic_tools" type="relay" name="points_raw_relay" output="log" args="/os_cloud_node/points /points_raw"/>
 
 </launch>

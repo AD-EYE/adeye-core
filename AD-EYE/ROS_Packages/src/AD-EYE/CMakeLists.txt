@@ -151,6 +151,16 @@ add_executable(
   src/ctrl_cmd_republisher.cpp
 )
 
+add_executable(
+  recorded_acceleration_fault_proxy
+  src/recorded_acceleration_fault_proxy.cpp
+)
+
+add_executable(
+  steering_fault_proxy
+  src/steering_fault_proxy.cpp
+)
+
 target_link_libraries(
   GridMapCreator
   ${catkin_LIBRARIES}
@@ -240,6 +250,16 @@ target_link_libraries(
   ${catkin_LIBRARIES}
  )
 
+target_link_libraries(
+  recorded_acceleration_fault_proxy
+  ${catkin_LIBRARIES}
+)
+
+target_link_libraries(
+  steering_fault_proxy
+  ${catkin_LIBRARIES}
+)
+
 add_dependencies(controlSwitch
   ${catkin_EXPORTED_TARGETS}
 )
@@ -297,6 +317,14 @@ add_dependencies(vehicle_controller
 )
 
 add_dependencies(ctrl_cmd_republisher
+  ${catkin_EXPORTED_TARGETS}
+)
+
+add_dependencies(recorded_acceleration_fault_proxy
+  ${catkin_EXPORTED_TARGETS}
+)
+
+add_dependencies(steering_fault_proxy
   ${catkin_EXPORTED_TARGETS}
 )
 
@@ -362,7 +390,7 @@ add_dependencies(
 
 # Mark executables and/or libraries for installation
 install(
-  TARGETS GridMapCreator flattening controlSwitch safetySupervisor collisionDetector radar_broadcaster objectsFrameAdapter cameraObjectListFuse lidarRadarFuse safetyChannelPerception ExperimentC
+  TARGETS GridMapCreator flattening controlSwitch safetySupervisor collisionDetector radar_broadcaster objectsFrameAdapter cameraObjectListFuse lidarRadarFuse safetyChannelPerception ExperimentC vehicle_controller ctrl_cmd_republisher recorded_acceleration_fault_proxy steering_fault_proxy
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

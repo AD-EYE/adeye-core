@@ -15,6 +15,7 @@
 std::string topic_acceleration_request;
 std::string topic_steering_request;
 ros::Publisher acceleration_fault_status_pub;
+bool enable_internal_acceleration_faults = true;
 
 // ===== AD-EYE fault-injection change: physical acceleration faults =====
 double acceleration_offset = 0.0;
@@ -104,6 +105,9 @@ bool parseAccelerationFaultValue(
 }
 
 void physicalFaultConfigCallback(const std_msgs::String::ConstPtr& message) {
+    if (!enable_internal_acceleration_faults) {
+        return;
+    }
     double value = 0.0;
     const std::string command = "PHYSICAL_FAULT_TIMEOUT_command";
     if (!parseAccelerationFaultValue(message->data, command + "=", &value)) {
@@ -131,6 +135,9 @@ void physicalFaultConfigCallback(const std_msgs::String::ConstPtr& message) {
 }
 
 void vehicleCommandCallback(const std_msgs::String::ConstPtr& message) {
+    if (!enable_internal_acceleration_faults) {
+        return;
+    }
     double value = 0.0;
 
     if (parseAccelerationFaultValue(message->data, "ACCELOFFSET_command=", &value)) {
@@ -263,6 +270,9 @@ public:
     }
 
     void accelerationFaultWatchdogCallback(const ros::WallTimerEvent&) {
+        if (!enable_internal_acceleration_faults) {
+            return;
+        }
         if (clearExpiredAccelerationFaults() && has_last_unfaulted_acceleration) {
             std_msgs::Float64 msg;
             msg.data = last_unfaulted_acceleration;
@@ -373,6 +383,8 @@ int main(int argc, char** argv) {
     private_nh.getParam("topic_velocity_current", topic_velocity_current);
     private_nh.getParam("topic_acceleration_request", topic_acceleration_request);
     private_nh.getParam("topic_steering_request", topic_steering_request);
+    private_nh.param("enable_internal_acceleration_faults",
+                     enable_internal_acceleration_faults, true);
     private_nh.param("max_acceleration_offset", max_acceleration_offset, 0.2);
     private_nh.param("max_acceleration_saturation", max_acceleration_saturation, 0.5);
     private_nh.param("max_acceleration_oscillation", max_acceleration_oscillation, 0.1);

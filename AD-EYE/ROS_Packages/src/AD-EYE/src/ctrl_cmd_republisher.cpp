@@ -13,6 +13,8 @@
 ros::Publisher pub;
 ros::Publisher fault_status_pub;
 ros::Publisher steering_output_inhibit_pub;
+bool enable_internal_steering_faults = true;
+std::string steering_output_topic = "/steering_requested_phy";
 
 // ===== AD-EYE fault-injection change: physical steering faults =====
 // Autoware and the ros2can DBC both use radians. Degrees are a GUI-only unit.
@@ -112,6 +114,9 @@ bool parseValue(const std::string& command, const std::string& prefix, double* v
 
 void physicalFaultConfigCallback(const std_msgs::String::ConstPtr& message)
 {
+    if (!enable_internal_steering_faults) {
+        return;
+    }
     double value = 0.0;
     const std::string command = "PHYSICAL_FAULT_TIMEOUT_command";
     if (!parseValue(message->data, command + "=", &value)) {
@@ -140,6 +145,9 @@ void physicalFaultConfigCallback(const std_msgs::String::ConstPtr& message)
 
 void vehicleCommandCallback(const std_msgs::String::ConstPtr& message)
 {
+    if (!enable_internal_steering_faults) {
+        return;
+    }
     double value = 0.0;
 
     if (parseValue(message->data, "STEEROFFSET_command=", &value)) {
@@ -213,6 +221,9 @@ void vehicleCommandCallback(const std_msgs::String::ConstPtr& message)
 
 bool clearExpiredSteeringFaults()
 {
+    if (!enable_internal_steering_faults) {
+        return false;
+    }
     if (!fault_deadline_active || ros::WallTime::now() < fault_deadline) {
         return false;
     }
@@ -278,6 +289,9 @@ void ctrlCmdCallback(const autoware_msgs::ControlCommandStamped::ConstPtr& contr
 
 void steeringFaultWatchdogCallback(const ros::WallTimerEvent&)
 {
+    if (!enable_internal_steering_faults) {
+        return;
+    }
     if (clearExpiredSteeringFaults()) {
         const bool nominal_is_fresh = has_last_unfaulted_steering &&
             (ros::WallTime::now() - last_unfaulted_steering_time).toSec() <=
@@ -324,6 +338,10 @@ int main(int argc, char** argv)
     const double default_offset_limit = M_PI / 180.0;
     const double default_saturation_limit = 10.0 * M_PI / 180.0;
     const double default_oscillation_limit = 0.5 * M_PI / 180.0;
+    private_nh.param("enable_internal_steering_faults",
+                     enable_internal_steering_faults, true);
+    private_nh.param("steering_output_topic", steering_output_topic,
+                     std::string("/steering_requested_phy"));
     private_nh.param("max_steering_offset", max_steering_offset, default_offset_limit);
     private_nh.param("max_steering_saturation", max_steering_saturation, default_saturation_limit);
     private_nh.param("max_steering_oscillation", max_steering_oscillation, default_oscillation_limit);
@@ -370,7 +388,7 @@ int main(int argc, char** argv)
         "/adeye/physical_fault_config", 10, physicalFaultConfigCallback
     );
 
-    pub = nh.advertise<std_msgs::Float64>("/steering_requested_phy", 1);
+    pub = nh.advertise<std_msgs::Float64>(steering_output_topic, 1);
     fault_status_pub = nh.advertise<std_msgs::String>(
         "/adeye/physical_fault_status", 10
     );
