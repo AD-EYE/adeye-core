@@ -3,7 +3,7 @@
 import rospy
 from geometry_msgs.msg import Pose, PoseStamped, PoseWithCovarianceStamped
 from geometry_msgs.msg import PoseStamped
-from sensor_msgs.msg import NavSatFix
+from sensor_msgs.msg import NavSatFix, NavSatStatus
 from math import cos, radians, sqrt, isnan
 import tf
 
@@ -40,8 +40,9 @@ class GnssBroadcaster:
         self.gnss_pub.publish(msg)
 
     def gnssCallback(self, fix):
-        # Do not spread false coordinates
-        if isnan(fix.latitude) or isnan(fix.longitude):
+        # Do not turn an invalid/no-fix GNSS reading into a valid pose.
+        if (fix.status.status == NavSatStatus.STATUS_NO_FIX or
+                isnan(fix.latitude) or isnan(fix.longitude)):
             return
         x_p, y_p = self.world_to_map_transform(self.standard_parallel, self.map_origin[0], self.map_origin[1], fix.longitude, fix.latitude)
         # print('Coords : (' + str(x_p) + " " + str(y_p) + "), Distance to the maps origin : " + str(sqrt(x_p**2 + y_p**2)) + 'm')

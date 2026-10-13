@@ -1,0 +1,15 @@
+<launch>
+    <arg name="record_physical_commands" default="false"/>
+    <arg name="use_recorded_inputs" default="false"/>
+    <!-- Live acceleration faults with normal live steering passed through unchanged. -->
+    <include file="$(find adeye)/launch/manager_real_world.launch">
+        <arg name="record_physical_commands" value="$(arg record_physical_commands)"/>
+        <arg name="use_recorded_inputs" value="$(arg use_recorded_inputs)"/>
+
+        <arg name="enable_steering_proxy" value="true"/>
+        <arg name="enable_acceleration_proxy" value="true"/>
+
+        <arg name="enable_steering_faults" value="false"/>
+        <arg name="enable_acceleration_faults" value="true"/>
+    </include>
+</launch>

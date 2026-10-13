@@ -21,6 +21,9 @@ class SensorFaultInjectionManager:
     def __init__(self):
         self._lock = threading.Lock()
 
+        self.enable_gnss = bool(rospy.get_param("~enable_gnss", True))
+        self.enable_lidar = bool(rospy.get_param("~enable_lidar", True))
+
         self.gnss_east_bias_m = 0.0
         self.gnss_north_bias_m = 0.0
         self.gnss_dropout_enabled = False
@@ -59,36 +62,44 @@ class SensorFaultInjectionManager:
             "~lidar_output_topic", "/adeye/fault_injection/points"
         )
 
-        self.gnss_pub = rospy.Publisher(
-            gnss_output_topic, NavSatFix, queue_size=10
-        )
-        self.lidar_pub = rospy.Publisher(
-            lidar_output_topic, PointCloud2, queue_size=10
-        )
+        self.gnss_pub = None
+        self.lidar_pub = None
+        if self.enable_gnss:
+            self.gnss_pub = rospy.Publisher(
+                gnss_output_topic, NavSatFix, queue_size=10
+            )
+        if self.enable_lidar:
+            self.lidar_pub = rospy.Publisher(
+                lidar_output_topic, PointCloud2, queue_size=10
+            )
 
         self.command_sub = rospy.Subscriber(
             "/vehicle_commands", String, self.command_callback, queue_size=10
         )
-        self.gnss_sub = rospy.Subscriber(
-            gnss_input_topic, NavSatFix, self.gnss_callback, queue_size=10
-        )
-        self.lidar_sub = rospy.Subscriber(
-            lidar_input_topic, PointCloud2, self.lidar_callback, queue_size=10
-        )
+        self.gnss_sub = None
+        self.lidar_sub = None
+        if self.enable_gnss:
+            self.gnss_sub = rospy.Subscriber(
+                gnss_input_topic, NavSatFix, self.gnss_callback, queue_size=10
+            )
+        if self.enable_lidar:
+            self.lidar_sub = rospy.Subscriber(
+                lidar_input_topic, PointCloud2, self.lidar_callback, queue_size=10
+            )
         self.health_timer = rospy.Timer(
             rospy.Duration(1.0), self.health_watchdog_callback
         )
 
         rospy.loginfo(
-            "Sensor fault injector: GNSS %s -> %s, LiDAR %s -> %s",
-            gnss_input_topic,
-            gnss_output_topic,
-            lidar_input_topic,
-            lidar_output_topic,
+            "Sensor fault injector: GNSS %s, LiDAR %s",
+            "%s -> %s" % (gnss_input_topic, gnss_output_topic)
+            if self.enable_gnss else "disabled",
+            "%s -> %s" % (lidar_input_topic, lidar_output_topic)
+            if self.enable_lidar else "disabled",
         )
 
     def health_watchdog_callback(self, _event):
-        """Report a source outage without treating an intentional fault as one."""
+        """Report missing sensor data without reporting an applied fault as a problem."""
 
         now = time.time()
         with self._lock:
@@ -97,19 +108,19 @@ class SensorFaultInjectionManager:
             gnss_age = now - self.last_gnss_input_time
             lidar_age = now - self.last_lidar_input_time
 
-        if gnss_age > self.sensor_input_timeout_s:
+        if self.enable_gnss and gnss_age > self.sensor_input_timeout_s:
             rospy.logerr_throttle(
                 5.0,
-                "Sensor fault injector health: GNSS input has %s for %.1f s",
-                "never arrived" if not gnss_seen else "been stale",
+                "GNSS data has %s for %.1f s",
+                "not arrived" if not gnss_seen else "not updated",
                 gnss_age,
             )
 
-        if lidar_age > self.sensor_input_timeout_s:
+        if self.enable_lidar and lidar_age > self.sensor_input_timeout_s:
             rospy.logerr_throttle(
                 5.0,
-                "Sensor fault injector health: LiDAR input has %s for %.1f s",
-                "never arrived" if not lidar_seen else "been stale",
+                "LiDAR data has %s for %.1f s",
+                "not arrived" if not lidar_seen else "not updated",
                 lidar_age,
             )
 
@@ -122,14 +133,14 @@ class SensorFaultInjectionManager:
                 if abs(value) <= self.max_gnss_bias_m:
                     self.gnss_east_bias_m = value
                 else:
-                    rospy.logwarn("Rejected GNSS east bias outside physical limit: %s", value)
+                    rospy.logwarn("GNSS east offset rejected because it is outside the test limit: %s", value)
 
             value = self._command_value(command, "GNSS_NORTH_BIAS_M_command=")
             if value is not None:
                 if abs(value) <= self.max_gnss_bias_m:
                     self.gnss_north_bias_m = value
                 else:
-                    rospy.logwarn("Rejected GNSS north bias outside physical limit: %s", value)
+                    rospy.logwarn("GNSS north offset rejected because it is outside the test limit: %s", value)
 
             if command == "GNSS_DROPOUT_command=1":
                 self.gnss_dropout_enabled = True
@@ -145,11 +156,11 @@ class SensorFaultInjectionManager:
             if value is not None:
                 integer_value = int(value)
                 if value != integer_value:
-                    rospy.logwarn("Rejected non-integer LiDAR dropout interval: %s", value)
+                    rospy.logwarn("LiDAR drop interval rejected because it is not a whole number: %s", value)
                 elif integer_value == 0 or 1 <= integer_value <= self.max_lidar_drop_every_n:
                     self.lidar_drop_every_n = integer_value
                 else:
-                    rospy.logwarn("Rejected LiDAR dropout interval outside physical limit: %s", value)
+                    rospy.logwarn("LiDAR drop interval rejected because it is outside the test limit: %s", value)
 
             value = self._command_value(
                 command, "LIDAR_TIMESTAMP_OFFSET_S_command="
@@ -158,7 +169,7 @@ class SensorFaultInjectionManager:
                 if abs(value) <= self.max_lidar_timestamp_offset_s:
                     self.lidar_timestamp_offset_s = value
                 else:
-                    rospy.logwarn("Rejected LiDAR timestamp offset outside physical limit: %s", value)
+                    rospy.logwarn("LiDAR time offset rejected because it is outside the test limit: %s", value)
 
     @staticmethod
     def _command_value(command, prefix):
@@ -172,7 +183,7 @@ class SensorFaultInjectionManager:
             return None
 
         if math.isnan(value) or math.isinf(value):
-            rospy.logwarn("Non-finite sensor-fault command: %s", command)
+            rospy.logwarn("Sensor fault command does not contain a usable number: %s", command)
             return None
 
         return value

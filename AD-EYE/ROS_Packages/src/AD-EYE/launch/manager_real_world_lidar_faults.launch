@@ -1,0 +1,43 @@
+<launch>
+    <!--
+      Prototype LiDAR-fault module for live physical-car testing.
+
+      Steering and acceleration use the base, direct paths: their proxies and
+      fault injection are disabled. The normal LiDAR relay is replaced by the
+      sensor fault injector so /points_raw has exactly one publisher.
+    -->
+    <arg name="lidar_input_topic" default="/os_cloud_node/points"/>
+    <arg name="lidar_output_topic" default="/points_raw"/>
+    <arg name="sensor_input_timeout_s" default="2.0"/>
+    <arg name="max_lidar_drop_every_n" default="20"/>
+    <arg name="max_lidar_timestamp_offset_s" default="0.2"/>
+    <arg name="record_physical_commands" default="false"/>
+    <arg name="use_recorded_inputs" default="false"/>
+
+    <include file="$(find adeye)/launch/manager_real_world.launch">
+        <arg name="record_physical_commands" value="$(arg record_physical_commands)"/>
+        <arg name="use_recorded_inputs" value="$(arg use_recorded_inputs)"/>
+
+        <arg name="enable_steering_proxy" value="false"/>
+        <arg name="enable_acceleration_proxy" value="false"/>
+        <arg name="enable_steering_faults" value="false"/>
+        <arg name="enable_acceleration_faults" value="false"/>
+
+        <arg name="steering_producer_output_topic" value="/steering_requested_phy"/>
+        <arg name="acceleration_producer_output_topic" value="/acceleration_requested_phy"/>
+        <arg name="enable_default_points_raw_relay" value="false"/>
+    </include>
+
+    <node pkg="adeye"
+          type="SensorFaultInjectionManager.py"
+          name="lidar_fault_injection_manager"
+          output="screen">
+        <param name="enable_gnss" value="false"/>
+        <param name="enable_lidar" value="true"/>
+        <param name="lidar_input_topic" value="$(arg lidar_input_topic)"/>
+        <param name="lidar_output_topic" value="$(arg lidar_output_topic)"/>
+        <param name="sensor_input_timeout_s" value="$(arg sensor_input_timeout_s)"/>
+        <param name="max_lidar_drop_every_n" value="$(arg max_lidar_drop_every_n)"/>
+        <param name="max_lidar_timestamp_offset_s" value="$(arg max_lidar_timestamp_offset_s)"/>
+    </node>
+</launch>

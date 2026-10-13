@@ -413,6 +413,7 @@ catkin_install_python(PROGRAMS src/zed_driver.py
 )
 
 catkin_install_python(PROGRAMS
+  src/record_physical_commands.py
   src/fault_injections/fault_test.py
   src/fault_injections/fault_test_all.py
   src/fault_injections/steering_saturation_experiment.py

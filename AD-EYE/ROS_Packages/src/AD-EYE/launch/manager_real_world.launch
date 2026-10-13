@@ -13,19 +13,32 @@
     <arg name="lidar_source" default="RealWorld"/>
     <arg name="gnss_source" default="RealWorld"/>
     <arg name="camera_source" default="RealWorld"/>
-    <!-- Physical-car fault tests use steering and acceleration commands
-         from a rosbag by default. During playback, rename these topics:
+    <!-- Turn this relay off when another node, such as the LiDAR fault node,
+         publishes /points_raw. -->
+    <arg name="enable_default_points_raw_relay" default="true"/>
+    <!-- Optionally record the steering and acceleration commands sent to the car. -->
+    <arg name="record_physical_commands" default="false"/>
+    <arg name="physical_command_bag_directory" default="/media/Ubuntu/rosbag_recording"/>
+    <arg name="physical_command_bag_prefix" default="physical_commands"/>
+    <!-- Physical-car fault tests use live steering and acceleration commands
+         by default. To use a rosbag, set the corresponding recorded option
+         to true and rename these topics during playback:
          /acceleration_requested_phy:=/replay/acceleration_requested_phy
          /steering_requested_phy:=/replay/steering_requested_phy
-         Set either recorded option to false only when that command should
-         come from the running system instead of the rosbag. -->
-    <arg name="use_recorded_acceleration" default="true"/>
+    -->
+    <!-- This switch selects recorded steering and acceleration together, so a
+         replay test does not accidentally mix recorded and live commands. -->
+    <arg name="use_recorded_inputs" default="false"/>
+    <arg name="use_recorded_acceleration" default="$(arg use_recorded_inputs)"/>
+    <arg name="enable_acceleration_proxy" default="true"/>
+    <arg name="enable_acceleration_faults" default="true"/>
     <arg name="recorded_acceleration_topic" default="/replay/acceleration_requested_phy"/>
     <arg name="live_acceleration_topic" default="/nominal/acceleration_requested_phy"/>
+    <arg name="acceleration_producer_output_topic" default="$(arg live_acceleration_topic)"/>
     <arg name="recorded_acceleration_rate_hz" default="10.0"/>
     <arg name="recorded_acceleration_max_age_s" default="0.3"/>
-    <!-- The CAN format supports this range, but that does not make the full
-         range safe for a test. Use limits approved for the vehicle and test. -->
+    <!-- CAN can store this full range, but that does not mean every value is
+         safe for a test. Use limits approved for the car and test setup. -->
     <arg name="recorded_acceleration_min" default="-15.0"/>
     <arg name="recorded_acceleration_max" default="16.99"/>
     <arg name="recorded_acceleration_max_offset" default="0.2"/>
@@ -33,8 +46,12 @@
     <arg name="recorded_acceleration_max_oscillation" default="0.1"/>
     <arg name="recorded_acceleration_oscillation_frequency_hz" default="1.0"/>
     <arg name="recorded_acceleration_recovery_jerk" default="1.0"/>
-    <arg name="use_recorded_steering" default="true"/>
+    <arg name="recorded_input_end_timeout_s" default="2.0"/>
+    <arg name="use_recorded_steering" default="$(arg use_recorded_inputs)"/>
+    <arg name="enable_steering_proxy" default="true"/>
+    <arg name="enable_steering_faults" default="true"/>
     <arg name="live_steering_topic" default="/nominal/steering_requested_phy"/>
+    <arg name="steering_producer_output_topic" default="$(arg live_steering_topic)"/>
     <arg name="recorded_steering_topic" default="/replay/steering_requested_phy"/>
     <arg name="steering_proxy_publish_rate_hz" default="20.0"/>
     <arg name="steering_proxy_max_input_age_s" default="0.3"/>
@@ -44,6 +61,9 @@
     <arg name="steering_proxy_max_oscillation_rad" default="0.008726646259971648"/>
     <arg name="steering_proxy_oscillation_frequency_hz" default="1.0"/>
     <arg name="steering_proxy_max_recovery_rate_rad_s" default="0.2"/>
+    <!-- Allow the tester to choose how long an active fault lasts. This is not
+         related to the currently disabled missing-command checks. -->
+    <arg name="enable_physical_fault_timeout" default="true"/>
 
     <param name="sensing/lidar_source" value="$(arg lidar_source)" />
     <param name="sensing/gnss_source" value="$(arg gnss_source)" />
@@ -75,6 +95,16 @@
         <param name="actuator_fault_path" value="physical_topics" />
     </node>
 
+    <node pkg="adeye"
+          type="record_physical_commands.py"
+          name="physical_command_bag_recorder"
+          output="screen"
+          if="$(arg record_physical_commands)">
+        <param name="output_directory" value="$(arg physical_command_bag_directory)"/>
+        <param name="bag_prefix" value="$(arg physical_command_bag_prefix)"/>
+        <rosparam param="topics">[/acceleration_requested_phy, /steering_requested_phy]</rosparam>
+    </node>
+
     <!--<node pkg="nmea_navsat_driver" type="nmea_serial_driver" name="navsat_driver" respawn="true">
         <param name="port" value="/dev/ttyACM0"/>
         <param name="baud" value="9600"/>
@@ -98,7 +128,7 @@
     >
         <!-- Start with small fault limits for physical-car tests. -->
         <param name="enable_internal_steering_faults" value="false"/>
-        <param name="steering_output_topic" value="$(arg live_steering_topic)"/>
+        <param name="steering_output_topic" value="$(arg steering_producer_output_topic)"/>
         <param name="fault_timeout_s" value="5.0" />
         <param name="max_fault_timeout_s" value="300.0" />
         <param name="max_nominal_command_age_s" value="0.5" />
@@ -113,7 +143,7 @@
             type="steering_fault_proxy"
             name="steering_fault_proxy_live"
             output="screen"
-            unless="$(arg use_recorded_steering)"
+            if="$(eval arg('enable_steering_proxy') and not arg('use_recorded_steering'))"
     >
         <param name="input_topic" value="$(arg live_steering_topic)"/>
         <param name="output_topic" value="/steering_requested_phy"/>
@@ -127,6 +157,10 @@
         <param name="max_steering_oscillation_rad" value="$(arg steering_proxy_max_oscillation_rad)"/>
         <param name="oscillation_frequency_hz" value="$(arg steering_proxy_oscillation_frequency_hz)"/>
         <param name="max_recovery_rate_rad_s" value="$(arg steering_proxy_max_recovery_rate_rad_s)"/>
+        <param name="enable_fault_injection" value="$(arg enable_steering_faults)"/>
+        <param name="enable_fault_timeout" value="$(arg enable_physical_fault_timeout)"/>
+        <param name="zero_on_source_loss" value="false"/>
+        <param name="source_loss_timeout_s" value="$(arg recorded_input_end_timeout_s)"/>
     </node>
 
     <node
@@ -134,7 +168,7 @@
             type="steering_fault_proxy"
             name="steering_fault_proxy_recorded"
             output="screen"
-            if="$(arg use_recorded_steering)"
+            if="$(eval arg('enable_steering_proxy') and arg('use_recorded_steering'))"
     >
         <param name="input_topic" value="$(arg recorded_steering_topic)"/>
         <param name="output_topic" value="/steering_requested_phy"/>
@@ -148,6 +182,10 @@
         <param name="max_steering_oscillation_rad" value="$(arg steering_proxy_max_oscillation_rad)"/>
         <param name="oscillation_frequency_hz" value="$(arg steering_proxy_oscillation_frequency_hz)"/>
         <param name="max_recovery_rate_rad_s" value="$(arg steering_proxy_max_recovery_rate_rad_s)"/>
+        <param name="enable_fault_injection" value="$(arg enable_steering_faults)"/>
+        <param name="enable_fault_timeout" value="$(arg enable_physical_fault_timeout)"/>
+        <param name="zero_on_source_loss" value="true"/>
+        <param name="source_loss_timeout_s" value="$(arg recorded_input_end_timeout_s)"/>
     </node>
 
     <node
@@ -159,7 +197,7 @@
             unless="$(arg use_recorded_acceleration)"
     >
         <param name="topic_velocity_current" value="/current_velocity"/>
-        <param name="topic_acceleration_request" value="$(arg live_acceleration_topic)"/>
+        <param name="topic_acceleration_request" value="$(arg acceleration_producer_output_topic)"/>
         <param name="topic_steering_request" value="/old_steering_requested_phy"/>
         <param name="enable_internal_acceleration_faults" value="false"/>
         <!-- Start with small fault limits for physical-car tests. -->
@@ -176,7 +214,7 @@
             name="acceleration_fault_proxy_live"
             respawn="false"
             output="screen"
-            unless="$(arg use_recorded_acceleration)"
+            if="$(eval arg('enable_acceleration_proxy') and not arg('use_recorded_acceleration'))"
     >
         <param name="input_topic" value="$(arg live_acceleration_topic)"/>
         <param name="output_topic" value="/acceleration_requested_phy"/>
@@ -191,6 +229,10 @@
         <param name="max_acceleration_oscillation" value="$(arg recorded_acceleration_max_oscillation)"/>
         <param name="oscillation_frequency_hz" value="$(arg recorded_acceleration_oscillation_frequency_hz)"/>
         <param name="max_recovery_jerk" value="$(arg recorded_acceleration_recovery_jerk)"/>
+        <param name="enable_fault_injection" value="$(arg enable_acceleration_faults)"/>
+        <param name="enable_fault_timeout" value="$(arg enable_physical_fault_timeout)"/>
+        <param name="zero_on_source_loss" value="false"/>
+        <param name="source_loss_timeout_s" value="$(arg recorded_input_end_timeout_s)"/>
     </node>
 
     <node
@@ -199,7 +241,7 @@
             name="recorded_acceleration_fault_proxy"
             respawn="false"
             output="screen"
-            if="$(arg use_recorded_acceleration)"
+            if="$(eval arg('enable_acceleration_proxy') and arg('use_recorded_acceleration'))"
     >
         <param name="input_topic" value="$(arg recorded_acceleration_topic)"/>
         <param name="output_topic" value="/acceleration_requested_phy"/>
@@ -214,8 +256,17 @@
         <param name="max_acceleration_oscillation" value="$(arg recorded_acceleration_max_oscillation)"/>
         <param name="oscillation_frequency_hz" value="$(arg recorded_acceleration_oscillation_frequency_hz)"/>
         <param name="max_recovery_jerk" value="$(arg recorded_acceleration_recovery_jerk)"/>
+        <param name="enable_fault_injection" value="$(arg enable_acceleration_faults)"/>
+        <param name="enable_fault_timeout" value="$(arg enable_physical_fault_timeout)"/>
+        <param name="zero_on_source_loss" value="true"/>
+        <param name="source_loss_timeout_s" value="$(arg recorded_input_end_timeout_s)"/>
     </node>
 
-    <node pkg="topic_tools" type="relay" name="points_raw_relay" output="log" args="/os_cloud_node/points /points_raw"/>
+    <node pkg="topic_tools"
+          type="relay"
+          name="points_raw_relay"
+          output="log"
+          args="/os_cloud_node/points /points_raw"
+          if="$(arg enable_default_points_raw_relay)"/>
 
 </launch>

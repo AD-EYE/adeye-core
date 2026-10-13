@@ -1,0 +1,14 @@
+<launch>
+    <!-- Basic live-car mode with no steering or acceleration fault proxies. -->
+    <arg name="record_physical_commands" default="false"/>
+    <arg name="use_recorded_inputs" default="false"/>
+    <include file="$(find adeye)/launch/manager_real_world.launch">
+        <arg name="record_physical_commands" value="$(arg record_physical_commands)"/>
+        <arg name="use_recorded_inputs" value="$(arg use_recorded_inputs)"/>
+        <arg name="enable_steering_proxy" value="false"/>
+        <arg name="enable_acceleration_proxy" value="false"/>
+
+        <arg name="steering_producer_output_topic" value="/steering_requested_phy"/>
+        <arg name="acceleration_producer_output_topic" value="/acceleration_requested_phy"/>
+    </include>
+</launch>

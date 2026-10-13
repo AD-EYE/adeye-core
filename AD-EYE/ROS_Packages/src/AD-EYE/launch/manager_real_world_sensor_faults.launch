@@ -9,11 +9,14 @@
   -->
 
   <arg name="gnss_input_topic" default="/fix" />
+  <arg name="use_recorded_inputs" default="false" />
 
   <group>
     <remap from="/points_raw"
            to="/adeye/fault_injection/points_unmodified" />
-    <include file="$(find adeye)/launch/manager_real_world.launch" />
+    <include file="$(find adeye)/launch/manager_real_world.launch">
+      <arg name="use_recorded_inputs" value="$(arg use_recorded_inputs)" />
+    </include>
   </group>
 
   <node pkg="adeye"

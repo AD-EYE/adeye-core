@@ -1,0 +1,47 @@
+<launch>
+    <!--
+      Prototype GNSS-fault module for live physical-car testing.
+
+      The vehicle's NavSatFix input is passed through the sensor fault
+      injector before the existing GNSS broadcaster converts it to
+      /gnss_pose. Do not start another gnss_broadcaster at the same time.
+      Steering, acceleration and LiDAR keep their base/direct paths.
+    -->
+    <arg name="gnss_input_topic" default="/fix"/>
+    <arg name="faulted_gnss_topic" default="/adeye/fault_injection/fix"/>
+    <arg name="sensor_input_timeout_s" default="2.0"/>
+    <arg name="max_gnss_bias_m" default="5.0"/>
+    <arg name="record_physical_commands" default="false"/>
+    <arg name="use_recorded_inputs" default="false"/>
+
+    <include file="$(find adeye)/launch/manager_real_world.launch">
+        <arg name="record_physical_commands" value="$(arg record_physical_commands)"/>
+        <arg name="use_recorded_inputs" value="$(arg use_recorded_inputs)"/>
+
+        <arg name="enable_steering_proxy" value="false"/>
+        <arg name="enable_acceleration_proxy" value="false"/>
+        <arg name="enable_steering_faults" value="false"/>
+        <arg name="enable_acceleration_faults" value="false"/>
+
+        <arg name="steering_producer_output_topic" value="/steering_requested_phy"/>
+        <arg name="acceleration_producer_output_topic" value="/acceleration_requested_phy"/>
+    </include>
+
+    <node pkg="adeye"
+          type="SensorFaultInjectionManager.py"
+          name="gnss_fault_injection_manager"
+          output="screen">
+        <param name="enable_gnss" value="true"/>
+        <param name="enable_lidar" value="false"/>
+        <param name="gnss_input_topic" value="$(arg gnss_input_topic)"/>
+        <param name="gnss_output_topic" value="$(arg faulted_gnss_topic)"/>
+        <param name="sensor_input_timeout_s" value="$(arg sensor_input_timeout_s)"/>
+        <param name="max_gnss_bias_m" value="$(arg max_gnss_bias_m)"/>
+    </node>
+
+    <!-- Convert only the faulted NavSatFix stream into /gnss_pose. -->
+    <group>
+        <remap from="/fix" to="$(arg faulted_gnss_topic)"/>
+        <include file="$(find adeye)/launch/gnss_broadcaster.launch"/>
+    </group>
+</launch>

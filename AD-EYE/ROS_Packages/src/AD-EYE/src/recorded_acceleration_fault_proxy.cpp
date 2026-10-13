@@ -31,6 +31,10 @@ public:
         private_nh_.param("oscillation_frequency_hz", oscillation_frequency_hz_,
                           1.0);
         private_nh_.param("max_recovery_jerk", max_recovery_jerk_, 1.0);
+        private_nh_.param("enable_fault_injection", enable_fault_injection_, true);
+        private_nh_.param("enable_fault_timeout", enable_fault_timeout_, false);
+        private_nh_.param("zero_on_source_loss", zero_on_source_loss_, false);
+        private_nh_.param("source_loss_timeout_s", source_loss_timeout_s_, 2.0);
 
         if (!std::isfinite(publish_rate_hz_) || publish_rate_hz_ <= 0.0 ||
             !std::isfinite(fault_timeout_s_) || fault_timeout_s_ <= 0.0 ||
@@ -44,8 +48,10 @@ public:
             !std::isfinite(max_oscillation_) || max_oscillation_ <= 0.0 ||
             !std::isfinite(oscillation_frequency_hz_) ||
             oscillation_frequency_hz_ <= 0.0 ||
-            !std::isfinite(max_recovery_jerk_) || max_recovery_jerk_ <= 0.0) {
-            ROS_FATAL("Invalid recorded acceleration proxy parameters");
+            !std::isfinite(max_recovery_jerk_) || max_recovery_jerk_ <= 0.0 ||
+            !std::isfinite(source_loss_timeout_s_) ||
+            source_loss_timeout_s_ <= 0.0) {
+            ROS_FATAL("Acceleration proxy settings are not valid");
             valid_configuration_ = false;
             return;
         }
@@ -60,14 +66,16 @@ public:
         input_sub_ = nh_.subscribe<std_msgs::Float64>(
             input_topic_, 1, &RecordedAccelerationFaultProxy::inputCallback, this
         );
-        command_sub_ = nh_.subscribe<std_msgs::String>(
-            "/vehicle_commands", 10,
-            &RecordedAccelerationFaultProxy::commandCallback, this
-        );
-        config_sub_ = nh_.subscribe<std_msgs::String>(
-            "/adeye/physical_fault_config", 10,
-            &RecordedAccelerationFaultProxy::configCallback, this
-        );
+        if (enable_fault_injection_) {
+            command_sub_ = nh_.subscribe<std_msgs::String>(
+                "/vehicle_commands", 10,
+                &RecordedAccelerationFaultProxy::commandCallback, this
+            );
+            config_sub_ = nh_.subscribe<std_msgs::String>(
+                "/adeye/physical_fault_config", 10,
+                &RecordedAccelerationFaultProxy::configCallback, this
+            );
+        }
 
         const ros::WallDuration period(1.0 / publish_rate_hz_);
         timer_ = nh_.createWallTimer(
@@ -78,6 +86,8 @@ public:
         publishInhibit(false);
         ROS_INFO("Recorded acceleration proxy: %s -> %s at %.3f Hz",
                  input_topic_.c_str(), output_topic_.c_str(), publish_rate_hz_);
+        ROS_INFO("Acceleration fault injection: %s",
+                 enable_fault_injection_ ? "enabled" : "disabled (normal commands only)");
     }
 
     bool validConfiguration() const { return valid_configuration_; }
@@ -134,7 +144,7 @@ private:
                        bool active, double value, const std::string& detail)
     {
         double remaining_s = 0.0;
-        if (state_ == State::FAULT_ACTIVE) {
+        if (enable_fault_timeout_ && state_ == State::FAULT_ACTIVE) {
             remaining_s = std::max(
                 0.0, (fault_deadline_ - ros::WallTime::now()).toSec()
             );
@@ -144,7 +154,8 @@ private:
         json << "{\"source\":\"acceleration\",\"event\":\"" << event
              << "\",\"fault\":\"" << fault << "\",\"active\":"
              << (active ? "true" : "false") << ",\"value\":" << value
-             << ",\"timeout_s\":" << fault_timeout_s_
+             << ",\"timeout_s\":"
+             << (enable_fault_timeout_ ? fault_timeout_s_ : 0.0)
              << ",\"remaining_s\":" << remaining_s
              << ",\"detail\":\"" << detail << "\"}";
         status.data = json.str();
@@ -161,7 +172,7 @@ private:
     bool publishOutput(double value)
     {
         if (!valueAllowed(value)) {
-            enterInhibited("faulted output outside configured final bounds");
+            enterInhibited("acceleration with the fault applied is outside the allowed range");
             return false;
         }
         std_msgs::Float64 output;
@@ -171,6 +182,48 @@ private:
         last_published_time_ = ros::WallTime::now();
         has_last_published_ = true;
         return true;
+    }
+
+    bool publishRecordedOutput(double value)
+    {
+        if (!std::isfinite(value)) {
+            ROS_ERROR("Recorded acceleration rejected: value is not a usable number");
+            return false;
+        }
+        if (!valueAllowed(value)) {
+            ROS_WARN_THROTTLE(1.0,
+                              "Recorded acceleration %.9f is outside configured range [%.9f, %.9f]; publishing it unchanged",
+                              value, min_acceleration_, max_acceleration_);
+        }
+        std_msgs::Float64 output;
+        output.data = value;
+        output_pub_.publish(output);
+        last_published_value_ = value;
+        last_published_time_ = ros::WallTime::now();
+        has_last_published_ = true;
+        return true;
+    }
+
+    bool publishFaultedOutput(double value)
+    {
+        if (valueAllowed(value)) {
+            return publishOutput(value);
+        }
+
+        const std::string stopped_fault = faultName(active_fault_);
+        std::ostringstream detail;
+        detail << "fault stopped: calculated output " << value
+               << " exceeded configured range [" << min_acceleration_
+               << ", " << max_acceleration_
+               << "]; original replay value restored";
+        ROS_ERROR("%s", detail.str().c_str());
+
+        active_fault_ = Fault::NONE;
+        fault_value_ = 0.0;
+        state_ = State::PASS_THROUGH;
+        publishStatus("rejected", stopped_fault, false, value, detail.str());
+        publishRecordedOutput(latest_input_);
+        return false;
     }
 
     void enterInhibited(const std::string& reason)
@@ -190,13 +243,25 @@ private:
             fault_requires_explicit_reset ? fault_value_ : 0.0,
             reason
         );
-        ROS_ERROR("Recorded acceleration output inhibited: %s", reason.c_str());
+        ROS_ERROR("Acceleration output stopped: %s", reason.c_str());
     }
 
     void beginRecovery(const std::string& reason)
     {
-        if (!inputFresh() || !valueAllowed(latest_input_)) {
-            enterInhibited("cannot recover: acceleration source stale or invalid");
+        // DISABLED FOR CURRENT LIVE TESTS:
+        // Do not stop recovery only because the last command is over 0.3 s old.
+        if (!has_latest_input_ || !std::isfinite(latest_input_)) {
+            enterInhibited("cannot recover: acceleration source missing or invalid");
+            return;
+        }
+        if (!valueAllowed(latest_input_)) {
+            const std::string completed_fault = faultName(active_fault_);
+            active_fault_ = Fault::NONE;
+            fault_value_ = 0.0;
+            state_ = State::PASS_THROUGH;
+            publishRecordedOutput(latest_input_);
+            publishStatus("reset", completed_fault, false, latest_input_,
+                          "fault ended; using the recorded value again");
             return;
         }
         recovery_value_ = has_last_published_ ? last_published_value_ : latest_input_;
@@ -212,13 +277,12 @@ private:
                           "another acceleration fault or recovery is active");
             return false;
         }
-        const bool published_fresh = has_last_published_ &&
-            (ros::WallTime::now() - last_published_time_).toSec() <=
-                max_input_age_s_;
-        if (!inputFresh() || !published_fresh ||
-            !valueAllowed(last_published_value_)) {
+        // DISABLED FOR CURRENT LIVE TESTS:
+        // A valid command must exist, but it can be older than 0.3 seconds.
+        if (!has_latest_input_ || !std::isfinite(latest_input_) ||
+            !has_last_published_ || !std::isfinite(last_published_value_)) {
             publishStatus("rejected", fault, false, requested_value,
-                          "no fresh valid pre-click output");
+                          "no valid pre-click output");
             return false;
         }
         return true;
@@ -230,7 +294,9 @@ private:
         fault_value_ = value;
         frozen_value_ = last_published_value_;
         fault_started_ = ros::WallTime::now();
-        fault_deadline_ = fault_started_ + ros::WallDuration(fault_timeout_s_);
+        if (enable_fault_timeout_) {
+            fault_deadline_ = fault_started_ + ros::WallDuration(fault_timeout_s_);
+        }
         state_ = State::FAULT_ACTIVE;
         publishStatus("accepted", faultName(fault), true, value,
                       "physical acceleration fault activated");
@@ -238,15 +304,16 @@ private:
 
     void deactivateFault(Fault fault, const std::string& reason)
     {
-        if (state_ == State::INHIBITED && active_fault_ == fault && inputFresh()) {
+        if (state_ == State::INHIBITED && active_fault_ == fault &&
+            has_latest_input_ && std::isfinite(latest_input_)) {
             const std::string completed_fault = faultName(active_fault_);
             active_fault_ = Fault::NONE;
             fault_value_ = 0.0;
             state_ = State::PASS_THROUGH;
             publishInhibit(false);
-            publishOutput(latest_input_);
+            publishRecordedOutput(latest_input_);
             publishStatus("reset", completed_fault, false, latest_input_,
-                          "explicit fresh-source reset");
+                          "fault reset; using the current input again");
             return;
         }
         if (active_fault_ != fault ||
@@ -266,8 +333,9 @@ private:
         case Fault::FREEZE:
             return frozen_value_;
         case Fault::SATURATION:
-            // Limit forward acceleration only; do not change braking commands.
-            return std::min(latest_input_, fault_value_);
+            // Use the same limit for speeding up and slowing down.
+            return std::max(-fault_value_,
+                            std::min(latest_input_, fault_value_));
         case Fault::OSCILLATION: {
             const double two_pi = 6.28318530717958647692;
             const double elapsed_s = (now - fault_started_).toSec();
@@ -282,25 +350,26 @@ private:
 
     void inputCallback(const std_msgs::Float64::ConstPtr& message)
     {
-        if (!valueAllowed(message->data)) {
-            enterInhibited("acceleration source outside configured bounds");
+        if (!std::isfinite(message->data)) {
+            ROS_ERROR("Recorded acceleration rejected: input is not a usable number");
             return;
         }
         latest_input_ = message->data;
         latest_input_time_ = ros::WallTime::now();
         has_latest_input_ = true;
+        source_ended_ = false;
 
         if (state_ == State::INHIBITED && active_fault_ == Fault::NONE) {
             state_ = State::PASS_THROUGH;
             publishInhibit(false);
-            publishOutput(latest_input_);
+            publishRecordedOutput(latest_input_);
             publishStatus("reset", "acceleration_output", false, latest_input_,
-                          "fresh acceleration source restored");
+                          "acceleration input is available again");
             return;
         }
 
         if (state_ == State::PASS_THROUGH) {
-            publishOutput(latest_input_);
+            publishRecordedOutput(latest_input_);
         }
     }
 
@@ -327,7 +396,7 @@ private:
         const bool in_range = value >= minimum && value <= maximum;
         if (!in_range) {
             publishStatus("rejected", command, false, value,
-                          "fault value outside configured physical limit");
+                          "fault value is outside the test limit");
         } else if (activationReady(command, value)) {
             activateFault(fault, value);
         }
@@ -360,7 +429,10 @@ private:
         if (!parseValue(message->data, fault + "=", &value)) {
             return;
         }
-        if (state_ == State::FAULT_ACTIVE || state_ == State::RECOVER) {
+        if (!enable_fault_timeout_) {
+            publishStatus("rejected", fault, false, value,
+                          "physical fault timeout is disabled");
+        } else if (state_ == State::FAULT_ACTIVE || state_ == State::RECOVER) {
             publishStatus("rejected", fault, false, value,
                           "cannot change timeout while a fault is active");
         } else if (value <= 0.0 || value > max_fault_timeout_s_) {
@@ -381,37 +453,56 @@ private:
         );
         last_timer_time_ = now;
 
-        if (state_ == State::PASS_THROUGH) {
-            if (has_latest_input_ && !inputFresh()) {
-                enterInhibited("acceleration source stale");
+        if (zero_on_source_loss_ && has_latest_input_ &&
+            (now - latest_input_time_).toSec() > source_loss_timeout_s_) {
+            if (!source_ended_) {
+                const std::string ended_fault = faultName(active_fault_);
+                active_fault_ = Fault::NONE;
+                fault_value_ = 0.0;
+                state_ = State::PASS_THROUGH;
+                source_ended_ = true;
+                ROS_WARN("Recorded acceleration source ended; publishing zero acceleration");
+                publishStatus("reset", ended_fault, false, 0.0,
+                              "recorded acceleration ended; sending zero");
             }
+            publishOutput(0.0);
+            return;
+        }
+
+        if (state_ == State::PASS_THROUGH) {
+            // DISABLED FOR CURRENT LIVE TESTS:
+            // if (has_latest_input_ && !inputFresh()) {
+            //     enterInhibited("acceleration source stale");
+            // }
             return;
         }
 
         if (state_ == State::FAULT_ACTIVE) {
-            if (!inputFresh()) {
-                enterInhibited("acceleration source became stale during fault");
-                return;
-            }
-            if (now >= fault_deadline_) {
+            // DISABLED FOR CURRENT LIVE TESTS:
+            // if (!inputFresh()) {
+            //     enterInhibited("acceleration source became stale during fault");
+            //     return;
+            // }
+            if (enable_fault_timeout_ && now >= fault_deadline_) {
                 publishStatus("timeout", faultName(active_fault_), true,
                               fault_value_, "fault timeout expired");
-                beginRecovery("fault timeout; starting jerk-limited recovery");
+                beginRecovery("fault time ended; returning gradually to the recorded value");
             } else {
-                if (publishOutput(faultedOutput(now))) {
+                if (publishFaultedOutput(faultedOutput(now))) {
                     publishStatus("active", faultName(active_fault_), true,
                                   fault_value_,
-                                  "publishing faulted acceleration");
+                                  "sending acceleration with the fault applied");
                 }
             }
             return;
         }
 
         if (state_ == State::RECOVER) {
-            if (!inputFresh()) {
-                enterInhibited("acceleration source stale during recovery");
-                return;
-            }
+            // DISABLED FOR CURRENT LIVE TESTS:
+            // if (!inputFresh()) {
+            //     enterInhibited("acceleration source stale during recovery");
+            //     return;
+            // }
             const double target = latest_input_;
             const double maximum_step = max_recovery_jerk_ * elapsed_s;
             const double delta = target - recovery_value_;
@@ -423,7 +514,7 @@ private:
                     fault_value_ = 0.0;
                     state_ = State::PASS_THROUGH;
                     publishStatus("reset", completed_fault, false,
-                                  recovery_value_, "pass-through restored");
+                                  recovery_value_, "normal acceleration commands restored");
                 }
             } else {
                 recovery_value_ += std::max(-maximum_step,
@@ -457,6 +548,11 @@ private:
     double oscillation_frequency_hz_ = 1.0;
     double max_recovery_jerk_ = 1.0;
     bool valid_configuration_ = true;
+    bool enable_fault_timeout_ = false;
+    bool enable_fault_injection_ = true;
+    bool zero_on_source_loss_ = false;
+    bool source_ended_ = false;
+    double source_loss_timeout_s_ = 2.0;
 
     State state_ = State::PASS_THROUGH;
     Fault active_fault_ = Fault::NONE;

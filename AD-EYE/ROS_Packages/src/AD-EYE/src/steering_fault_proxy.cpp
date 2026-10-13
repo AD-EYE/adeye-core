@@ -33,9 +33,13 @@ public:
                           1.0);
         private_nh_.param("max_recovery_rate_rad_s", max_recovery_rate_rad_s_,
                           0.2);
+        private_nh_.param("enable_fault_injection", enable_fault_injection_, true);
+        private_nh_.param("enable_fault_timeout", enable_fault_timeout_, false);
+        private_nh_.param("zero_on_source_loss", zero_on_source_loss_, false);
+        private_nh_.param("source_loss_timeout_s", source_loss_timeout_s_, 2.0);
 
         if (!parametersValid()) {
-            ROS_FATAL("Invalid steering fault proxy parameters");
+            ROS_FATAL("Steering proxy settings are not valid");
             valid_configuration_ = false;
             return;
         }
@@ -50,13 +54,15 @@ public:
         input_sub_ = nh_.subscribe<std_msgs::Float64>(
             input_topic_, 1, &SteeringFaultProxy::inputCallback, this
         );
-        command_sub_ = nh_.subscribe<std_msgs::String>(
-            "/vehicle_commands", 10, &SteeringFaultProxy::commandCallback, this
-        );
-        config_sub_ = nh_.subscribe<std_msgs::String>(
-            "/adeye/physical_fault_config", 10,
-            &SteeringFaultProxy::configCallback, this
-        );
+        if (enable_fault_injection_) {
+            command_sub_ = nh_.subscribe<std_msgs::String>(
+                "/vehicle_commands", 10, &SteeringFaultProxy::commandCallback, this
+            );
+            config_sub_ = nh_.subscribe<std_msgs::String>(
+                "/adeye/physical_fault_config", 10,
+                &SteeringFaultProxy::configCallback, this
+            );
+        }
         timer_ = nh_.createWallTimer(
             ros::WallDuration(1.0 / publish_rate_hz_),
             &SteeringFaultProxy::timerCallback, this
@@ -65,6 +71,8 @@ public:
         publishInhibit(false);
         ROS_INFO("Steering fault proxy: %s -> %s at %.3f Hz",
                  input_topic_.c_str(), output_topic_.c_str(), publish_rate_hz_);
+        ROS_INFO("Steering fault injection: %s",
+                 enable_fault_injection_ ? "enabled" : "disabled (normal commands only)");
     }
 
     bool validConfiguration() const { return valid_configuration_; }
@@ -88,7 +96,9 @@ private:
             std::isfinite(oscillation_frequency_hz_) &&
             oscillation_frequency_hz_ > 0.0 &&
             std::isfinite(max_recovery_rate_rad_s_) &&
-            max_recovery_rate_rad_s_ > 0.0;
+            max_recovery_rate_rad_s_ > 0.0 &&
+            std::isfinite(source_loss_timeout_s_) &&
+            source_loss_timeout_s_ > 0.0;
     }
 
     bool parseValue(const std::string& text, const std::string& prefix,
@@ -139,7 +149,7 @@ private:
                        bool active, double value, const std::string& detail)
     {
         double remaining_s = 0.0;
-        if (state_ == State::FAULT_ACTIVE) {
+        if (enable_fault_timeout_ && state_ == State::FAULT_ACTIVE) {
             remaining_s = std::max(
                 0.0, (fault_deadline_ - ros::WallTime::now()).toSec()
             );
@@ -149,7 +159,8 @@ private:
         json << "{\"source\":\"steering\",\"event\":\"" << event
              << "\",\"fault\":\"" << fault << "\",\"active\":"
              << (active ? "true" : "false") << ",\"value\":" << value
-             << ",\"timeout_s\":" << fault_timeout_s_
+             << ",\"timeout_s\":"
+             << (enable_fault_timeout_ ? fault_timeout_s_ : 0.0)
              << ",\"remaining_s\":" << remaining_s
              << ",\"detail\":\"" << detail << "\"}";
         status.data = json.str();
@@ -166,7 +177,7 @@ private:
     bool publishOutput(double value)
     {
         if (!valueAllowed(value)) {
-            enterInhibited("faulted steering outside configured final bounds");
+            enterInhibited("steering with the fault applied is outside the allowed range");
             return false;
         }
         std_msgs::Float64 output;
@@ -188,7 +199,7 @@ private:
         publishInhibit(true);
         publishStatus("inhibited", faultName(interrupted_fault),
                       interrupted_fault != Fault::NONE, fault_value_, reason);
-        ROS_ERROR("Steering output inhibited: %s", reason.c_str());
+        ROS_ERROR("Steering output stopped: %s", reason.c_str());
     }
 
     bool activationReady(const std::string& fault, double requested_value)
@@ -198,13 +209,12 @@ private:
                           "another steering fault or recovery is active");
             return false;
         }
-        const bool output_fresh = has_last_published_ &&
-            (ros::WallTime::now() - last_published_time_).toSec() <=
-                max_input_age_s_;
-        if (!inputFresh() || !output_fresh ||
+        // DISABLED FOR CURRENT LIVE TESTS:
+        // A valid command must exist, but it can be older than 0.3 seconds.
+        if (!has_latest_input_ || !has_last_published_ ||
             !valueAllowed(last_published_value_)) {
             publishStatus("rejected", fault, false, requested_value,
-                          "no fresh valid pre-click steering output");
+                          "no valid pre-click steering output");
             return false;
         }
         return true;
@@ -216,7 +226,9 @@ private:
         fault_value_ = value;
         frozen_value_ = last_published_value_;
         fault_started_ = ros::WallTime::now();
-        fault_deadline_ = fault_started_ + ros::WallDuration(fault_timeout_s_);
+        if (enable_fault_timeout_) {
+            fault_deadline_ = fault_started_ + ros::WallDuration(fault_timeout_s_);
+        }
         state_ = State::FAULT_ACTIVE;
         publishStatus("accepted", faultName(fault), true, value,
                       "physical steering fault activated");
@@ -224,8 +236,10 @@ private:
 
     void beginRecovery(const std::string& reason)
     {
-        if (!inputFresh() || !valueAllowed(latest_input_)) {
-            enterInhibited("cannot recover: steering source stale or invalid");
+        // DISABLED FOR CURRENT LIVE TESTS:
+        // Do not stop recovery only because the last command is over 0.3 s old.
+        if (!has_latest_input_ || !valueAllowed(latest_input_)) {
+            enterInhibited("cannot recover: steering source missing or invalid");
             return;
         }
         recovery_value_ = has_last_published_ ? last_published_value_ : latest_input_;
@@ -236,7 +250,8 @@ private:
 
     void deactivateFault(Fault fault)
     {
-        if (state_ == State::INHIBITED && active_fault_ == fault && inputFresh()) {
+        if (state_ == State::INHIBITED && active_fault_ == fault &&
+            has_latest_input_ && valueAllowed(latest_input_)) {
             const std::string completed_fault = faultName(active_fault_);
             active_fault_ = Fault::NONE;
             fault_value_ = 0.0;
@@ -244,7 +259,7 @@ private:
             publishInhibit(false);
             publishOutput(latest_input_);
             publishStatus("reset", completed_fault, false, latest_input_,
-                          "explicit fresh-source reset");
+                          "fault reset; using the current input again");
             return;
         }
         if (active_fault_ != fault ||
@@ -291,13 +306,14 @@ private:
         latest_input_ = message->data;
         latest_input_time_ = ros::WallTime::now();
         has_latest_input_ = true;
+        source_ended_ = false;
 
         if (state_ == State::INHIBITED && active_fault_ == Fault::NONE) {
             state_ = State::PASS_THROUGH;
             publishInhibit(false);
             publishOutput(latest_input_);
             publishStatus("reset", "steering_output", false, latest_input_,
-                          "fresh steering source restored");
+                          "steering input is available again");
         } else if (state_ == State::PASS_THROUGH) {
             publishOutput(latest_input_);
         }
@@ -322,7 +338,7 @@ private:
             deactivateFault(fault);
         } else if (value < minimum || value > maximum) {
             publishStatus("rejected", command, false, value,
-                          "fault value outside configured physical limit");
+                          "fault value is outside the test limit");
         } else if (activationReady(command, value)) {
             activateFault(fault, value);
         }
@@ -355,7 +371,10 @@ private:
         if (!parseValue(message->data, command + "=", &value)) {
             return;
         }
-        if (state_ == State::FAULT_ACTIVE || state_ == State::RECOVER) {
+        if (!enable_fault_timeout_) {
+            publishStatus("rejected", command, false, value,
+                          "physical fault timeout is disabled");
+        } else if (state_ == State::FAULT_ACTIVE || state_ == State::RECOVER) {
             publishStatus("rejected", command, false, value,
                           "cannot change timeout while a steering fault is active");
         } else if (value <= 0.0 || value > max_fault_timeout_s_) {
@@ -376,32 +395,51 @@ private:
         );
         last_timer_time_ = now;
 
-        if (state_ == State::PASS_THROUGH) {
-            if (has_latest_input_ && !inputFresh()) {
-                enterInhibited("nominal steering source stale");
+        if (zero_on_source_loss_ && has_latest_input_ &&
+            (now - latest_input_time_).toSec() > source_loss_timeout_s_) {
+            if (!source_ended_) {
+                const std::string ended_fault = faultName(active_fault_);
+                active_fault_ = Fault::NONE;
+                fault_value_ = 0.0;
+                state_ = State::PASS_THROUGH;
+                source_ended_ = true;
+                ROS_WARN("Recorded steering source ended; publishing zero steering");
+                publishStatus("reset", ended_fault, false, 0.0,
+                              "recorded steering ended; sending zero");
             }
+            publishOutput(0.0);
+            return;
+        }
+
+        if (state_ == State::PASS_THROUGH) {
+            // DISABLED FOR CURRENT LIVE TESTS:
+            // if (has_latest_input_ && !inputFresh()) {
+            //     enterInhibited("nominal steering source stale");
+            // }
             return;
         }
         if (state_ == State::FAULT_ACTIVE) {
-            if (!inputFresh()) {
-                enterInhibited("steering source became stale during fault");
-                return;
-            }
-            if (now >= fault_deadline_) {
+            // DISABLED FOR CURRENT LIVE TESTS:
+            // if (!inputFresh()) {
+            //     enterInhibited("steering source became stale during fault");
+            //     return;
+            // }
+            if (enable_fault_timeout_ && now >= fault_deadline_) {
                 publishStatus("timeout", faultName(active_fault_), true,
                               fault_value_, "fault timeout expired");
-                beginRecovery("fault timeout; starting rate-limited recovery");
+                beginRecovery("fault time ended; returning gradually to the recorded value");
             } else if (publishOutput(faultedOutput(now))) {
                 publishStatus("active", faultName(active_fault_), true,
-                              fault_value_, "publishing faulted steering");
+                              fault_value_, "sending steering with the fault applied");
             }
             return;
         }
         if (state_ == State::RECOVER) {
-            if (!inputFresh()) {
-                enterInhibited("steering source stale during recovery");
-                return;
-            }
+            // DISABLED FOR CURRENT LIVE TESTS:
+            // if (!inputFresh()) {
+            //     enterInhibited("steering source stale during recovery");
+            //     return;
+            // }
             const double maximum_step = max_recovery_rate_rad_s_ * elapsed_s;
             const double delta = latest_input_ - recovery_value_;
             if (std::abs(delta) <= maximum_step) {
@@ -412,7 +450,7 @@ private:
                     fault_value_ = 0.0;
                     state_ = State::PASS_THROUGH;
                     publishStatus("reset", completed_fault, false,
-                                  recovery_value_, "pass-through restored");
+                                  recovery_value_, "normal steering commands restored");
                 }
             } else {
                 recovery_value_ += std::max(-maximum_step,
@@ -444,6 +482,11 @@ private:
     double oscillation_frequency_hz_ = 1.0;
     double max_recovery_rate_rad_s_ = 0.2;
     bool valid_configuration_ = true;
+    bool enable_fault_injection_ = true;
+    bool enable_fault_timeout_ = false;
+    bool zero_on_source_loss_ = false;
+    bool source_ended_ = false;
+    double source_loss_timeout_s_ = 2.0;
     State state_ = State::PASS_THROUGH;
     Fault active_fault_ = Fault::NONE;
     bool has_latest_input_ = false;
