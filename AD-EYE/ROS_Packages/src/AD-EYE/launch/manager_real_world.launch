@@ -39,10 +39,12 @@
     <arg name="recorded_acceleration_max_age_s" default="0.3"/>
     <!-- CAN can store this full range, but that does not mean every value is
          safe for a test. Use limits approved for the car and test setup. -->
-    <arg name="recorded_acceleration_min" default="-15.0"/>
-    <arg name="recorded_acceleration_max" default="16.99"/>
+    <arg name="recorded_acceleration_min" default="-0.5"/>
+    <arg name="recorded_acceleration_max" default="0.75"/>
     <arg name="recorded_acceleration_max_offset" default="0.2"/>
+    <arg name="recorded_acceleration_min_saturation" default="0.1"/>
     <arg name="recorded_acceleration_max_saturation" default="0.5"/>
+    <arg name="recorded_acceleration_min_oscillation" default="0.01"/>
     <arg name="recorded_acceleration_max_oscillation" default="0.1"/>
     <arg name="recorded_acceleration_oscillation_frequency_hz" default="1.0"/>
     <arg name="recorded_acceleration_recovery_jerk" default="1.0"/>
@@ -57,7 +59,9 @@
     <arg name="steering_proxy_max_input_age_s" default="0.3"/>
     <arg name="steering_proxy_max_angle_rad" default="0.85"/>
     <arg name="steering_proxy_max_offset_rad" default="0.017453292519943295"/>
+    <arg name="steering_proxy_min_saturation_rad" default="0.017453292519943295"/>
     <arg name="steering_proxy_max_saturation_rad" default="0.17453292519943295"/>
+    <arg name="steering_proxy_min_oscillation_rad" default="0.0008726646259971648"/>
     <arg name="steering_proxy_max_oscillation_rad" default="0.008726646259971648"/>
     <arg name="steering_proxy_oscillation_frequency_hz" default="1.0"/>
     <arg name="steering_proxy_max_recovery_rate_rad_s" default="0.2"/>
@@ -153,7 +157,9 @@
         <param name="max_input_age_s" value="$(arg steering_proxy_max_input_age_s)"/>
         <param name="max_steering_angle_rad" value="$(arg steering_proxy_max_angle_rad)"/>
         <param name="max_steering_offset_rad" value="$(arg steering_proxy_max_offset_rad)"/>
+        <param name="min_steering_saturation_rad" value="$(arg steering_proxy_min_saturation_rad)"/>
         <param name="max_steering_saturation_rad" value="$(arg steering_proxy_max_saturation_rad)"/>
+        <param name="min_steering_oscillation_rad" value="$(arg steering_proxy_min_oscillation_rad)"/>
         <param name="max_steering_oscillation_rad" value="$(arg steering_proxy_max_oscillation_rad)"/>
         <param name="oscillation_frequency_hz" value="$(arg steering_proxy_oscillation_frequency_hz)"/>
         <param name="max_recovery_rate_rad_s" value="$(arg steering_proxy_max_recovery_rate_rad_s)"/>
@@ -178,7 +184,9 @@
         <param name="max_input_age_s" value="$(arg steering_proxy_max_input_age_s)"/>
         <param name="max_steering_angle_rad" value="$(arg steering_proxy_max_angle_rad)"/>
         <param name="max_steering_offset_rad" value="$(arg steering_proxy_max_offset_rad)"/>
+        <param name="min_steering_saturation_rad" value="$(arg steering_proxy_min_saturation_rad)"/>
         <param name="max_steering_saturation_rad" value="$(arg steering_proxy_max_saturation_rad)"/>
+        <param name="min_steering_oscillation_rad" value="$(arg steering_proxy_min_oscillation_rad)"/>
         <param name="max_steering_oscillation_rad" value="$(arg steering_proxy_max_oscillation_rad)"/>
         <param name="oscillation_frequency_hz" value="$(arg steering_proxy_oscillation_frequency_hz)"/>
         <param name="max_recovery_rate_rad_s" value="$(arg steering_proxy_max_recovery_rate_rad_s)"/>
@@ -225,7 +233,9 @@
         <param name="min_acceleration" value="$(arg recorded_acceleration_min)"/>
         <param name="max_acceleration" value="$(arg recorded_acceleration_max)"/>
         <param name="max_acceleration_offset" value="$(arg recorded_acceleration_max_offset)"/>
+        <param name="min_acceleration_saturation" value="$(arg recorded_acceleration_min_saturation)"/>
         <param name="max_acceleration_saturation" value="$(arg recorded_acceleration_max_saturation)"/>
+        <param name="min_acceleration_oscillation" value="$(arg recorded_acceleration_min_oscillation)"/>
         <param name="max_acceleration_oscillation" value="$(arg recorded_acceleration_max_oscillation)"/>
         <param name="oscillation_frequency_hz" value="$(arg recorded_acceleration_oscillation_frequency_hz)"/>
         <param name="max_recovery_jerk" value="$(arg recorded_acceleration_recovery_jerk)"/>
@@ -252,7 +262,9 @@
         <param name="min_acceleration" value="$(arg recorded_acceleration_min)"/>
         <param name="max_acceleration" value="$(arg recorded_acceleration_max)"/>
         <param name="max_acceleration_offset" value="$(arg recorded_acceleration_max_offset)"/>
+        <param name="min_acceleration_saturation" value="$(arg recorded_acceleration_min_saturation)"/>
         <param name="max_acceleration_saturation" value="$(arg recorded_acceleration_max_saturation)"/>
+        <param name="min_acceleration_oscillation" value="$(arg recorded_acceleration_min_oscillation)"/>
         <param name="max_acceleration_oscillation" value="$(arg recorded_acceleration_max_oscillation)"/>
         <param name="oscillation_frequency_hz" value="$(arg recorded_acceleration_oscillation_frequency_hz)"/>
         <param name="max_recovery_jerk" value="$(arg recorded_acceleration_recovery_jerk)"/>

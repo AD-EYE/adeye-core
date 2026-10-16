@@ -25,10 +25,20 @@ public:
         private_nh_.param("max_steering_angle_rad", max_angle_rad_, 0.85);
         private_nh_.param("max_steering_offset_rad", max_offset_rad_,
                           0.017453292519943295);
+        private_nh_.param("min_steering_saturation_rad", min_saturation_rad_,
+                          0.017453292519943295);
         private_nh_.param("max_steering_saturation_rad", max_saturation_rad_,
                           0.17453292519943295);
+        private_nh_.param("min_steering_oscillation_rad", min_oscillation_rad_,
+                          0.0008726646259971648);
         private_nh_.param("max_steering_oscillation_rad", max_oscillation_rad_,
                           0.008726646259971648);
+        offset_min_rad_ = -max_offset_rad_;
+        offset_max_rad_ = max_offset_rad_;
+        saturation_min_rad_ = min_saturation_rad_;
+        saturation_max_rad_ = max_saturation_rad_;
+        oscillation_min_rad_ = min_oscillation_rad_;
+        oscillation_max_rad_ = max_oscillation_rad_;
         private_nh_.param("oscillation_frequency_hz", oscillation_frequency_hz_,
                           1.0);
         private_nh_.param("max_recovery_rate_rad_s", max_recovery_rate_rad_s_,
@@ -90,9 +100,13 @@ private:
             std::isfinite(max_input_age_s_) && max_input_age_s_ > 0.0 &&
             std::isfinite(max_angle_rad_) && max_angle_rad_ > 0.0 &&
             std::isfinite(max_offset_rad_) && max_offset_rad_ > 0.0 &&
+            std::isfinite(min_saturation_rad_) && min_saturation_rad_ > 0.0 &&
             std::isfinite(max_saturation_rad_) && max_saturation_rad_ > 0.0 &&
+            min_saturation_rad_ <= max_saturation_rad_ &&
             max_saturation_rad_ <= max_angle_rad_ &&
+            std::isfinite(min_oscillation_rad_) && min_oscillation_rad_ > 0.0 &&
             std::isfinite(max_oscillation_rad_) && max_oscillation_rad_ > 0.0 &&
+            min_oscillation_rad_ <= max_oscillation_rad_ &&
             std::isfinite(oscillation_frequency_hz_) &&
             oscillation_frequency_hz_ > 0.0 &&
             std::isfinite(max_recovery_rate_rad_s_) &&
@@ -116,6 +130,45 @@ private:
             }
             *value = parsed;
             return true;
+        } catch (const std::exception&) {
+            return false;
+        }
+    }
+
+    bool parseLimits(const std::string& text, std::string* fault,
+                     double* minimum, double* maximum) const
+    {
+        const std::string prefix = "FAULT_LIMITS_command=";
+        if (text.compare(0, prefix.size(), prefix) != 0) {
+            return false;
+        }
+        const std::string values = text.substr(prefix.size());
+        const std::size_t first_comma = values.find(',');
+        const std::size_t second_comma = values.find(',', first_comma + 1);
+        if (first_comma == std::string::npos ||
+            second_comma == std::string::npos ||
+            values.find(',', second_comma + 1) != std::string::npos) {
+            return false;
+        }
+        try {
+            std::size_t minimum_used = 0;
+            std::size_t maximum_used = 0;
+            const std::string minimum_text = values.substr(
+                first_comma + 1, second_comma - first_comma - 1
+            );
+            const std::string maximum_text = values.substr(second_comma + 1);
+            const double parsed_minimum = std::stod(minimum_text, &minimum_used);
+            const double parsed_maximum = std::stod(maximum_text, &maximum_used);
+            if (minimum_used != minimum_text.size() ||
+                maximum_used != maximum_text.size() ||
+                !std::isfinite(parsed_minimum) ||
+                !std::isfinite(parsed_maximum)) {
+                return false;
+            }
+            *fault = values.substr(0, first_comma);
+            *minimum = parsed_minimum;
+            *maximum = parsed_maximum;
+            return !fault->empty();
         } catch (const std::exception&) {
             return false;
         }
@@ -146,7 +199,11 @@ private:
     }
 
     void publishStatus(const std::string& event, const std::string& fault,
-                       bool active, double value, const std::string& detail)
+                       bool active, double value, const std::string& detail,
+                       double minimum = 0.0, double maximum = 0.0,
+                       bool include_limits = false,
+                       double hard_minimum = 0.0, double hard_maximum = 0.0,
+                       bool include_hard_limits = false)
     {
         double remaining_s = 0.0;
         if (enable_fault_timeout_ && state_ == State::FAULT_ACTIVE) {
@@ -161,10 +218,33 @@ private:
              << (active ? "true" : "false") << ",\"value\":" << value
              << ",\"timeout_s\":"
              << (enable_fault_timeout_ ? fault_timeout_s_ : 0.0)
-             << ",\"remaining_s\":" << remaining_s
-             << ",\"detail\":\"" << detail << "\"}";
+             << ",\"remaining_s\":" << remaining_s;
+        if (include_limits) {
+            json << ",\"min_value\":" << minimum
+                 << ",\"max_value\":" << maximum;
+        }
+        if (include_hard_limits) {
+            json << ",\"hard_min_value\":" << hard_minimum
+                 << ",\"hard_max_value\":" << hard_maximum;
+        }
+        json << ",\"detail\":\"" << detail << "\"}";
         status.data = json.str();
         status_pub_.publish(status);
+    }
+
+    void publishFaultLimits()
+    {
+        publishStatus("limits", "STEEROFFSET_command", false, 0.0,
+                      "steering offset ranges", offset_min_rad_, offset_max_rad_,
+                      true, -max_offset_rad_, max_offset_rad_, true);
+        publishStatus("limits", "STEERSAT_command", false, 0.0,
+                      "steering saturation ranges",
+                      saturation_min_rad_, saturation_max_rad_, true,
+                      min_saturation_rad_, max_saturation_rad_, true);
+        publishStatus("limits", "STEEROSC_command", false, 0.0,
+                      "steering oscillation ranges",
+                      oscillation_min_rad_, oscillation_max_rad_, true,
+                      min_oscillation_rad_, max_oscillation_rad_, true);
     }
 
     void publishInhibit(bool inhibit)
@@ -209,8 +289,8 @@ private:
                           "another steering fault or recovery is active");
             return false;
         }
-        // DISABLED FOR CURRENT LIVE TESTS:
-        // A valid command must exist, but it can be older than 0.3 seconds.
+        // Turned off for current live tests:
+        // At least one steering command is needed, but it may be older than 0.3 seconds.
         if (!has_latest_input_ || !has_last_published_ ||
             !valueAllowed(last_published_value_)) {
             publishStatus("rejected", fault, false, requested_value,
@@ -236,8 +316,8 @@ private:
 
     void beginRecovery(const std::string& reason)
     {
-        // DISABLED FOR CURRENT LIVE TESTS:
-        // Do not stop recovery only because the last command is over 0.3 s old.
+        // Turned off for current live tests:
+        // Keep returning to normal even if no new command arrived in the last 0.3 seconds.
         if (!has_latest_input_ || !valueAllowed(latest_input_)) {
             enterInhibited("cannot recover: steering source missing or invalid");
             return;
@@ -349,15 +429,15 @@ private:
         double value = 0.0;
         if (parseValue(message->data, "STEEROFFSET_command=", &value)) {
             handleValue(Fault::OFFSET, "STEEROFFSET_command", value,
-                        -max_offset_rad_, max_offset_rad_);
+                        offset_min_rad_, offset_max_rad_);
         } else if (parseValue(message->data, "STEERFREEZE_command=", &value)) {
             handleToggle(Fault::FREEZE, "STEERFREEZE_command", value);
         } else if (parseValue(message->data, "STEERSAT_command=", &value)) {
             handleValue(Fault::SATURATION, "STEERSAT_command", value,
-                        0.0, max_saturation_rad_);
+                        saturation_min_rad_, saturation_max_rad_);
         } else if (parseValue(message->data, "STEEROSC_command=", &value)) {
             handleValue(Fault::OSCILLATION, "STEEROSC_command", value,
-                        0.0, max_oscillation_rad_);
+                        oscillation_min_rad_, oscillation_max_rad_);
         } else if (parseValue(message->data, "STEERRANDOM_command=", &value)) {
             publishStatus("rejected", "STEERRANDOM_command", false, value,
                           "random steering is simulation-only");
@@ -366,24 +446,72 @@ private:
 
     void configCallback(const std_msgs::String::ConstPtr& message)
     {
-        double value = 0.0;
-        const std::string command = "PHYSICAL_FAULT_TIMEOUT_command";
-        if (!parseValue(message->data, command + "=", &value)) {
+        if (message->data == "FAULT_LIMITS_QUERY_command") {
+            publishFaultLimits();
             return;
         }
-        if (!enable_fault_timeout_) {
+
+        double value = 0.0;
+        const std::string command = "PHYSICAL_FAULT_TIMEOUT_command";
+        if (parseValue(message->data, command + "=", &value)) {
+          if (!enable_fault_timeout_) {
             publishStatus("rejected", command, false, value,
                           "physical fault timeout is disabled");
-        } else if (state_ == State::FAULT_ACTIVE || state_ == State::RECOVER) {
+          } else if (state_ == State::FAULT_ACTIVE || state_ == State::RECOVER) {
             publishStatus("rejected", command, false, value,
                           "cannot change timeout while a steering fault is active");
-        } else if (value <= 0.0 || value > max_fault_timeout_s_) {
+          } else if (value <= 0.0 || value > max_fault_timeout_s_) {
             publishStatus("rejected", command, false, value,
                           "timeout outside configured limits");
-        } else {
+          } else {
             fault_timeout_s_ = value;
             publishStatus("configured", command, false, value,
                           "steering fault timeout updated");
+          }
+          return;
+        }
+
+        std::string limit_fault;
+        double minimum = 0.0;
+        double maximum = 0.0;
+        if (!parseLimits(message->data, &limit_fault, &minimum, &maximum)) {
+            return;
+        }
+        if (state_ == State::FAULT_ACTIVE || state_ == State::RECOVER) {
+            publishStatus("rejected", limit_fault, false, 0.0,
+                          "cannot change the range while a fault is active");
+            return;
+        }
+
+        bool accepted = false;
+        if (limit_fault == "STEEROFFSET_command" && minimum < maximum &&
+            minimum >= -max_offset_rad_ && maximum <= max_offset_rad_) {
+            offset_min_rad_ = minimum;
+            offset_max_rad_ = maximum;
+            accepted = true;
+        } else if (limit_fault == "STEERSAT_command" &&
+                   minimum >= min_saturation_rad_ &&
+                   minimum < maximum && maximum <= max_saturation_rad_) {
+            saturation_min_rad_ = minimum;
+            saturation_max_rad_ = maximum;
+            accepted = true;
+        } else if (limit_fault == "STEEROSC_command" &&
+                   minimum >= min_oscillation_rad_ &&
+                   minimum < maximum && maximum <= max_oscillation_rad_) {
+            oscillation_min_rad_ = minimum;
+            oscillation_max_rad_ = maximum;
+            accepted = true;
+        } else if (limit_fault.compare(0, 5, "STEER") != 0) {
+            return;
+        }
+
+        if (accepted) {
+            publishStatus("configured", limit_fault, false, 0.0,
+                          "steering fault range updated",
+                          minimum, maximum, true);
+        } else {
+            publishStatus("rejected", limit_fault, false, 0.0,
+                          "requested range is outside the allowed safety range");
         }
     }
 
@@ -412,14 +540,14 @@ private:
         }
 
         if (state_ == State::PASS_THROUGH) {
-            // DISABLED FOR CURRENT LIVE TESTS:
+            // Turned off for current live tests:
             // if (has_latest_input_ && !inputFresh()) {
             //     enterInhibited("nominal steering source stale");
             // }
             return;
         }
         if (state_ == State::FAULT_ACTIVE) {
-            // DISABLED FOR CURRENT LIVE TESTS:
+            // Turned off for current live tests:
             // if (!inputFresh()) {
             //     enterInhibited("steering source became stale during fault");
             //     return;
@@ -435,7 +563,7 @@ private:
             return;
         }
         if (state_ == State::RECOVER) {
-            // DISABLED FOR CURRENT LIVE TESTS:
+            // Turned off for current live tests:
             // if (!inputFresh()) {
             //     enterInhibited("steering source stale during recovery");
             //     return;
@@ -477,8 +605,16 @@ private:
     double max_input_age_s_ = 0.3;
     double max_angle_rad_ = 0.85;
     double max_offset_rad_ = 0.017453292519943295;
+    double min_saturation_rad_ = 0.017453292519943295;
     double max_saturation_rad_ = 0.17453292519943295;
+    double min_oscillation_rad_ = 0.0008726646259971648;
     double max_oscillation_rad_ = 0.008726646259971648;
+    double offset_min_rad_ = -0.017453292519943295;
+    double offset_max_rad_ = 0.017453292519943295;
+    double saturation_min_rad_ = 0.017453292519943295;
+    double saturation_max_rad_ = 0.17453292519943295;
+    double oscillation_min_rad_ = 0.0008726646259971648;
+    double oscillation_max_rad_ = 0.008726646259971648;
     double oscillation_frequency_hz_ = 1.0;
     double max_recovery_rate_rad_s_ = 0.2;
     bool valid_configuration_ = true;

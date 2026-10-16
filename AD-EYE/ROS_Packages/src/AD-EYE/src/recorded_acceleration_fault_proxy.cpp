@@ -23,11 +23,19 @@ public:
         private_nh_.param("fault_timeout_s", fault_timeout_s_, 5.0);
         private_nh_.param("max_fault_timeout_s", max_fault_timeout_s_, 300.0);
         private_nh_.param("max_input_age_s", max_input_age_s_, 0.3);
-        private_nh_.param("min_acceleration", min_acceleration_, -15.0);
-        private_nh_.param("max_acceleration", max_acceleration_, 16.99);
+        private_nh_.param("min_acceleration", min_acceleration_, -0.5);
+        private_nh_.param("max_acceleration", max_acceleration_, 0.75);
         private_nh_.param("max_acceleration_offset", max_offset_, 0.2);
+        private_nh_.param("min_acceleration_saturation", min_saturation_, 0.1);
         private_nh_.param("max_acceleration_saturation", max_saturation_, 0.5);
+        private_nh_.param("min_acceleration_oscillation", min_oscillation_, 0.01);
         private_nh_.param("max_acceleration_oscillation", max_oscillation_, 0.1);
+        offset_min_ = -max_offset_;
+        offset_max_ = max_offset_;
+        saturation_min_ = min_saturation_;
+        saturation_max_ = max_saturation_;
+        oscillation_min_ = min_oscillation_;
+        oscillation_max_ = max_oscillation_;
         private_nh_.param("oscillation_frequency_hz", oscillation_frequency_hz_,
                           1.0);
         private_nh_.param("max_recovery_jerk", max_recovery_jerk_, 1.0);
@@ -44,8 +52,12 @@ public:
             !std::isfinite(min_acceleration_) || !std::isfinite(max_acceleration_) ||
             min_acceleration_ >= max_acceleration_ ||
             !std::isfinite(max_offset_) || max_offset_ <= 0.0 ||
+            !std::isfinite(min_saturation_) || min_saturation_ <= 0.0 ||
             !std::isfinite(max_saturation_) || max_saturation_ <= 0.0 ||
+            min_saturation_ > max_saturation_ ||
+            !std::isfinite(min_oscillation_) || min_oscillation_ <= 0.0 ||
             !std::isfinite(max_oscillation_) || max_oscillation_ <= 0.0 ||
+            min_oscillation_ > max_oscillation_ ||
             !std::isfinite(oscillation_frequency_hz_) ||
             oscillation_frequency_hz_ <= 0.0 ||
             !std::isfinite(max_recovery_jerk_) || max_recovery_jerk_ <= 0.0 ||
@@ -128,6 +140,45 @@ private:
         }
     }
 
+    bool parseLimits(const std::string& text, std::string* fault,
+                     double* minimum, double* maximum) const
+    {
+        const std::string prefix = "FAULT_LIMITS_command=";
+        if (text.compare(0, prefix.size(), prefix) != 0) {
+            return false;
+        }
+        const std::string values = text.substr(prefix.size());
+        const std::size_t first_comma = values.find(',');
+        const std::size_t second_comma = values.find(',', first_comma + 1);
+        if (first_comma == std::string::npos ||
+            second_comma == std::string::npos ||
+            values.find(',', second_comma + 1) != std::string::npos) {
+            return false;
+        }
+        try {
+            std::size_t minimum_used = 0;
+            std::size_t maximum_used = 0;
+            const std::string minimum_text = values.substr(
+                first_comma + 1, second_comma - first_comma - 1
+            );
+            const std::string maximum_text = values.substr(second_comma + 1);
+            const double parsed_minimum = std::stod(minimum_text, &minimum_used);
+            const double parsed_maximum = std::stod(maximum_text, &maximum_used);
+            if (minimum_used != minimum_text.size() ||
+                maximum_used != maximum_text.size() ||
+                !std::isfinite(parsed_minimum) ||
+                !std::isfinite(parsed_maximum)) {
+                return false;
+            }
+            *fault = values.substr(0, first_comma);
+            *minimum = parsed_minimum;
+            *maximum = parsed_maximum;
+            return !fault->empty();
+        } catch (const std::exception&) {
+            return false;
+        }
+    }
+
     bool inputFresh() const
     {
         return has_latest_input_ &&
@@ -141,7 +192,11 @@ private:
     }
 
     void publishStatus(const std::string& event, const std::string& fault,
-                       bool active, double value, const std::string& detail)
+                       bool active, double value, const std::string& detail,
+                       double minimum = 0.0, double maximum = 0.0,
+                       bool include_limits = false,
+                       double hard_minimum = 0.0, double hard_maximum = 0.0,
+                       bool include_hard_limits = false)
     {
         double remaining_s = 0.0;
         if (enable_fault_timeout_ && state_ == State::FAULT_ACTIVE) {
@@ -156,10 +211,33 @@ private:
              << (active ? "true" : "false") << ",\"value\":" << value
              << ",\"timeout_s\":"
              << (enable_fault_timeout_ ? fault_timeout_s_ : 0.0)
-             << ",\"remaining_s\":" << remaining_s
-             << ",\"detail\":\"" << detail << "\"}";
+             << ",\"remaining_s\":" << remaining_s;
+        if (include_limits) {
+            json << ",\"min_value\":" << minimum
+                 << ",\"max_value\":" << maximum;
+        }
+        if (include_hard_limits) {
+            json << ",\"hard_min_value\":" << hard_minimum
+                 << ",\"hard_max_value\":" << hard_maximum;
+        }
+        json << ",\"detail\":\"" << detail << "\"}";
         status.data = json.str();
         status_pub_.publish(status);
+    }
+
+    void publishFaultLimits()
+    {
+        publishStatus("limits", "ACCELOFFSET_command", false, 0.0,
+                      "acceleration offset ranges", offset_min_, offset_max_,
+                      true, -max_offset_, max_offset_, true);
+        publishStatus("limits", "ACCELSAT_command", false, 0.0,
+                      "acceleration saturation ranges",
+                      saturation_min_, saturation_max_, true,
+                      min_saturation_, max_saturation_, true);
+        publishStatus("limits", "ACCELOSC_command", false, 0.0,
+                      "acceleration oscillation ranges",
+                      oscillation_min_, oscillation_max_, true,
+                      min_oscillation_, max_oscillation_, true);
     }
 
     void publishInhibit(bool inhibit)
@@ -248,8 +326,8 @@ private:
 
     void beginRecovery(const std::string& reason)
     {
-        // DISABLED FOR CURRENT LIVE TESTS:
-        // Do not stop recovery only because the last command is over 0.3 s old.
+        // Turned off for current live tests:
+        // Keep returning to normal even if no new command arrived in the last 0.3 seconds.
         if (!has_latest_input_ || !std::isfinite(latest_input_)) {
             enterInhibited("cannot recover: acceleration source missing or invalid");
             return;
@@ -277,8 +355,8 @@ private:
                           "another acceleration fault or recovery is active");
             return false;
         }
-        // DISABLED FOR CURRENT LIVE TESTS:
-        // A valid command must exist, but it can be older than 0.3 seconds.
+        // Turned off for current live tests:
+        // At least one acceleration command is needed, but it may be older than 0.3 seconds.
         if (!has_latest_input_ || !std::isfinite(latest_input_) ||
             !has_last_published_ || !std::isfinite(last_published_value_)) {
             publishStatus("rejected", fault, false, requested_value,
@@ -409,13 +487,13 @@ private:
             handleToggleFault("ACCELFREEZE_command", Fault::FREEZE, value);
         } else if (parseValue(message->data, "ACCELOFFSET_command=", &value)) {
             handleValueFault("ACCELOFFSET_command", Fault::OFFSET, value,
-                             -max_offset_, max_offset_);
+                             offset_min_, offset_max_);
         } else if (parseValue(message->data, "ACCELSAT_command=", &value)) {
             handleValueFault("ACCELSAT_command", Fault::SATURATION, value,
-                             0.0, max_saturation_);
+                             saturation_min_, saturation_max_);
         } else if (parseValue(message->data, "ACCELOSC_command=", &value)) {
             handleValueFault("ACCELOSC_command", Fault::OSCILLATION, value,
-                             0.0, max_oscillation_);
+                             oscillation_min_, oscillation_max_);
         } else if (parseValue(message->data, "ACCELRUNAWAY_command=", &value)) {
             publishStatus("rejected", "ACCELRUNAWAY_command", false, value,
                           "runaway acceleration is simulation-only");
@@ -424,24 +502,72 @@ private:
 
     void configCallback(const std_msgs::String::ConstPtr& message)
     {
-        double value = 0.0;
-        const std::string fault = "PHYSICAL_FAULT_TIMEOUT_command";
-        if (!parseValue(message->data, fault + "=", &value)) {
+        if (message->data == "FAULT_LIMITS_QUERY_command") {
+            publishFaultLimits();
             return;
         }
-        if (!enable_fault_timeout_) {
+
+        double value = 0.0;
+        const std::string fault = "PHYSICAL_FAULT_TIMEOUT_command";
+        if (parseValue(message->data, fault + "=", &value)) {
+          if (!enable_fault_timeout_) {
             publishStatus("rejected", fault, false, value,
                           "physical fault timeout is disabled");
-        } else if (state_ == State::FAULT_ACTIVE || state_ == State::RECOVER) {
+          } else if (state_ == State::FAULT_ACTIVE || state_ == State::RECOVER) {
             publishStatus("rejected", fault, false, value,
                           "cannot change timeout while a fault is active");
-        } else if (value <= 0.0 || value > max_fault_timeout_s_) {
+          } else if (value <= 0.0 || value > max_fault_timeout_s_) {
             publishStatus("rejected", fault, false, value,
                           "timeout outside configured limits");
-        } else {
+          } else {
             fault_timeout_s_ = value;
             publishStatus("configured", fault, false, value,
                           "acceleration fault timeout updated");
+          }
+          return;
+        }
+
+        std::string limit_fault;
+        double minimum = 0.0;
+        double maximum = 0.0;
+        if (!parseLimits(message->data, &limit_fault, &minimum, &maximum)) {
+            return;
+        }
+        if (state_ == State::FAULT_ACTIVE || state_ == State::RECOVER) {
+            publishStatus("rejected", limit_fault, false, 0.0,
+                          "cannot change the range while a fault is active");
+            return;
+        }
+
+        bool accepted = false;
+        if (limit_fault == "ACCELOFFSET_command" && minimum < maximum &&
+            minimum >= -max_offset_ && maximum <= max_offset_) {
+            offset_min_ = minimum;
+            offset_max_ = maximum;
+            accepted = true;
+        } else if (limit_fault == "ACCELSAT_command" &&
+                   minimum >= min_saturation_ &&
+                   minimum < maximum && maximum <= max_saturation_) {
+            saturation_min_ = minimum;
+            saturation_max_ = maximum;
+            accepted = true;
+        } else if (limit_fault == "ACCELOSC_command" &&
+                   minimum >= min_oscillation_ &&
+                   minimum < maximum && maximum <= max_oscillation_) {
+            oscillation_min_ = minimum;
+            oscillation_max_ = maximum;
+            accepted = true;
+        } else if (limit_fault.compare(0, 5, "ACCEL") != 0) {
+            return;
+        }
+
+        if (accepted) {
+            publishStatus("configured", limit_fault, false, 0.0,
+                          "acceleration fault range updated",
+                          minimum, maximum, true);
+        } else {
+            publishStatus("rejected", limit_fault, false, 0.0,
+                          "requested range is outside the allowed safety range");
         }
     }
 
@@ -470,7 +596,7 @@ private:
         }
 
         if (state_ == State::PASS_THROUGH) {
-            // DISABLED FOR CURRENT LIVE TESTS:
+            // Turned off for current live tests:
             // if (has_latest_input_ && !inputFresh()) {
             //     enterInhibited("acceleration source stale");
             // }
@@ -478,7 +604,7 @@ private:
         }
 
         if (state_ == State::FAULT_ACTIVE) {
-            // DISABLED FOR CURRENT LIVE TESTS:
+            // Turned off for current live tests:
             // if (!inputFresh()) {
             //     enterInhibited("acceleration source became stale during fault");
             //     return;
@@ -498,7 +624,7 @@ private:
         }
 
         if (state_ == State::RECOVER) {
-            // DISABLED FOR CURRENT LIVE TESTS:
+            // Turned off for current live tests:
             // if (!inputFresh()) {
             //     enterInhibited("acceleration source stale during recovery");
             //     return;
@@ -540,11 +666,19 @@ private:
     double fault_timeout_s_ = 5.0;
     double max_fault_timeout_s_ = 300.0;
     double max_input_age_s_ = 0.3;
-    double min_acceleration_ = -15.0;
-    double max_acceleration_ = 16.99;
+    double min_acceleration_ = -0.5;
+    double max_acceleration_ = 0.75;
     double max_offset_ = 0.2;
+    double min_saturation_ = 0.1;
     double max_saturation_ = 0.5;
+    double min_oscillation_ = 0.01;
     double max_oscillation_ = 0.1;
+    double offset_min_ = -0.2;
+    double offset_max_ = 0.2;
+    double saturation_min_ = 0.1;
+    double saturation_max_ = 0.5;
+    double oscillation_min_ = 0.01;
+    double oscillation_max_ = 0.1;
     double oscillation_frequency_hz_ = 1.0;
     double max_recovery_jerk_ = 1.0;
     bool valid_configuration_ = true;
