@@ -1,38 +1,47 @@
 <launch>
-  <!--
-    Physical-vehicle fault-test wrapper. It leaves manager_real_world.launch
-    unchanged and routes its final LiDAR output through the sensor injector.
-
-    Do not start manager_real_world.launch separately: it is included below.
-    The included real-world launch configures manager.py to use the typed CAN
-    speed and steering topics rather than the CAN diagnostic /vehicle_status.
-  -->
+  <!-- Physical sensor-fault module. LiDAR has one clear proxy path:
+       /os_cloud_node/points -> sensor fault manager -> /points_raw. -->
 
   <arg name="gnss_input_topic" default="/fix" />
+  <arg name="faulted_gnss_topic" default="/adeye/fault_injection/fix" />
+  <arg name="lidar_input_topic" default="/os_cloud_node/points" />
+  <arg name="lidar_output_topic" default="/points_raw" />
+  <arg name="sensor_input_timeout_s" default="2.0" />
+  <arg name="max_gnss_bias_m" default="5.0" />
+  <arg name="max_lidar_drop_every_n" default="20" />
+  <arg name="max_lidar_timestamp_offset_s" default="0.2" />
   <arg name="use_recorded_inputs" default="false" />
 
-  <group>
-    <remap from="/points_raw"
-           to="/adeye/fault_injection/points_unmodified" />
-    <include file="$(find adeye)/launch/manager_real_world.launch">
-      <arg name="use_recorded_inputs" value="$(arg use_recorded_inputs)" />
-    </include>
-  </group>
+  <include file="$(find adeye)/launch/manager_real_world.launch">
+    <arg name="use_recorded_inputs" value="$(arg use_recorded_inputs)" />
+    <arg name="enable_steering_proxy" value="false" />
+    <arg name="enable_acceleration_proxy" value="false" />
+    <arg name="enable_steering_faults" value="false" />
+    <arg name="enable_acceleration_faults" value="false" />
+    <arg name="steering_producer_output_topic" value="/steering_requested_phy" />
+    <arg name="acceleration_producer_output_topic" value="/acceleration_requested_phy" />
+    <arg name="enable_default_points_raw_relay" value="false" />
+  </include>
 
   <node pkg="adeye"
         type="SensorFaultInjectionManager.py"
         name="sensor_fault_injection_manager"
         output="screen">
     <param name="gnss_input_topic" value="$(arg gnss_input_topic)" />
-    <param name="gnss_output_topic" value="/adeye/fault_injection/fix" />
-    <param name="lidar_input_topic"
-           value="/adeye/fault_injection/points_unmodified" />
-    <param name="lidar_output_topic" value="/points_raw" />
+    <param name="enable_gnss" value="true" />
+    <param name="enable_lidar" value="true" />
+    <param name="gnss_output_topic" value="$(arg faulted_gnss_topic)" />
+    <param name="lidar_input_topic" value="$(arg lidar_input_topic)" />
+    <param name="lidar_output_topic" value="$(arg lidar_output_topic)" />
+    <param name="sensor_input_timeout_s" value="$(arg sensor_input_timeout_s)" />
+    <param name="max_gnss_bias_m" value="$(arg max_gnss_bias_m)" />
+    <param name="max_lidar_drop_every_n" value="$(arg max_lidar_drop_every_n)" />
+    <param name="max_lidar_timestamp_offset_s" value="$(arg max_lidar_timestamp_offset_s)" />
   </node>
 
-  <!-- Existing GNSS conversion, now consuming the faulted NavSatFix stream.
+  <!-- Existing GNSS conversion, now consuming the faulted NavSatFix stream. -->
   <group>
-    <remap from="/fix" to="/adeye/fault_injection/fix" />
+    <remap from="/fix" to="$(arg faulted_gnss_topic)" />
     <include file="$(find adeye)/launch/gnss_broadcaster.launch" />
-  </group> -->
+  </group>
 </launch>

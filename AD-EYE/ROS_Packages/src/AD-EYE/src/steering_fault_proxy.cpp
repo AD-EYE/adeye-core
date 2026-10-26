@@ -22,7 +22,7 @@ public:
         private_nh_.param("fault_timeout_s", fault_timeout_s_, 5.0);
         private_nh_.param("max_fault_timeout_s", max_fault_timeout_s_, 300.0);
         private_nh_.param("max_input_age_s", max_input_age_s_, 0.3);
-        private_nh_.param("max_steering_angle_rad", max_angle_rad_, 0.85);
+        private_nh_.param("max_steering_angle_rad", max_angle_rad_, 35.0 * M_PI / 180.0);
         private_nh_.param("max_steering_offset_rad", max_offset_rad_,
                           0.017453292519943295);
         private_nh_.param("min_steering_saturation_rad", min_saturation_rad_,
@@ -89,7 +89,7 @@ public:
 
 private:
     enum class State { PASS_THROUGH, FAULT_ACTIVE, RECOVER, INHIBITED };
-    enum class Fault { NONE, OFFSET, FREEZE, SATURATION, OSCILLATION };
+    enum class Fault { NONE, OFFSET, FREEZE, SATURATION, OSCILLATION, CONSTANT };
 
     bool parametersValid() const
     {
@@ -174,6 +174,40 @@ private:
         }
     }
 
+    bool parseConstantCommand(const std::string& text, double* value,
+                              double* duration_s) const
+    {
+        const std::string prefix = "STEERCONSTANT_command=";
+        if (text.compare(0, prefix.size(), prefix) != 0) {
+            return false;
+        }
+        const std::string values = text.substr(prefix.size());
+        const std::size_t comma = values.find(',');
+        if (comma == std::string::npos ||
+            values.find(',', comma + 1) != std::string::npos) {
+            return false;
+        }
+        try {
+            std::size_t value_used = 0;
+            std::size_t duration_used = 0;
+            const std::string value_text = values.substr(0, comma);
+            const std::string duration_text = values.substr(comma + 1);
+            const double parsed_value = std::stod(value_text, &value_used);
+            const double parsed_duration = std::stod(duration_text, &duration_used);
+            if (value_used != value_text.size() ||
+                duration_used != duration_text.size() ||
+                !std::isfinite(parsed_value) ||
+                !std::isfinite(parsed_duration)) {
+                return false;
+            }
+            *value = parsed_value;
+            *duration_s = parsed_duration;
+            return true;
+        } catch (const std::exception&) {
+            return false;
+        }
+    }
+
     bool inputFresh() const
     {
         return has_latest_input_ &&
@@ -193,6 +227,7 @@ private:
         case Fault::FREEZE: return "STEERFREEZE_command";
         case Fault::SATURATION: return "STEERSAT_command";
         case Fault::OSCILLATION: return "STEEROSC_command";
+        case Fault::CONSTANT: return "STEERCONSTANT_command";
         case Fault::NONE: return "steering_output";
         }
         return "steering_output";
@@ -206,7 +241,12 @@ private:
                        bool include_hard_limits = false)
     {
         double remaining_s = 0.0;
-        if (enable_fault_timeout_ && state_ == State::FAULT_ACTIVE) {
+        if (active_fault_ == Fault::CONSTANT && constant_duration_s_ > 0.0 &&
+            state_ == State::FAULT_ACTIVE) {
+            remaining_s = std::max(
+                0.0, (constant_deadline_ - ros::WallTime::now()).toSec()
+            );
+        } else if (enable_fault_timeout_ && state_ == State::FAULT_ACTIVE) {
             remaining_s = std::max(
                 0.0, (fault_deadline_ - ros::WallTime::now()).toSec()
             );
@@ -217,7 +257,9 @@ private:
              << "\",\"fault\":\"" << fault << "\",\"active\":"
              << (active ? "true" : "false") << ",\"value\":" << value
              << ",\"timeout_s\":"
-             << (enable_fault_timeout_ ? fault_timeout_s_ : 0.0)
+             << (active_fault_ == Fault::CONSTANT
+                     ? constant_duration_s_
+                     : (enable_fault_timeout_ ? fault_timeout_s_ : 0.0))
              << ",\"remaining_s\":" << remaining_s;
         if (include_limits) {
             json << ",\"min_value\":" << minimum
@@ -256,7 +298,10 @@ private:
 
     bool publishOutput(double value)
     {
-        if (!valueAllowed(value)) {
+        // Continuous commands and their return to normal have no range cap for now.
+        // Restore valueAllowed(value) here to cap continuous sending too.
+        if (!std::isfinite(value) ||
+            (active_fault_ != Fault::CONSTANT && !valueAllowed(value))) {
             enterInhibited("steering with the fault applied is outside the allowed range");
             return false;
         }
@@ -312,6 +357,64 @@ private:
         state_ = State::FAULT_ACTIVE;
         publishStatus("accepted", faultName(fault), true, value,
                       "physical steering fault activated");
+    }
+
+    void activateConstant(double value, double duration_s)
+    {
+        const std::string fault = "STEERCONSTANT_command";
+        if (state_ != State::PASS_THROUGH || active_fault_ != Fault::NONE) {
+            publishStatus("rejected", fault, false, value,
+                          "another steering fault or recovery is active");
+            return;
+        }
+        // Range check disabled for continuous sending; keep valid-number checks.
+        // if (!valueAllowed(value)) {
+        if (!std::isfinite(value)) {
+            publishStatus("rejected", fault, false, value,
+                          "steering value must be a usable number");
+            return;
+        }
+        if (duration_s < 0.0 || duration_s > max_fault_timeout_s_) {
+            publishStatus("rejected", fault, false, value,
+                          "duration must be 0 to 300 seconds");
+            return;
+        }
+
+        active_fault_ = Fault::CONSTANT;
+        fault_value_ = value;
+        constant_duration_s_ = duration_s;
+        fault_started_ = ros::WallTime::now();
+        if (duration_s > 0.0) {
+            constant_deadline_ = fault_started_ + ros::WallDuration(duration_s);
+        }
+        state_ = State::FAULT_ACTIVE;
+        publishInhibit(false);
+        publishStatus("accepted", fault, true, value,
+                      duration_s > 0.0
+                          ? "continuous steering started for the selected duration"
+                          : "continuous steering started until stopped");
+    }
+
+    void stopConstant(const std::string& reason)
+    {
+        if (active_fault_ != Fault::CONSTANT ||
+            (state_ != State::FAULT_ACTIVE && state_ != State::RECOVER)) {
+            publishStatus("reset", "STEERCONSTANT_command", false, 0.0,
+                          "continuous steering is already stopped");
+            return;
+        }
+        if (has_latest_input_ && valueAllowed(latest_input_)) {
+            beginRecovery(reason);
+            return;
+        }
+
+        publishOutput(0.0);
+        active_fault_ = Fault::NONE;
+        fault_value_ = 0.0;
+        constant_duration_s_ = 0.0;
+        state_ = State::PASS_THROUGH;
+        publishStatus("reset", "STEERCONSTANT_command", false, 0.0,
+                      reason + "; no normal input was available, so zero was sent");
     }
 
     void beginRecovery(const std::string& reason)
@@ -371,6 +474,9 @@ private:
                 std::sin(two_pi * oscillation_frequency_hz_ * elapsed_s);
             break;
         }
+        case Fault::CONSTANT:
+            value = fault_value_;
+            break;
         case Fault::NONE:
             break;
         }
@@ -427,7 +533,12 @@ private:
     void commandCallback(const std_msgs::String::ConstPtr& message)
     {
         double value = 0.0;
-        if (parseValue(message->data, "STEEROFFSET_command=", &value)) {
+        double duration_s = 0.0;
+        if (parseConstantCommand(message->data, &value, &duration_s)) {
+            activateConstant(value, duration_s);
+        } else if (message->data == "STEERCONSTANT_STOP_command=1") {
+            stopConstant("continuous steering stopped by the operator");
+        } else if (parseValue(message->data, "STEEROFFSET_command=", &value)) {
             handleValue(Fault::OFFSET, "STEEROFFSET_command", value,
                         offset_min_rad_, offset_max_rad_);
         } else if (parseValue(message->data, "STEERFREEZE_command=", &value)) {
@@ -523,6 +634,18 @@ private:
         );
         last_timer_time_ = now;
 
+        if (state_ == State::FAULT_ACTIVE && active_fault_ == Fault::CONSTANT) {
+            if (constant_duration_s_ > 0.0 && now >= constant_deadline_) {
+                publishStatus("timeout", "STEERCONSTANT_command", true,
+                              fault_value_, "continuous steering duration finished");
+                stopConstant("continuous steering duration finished");
+            } else if (publishOutput(fault_value_)) {
+                publishStatus("active", "STEERCONSTANT_command", true,
+                              fault_value_, "sending the selected steering value continuously");
+            }
+            return;
+        }
+
         if (zero_on_source_loss_ && has_latest_input_ &&
             (now - latest_input_time_).toSec() > source_loss_timeout_s_) {
             if (!source_ended_) {
@@ -576,6 +699,7 @@ private:
                     const std::string completed_fault = faultName(active_fault_);
                     active_fault_ = Fault::NONE;
                     fault_value_ = 0.0;
+                    constant_duration_s_ = 0.0;
                     state_ = State::PASS_THROUGH;
                     publishStatus("reset", completed_fault, false,
                                   recovery_value_, "normal steering commands restored");
@@ -603,7 +727,7 @@ private:
     double fault_timeout_s_ = 5.0;
     double max_fault_timeout_s_ = 300.0;
     double max_input_age_s_ = 0.3;
-    double max_angle_rad_ = 0.85;
+    double max_angle_rad_ = 35.0 * M_PI / 180.0;
     double max_offset_rad_ = 0.017453292519943295;
     double min_saturation_rad_ = 0.017453292519943295;
     double max_saturation_rad_ = 0.17453292519943295;
@@ -634,8 +758,10 @@ private:
     double fault_value_ = 0.0;
     double frozen_value_ = 0.0;
     double recovery_value_ = 0.0;
+    double constant_duration_s_ = 0.0;
     ros::WallTime fault_started_;
     ros::WallTime fault_deadline_;
+    ros::WallTime constant_deadline_;
     ros::WallTime last_timer_time_;
 };
 

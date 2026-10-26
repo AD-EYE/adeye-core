@@ -106,7 +106,7 @@ public:
 
 private:
     enum class State { PASS_THROUGH, FAULT_ACTIVE, RECOVER, INHIBITED };
-    enum class Fault { NONE, OFFSET, FREEZE, SATURATION, OSCILLATION };
+    enum class Fault { NONE, OFFSET, FREEZE, SATURATION, OSCILLATION, CONSTANT };
 
     const char* faultName(Fault fault) const
     {
@@ -115,6 +115,7 @@ private:
         case Fault::FREEZE: return "ACCELFREEZE_command";
         case Fault::SATURATION: return "ACCELSAT_command";
         case Fault::OSCILLATION: return "ACCELOSC_command";
+        case Fault::CONSTANT: return "ACCELCONSTANT_command";
         case Fault::NONE: return "acceleration_output";
         }
         return "acceleration_output";
@@ -179,6 +180,40 @@ private:
         }
     }
 
+    bool parseConstantCommand(const std::string& text, double* value,
+                              double* duration_s) const
+    {
+        const std::string prefix = "ACCELCONSTANT_command=";
+        if (text.compare(0, prefix.size(), prefix) != 0) {
+            return false;
+        }
+        const std::string values = text.substr(prefix.size());
+        const std::size_t comma = values.find(',');
+        if (comma == std::string::npos ||
+            values.find(',', comma + 1) != std::string::npos) {
+            return false;
+        }
+        try {
+            std::size_t value_used = 0;
+            std::size_t duration_used = 0;
+            const std::string value_text = values.substr(0, comma);
+            const std::string duration_text = values.substr(comma + 1);
+            const double parsed_value = std::stod(value_text, &value_used);
+            const double parsed_duration = std::stod(duration_text, &duration_used);
+            if (value_used != value_text.size() ||
+                duration_used != duration_text.size() ||
+                !std::isfinite(parsed_value) ||
+                !std::isfinite(parsed_duration)) {
+                return false;
+            }
+            *value = parsed_value;
+            *duration_s = parsed_duration;
+            return true;
+        } catch (const std::exception&) {
+            return false;
+        }
+    }
+
     bool inputFresh() const
     {
         return has_latest_input_ &&
@@ -199,7 +234,12 @@ private:
                        bool include_hard_limits = false)
     {
         double remaining_s = 0.0;
-        if (enable_fault_timeout_ && state_ == State::FAULT_ACTIVE) {
+        if (active_fault_ == Fault::CONSTANT && constant_duration_s_ > 0.0 &&
+            state_ == State::FAULT_ACTIVE) {
+            remaining_s = std::max(
+                0.0, (constant_deadline_ - ros::WallTime::now()).toSec()
+            );
+        } else if (enable_fault_timeout_ && state_ == State::FAULT_ACTIVE) {
             remaining_s = std::max(
                 0.0, (fault_deadline_ - ros::WallTime::now()).toSec()
             );
@@ -210,7 +250,9 @@ private:
              << "\",\"fault\":\"" << fault << "\",\"active\":"
              << (active ? "true" : "false") << ",\"value\":" << value
              << ",\"timeout_s\":"
-             << (enable_fault_timeout_ ? fault_timeout_s_ : 0.0)
+             << (active_fault_ == Fault::CONSTANT
+                     ? constant_duration_s_
+                     : (enable_fault_timeout_ ? fault_timeout_s_ : 0.0))
              << ",\"remaining_s\":" << remaining_s;
         if (include_limits) {
             json << ",\"min_value\":" << minimum
@@ -249,7 +291,10 @@ private:
 
     bool publishOutput(double value)
     {
-        if (!valueAllowed(value)) {
+        // Continuous commands and their return to normal have no range cap for now.
+        // Restore valueAllowed(value) here to cap continuous sending too.
+        if (!std::isfinite(value) ||
+            (active_fault_ != Fault::CONSTANT && !valueAllowed(value))) {
             enterInhibited("acceleration with the fault applied is outside the allowed range");
             return false;
         }
@@ -380,6 +425,64 @@ private:
                       "physical acceleration fault activated");
     }
 
+    void activateConstant(double value, double duration_s)
+    {
+        const std::string fault = "ACCELCONSTANT_command";
+        if (state_ != State::PASS_THROUGH || active_fault_ != Fault::NONE) {
+            publishStatus("rejected", fault, false, value,
+                          "another acceleration fault or recovery is active");
+            return;
+        }
+        // Range check disabled for continuous sending; keep valid-number checks.
+        // if (!valueAllowed(value)) {
+        if (!std::isfinite(value)) {
+            publishStatus("rejected", fault, false, value,
+                          "acceleration value must be a usable number");
+            return;
+        }
+        if (duration_s < 0.0 || duration_s > max_fault_timeout_s_) {
+            publishStatus("rejected", fault, false, value,
+                          "duration is outside the allowed range");
+            return;
+        }
+
+        active_fault_ = Fault::CONSTANT;
+        fault_value_ = value;
+        constant_duration_s_ = duration_s;
+        fault_started_ = ros::WallTime::now();
+        if (duration_s > 0.0) {
+            constant_deadline_ = fault_started_ + ros::WallDuration(duration_s);
+        }
+        state_ = State::FAULT_ACTIVE;
+        publishInhibit(false);
+        publishStatus("accepted", fault, true, value,
+                      duration_s > 0.0
+                          ? "continuous acceleration started for the selected duration"
+                          : "continuous acceleration started until stopped");
+    }
+
+    void stopConstant(const std::string& reason)
+    {
+        if (active_fault_ != Fault::CONSTANT ||
+            (state_ != State::FAULT_ACTIVE && state_ != State::RECOVER)) {
+            publishStatus("reset", "ACCELCONSTANT_command", false, 0.0,
+                          "continuous acceleration is already stopped");
+            return;
+        }
+        if (has_latest_input_ && std::isfinite(latest_input_)) {
+            beginRecovery(reason);
+            return;
+        }
+
+        publishOutput(0.0);
+        active_fault_ = Fault::NONE;
+        fault_value_ = 0.0;
+        constant_duration_s_ = 0.0;
+        state_ = State::PASS_THROUGH;
+        publishStatus("reset", "ACCELCONSTANT_command", false, 0.0,
+                      reason + "; no normal input was available, so zero was sent");
+    }
+
     void deactivateFault(Fault fault, const std::string& reason)
     {
         if (state_ == State::INHIBITED && active_fault_ == fault &&
@@ -420,6 +523,8 @@ private:
             return latest_input_ + fault_value_ *
                 std::sin(two_pi * oscillation_frequency_hz_ * elapsed_s);
         }
+        case Fault::CONSTANT:
+            return fault_value_;
         case Fault::NONE:
             return latest_input_;
         }
@@ -483,7 +588,12 @@ private:
     void commandCallback(const std_msgs::String::ConstPtr& message)
     {
         double value = 0.0;
-        if (parseValue(message->data, "ACCELFREEZE_command=", &value)) {
+        double duration_s = 0.0;
+        if (parseConstantCommand(message->data, &value, &duration_s)) {
+            activateConstant(value, duration_s);
+        } else if (message->data == "ACCELCONSTANT_STOP_command=1") {
+            stopConstant("continuous acceleration stopped by the operator");
+        } else if (parseValue(message->data, "ACCELFREEZE_command=", &value)) {
             handleToggleFault("ACCELFREEZE_command", Fault::FREEZE, value);
         } else if (parseValue(message->data, "ACCELOFFSET_command=", &value)) {
             handleValueFault("ACCELOFFSET_command", Fault::OFFSET, value,
@@ -579,6 +689,18 @@ private:
         );
         last_timer_time_ = now;
 
+        if (state_ == State::FAULT_ACTIVE && active_fault_ == Fault::CONSTANT) {
+            if (constant_duration_s_ > 0.0 && now >= constant_deadline_) {
+                publishStatus("timeout", "ACCELCONSTANT_command", true,
+                              fault_value_, "continuous acceleration duration finished");
+                stopConstant("continuous acceleration duration finished");
+            } else if (publishOutput(fault_value_)) {
+                publishStatus("active", "ACCELCONSTANT_command", true,
+                              fault_value_, "sending the selected acceleration continuously");
+            }
+            return;
+        }
+
         if (zero_on_source_loss_ && has_latest_input_ &&
             (now - latest_input_time_).toSec() > source_loss_timeout_s_) {
             if (!source_ended_) {
@@ -638,6 +760,7 @@ private:
                     const std::string completed_fault = faultName(active_fault_);
                     active_fault_ = Fault::NONE;
                     fault_value_ = 0.0;
+                    constant_duration_s_ = 0.0;
                     state_ = State::PASS_THROUGH;
                     publishStatus("reset", completed_fault, false,
                                   recovery_value_, "normal acceleration commands restored");
@@ -699,8 +822,10 @@ private:
     double frozen_value_ = 0.0;
     double fault_value_ = 0.0;
     double recovery_value_ = 0.0;
+    double constant_duration_s_ = 0.0;
     ros::WallTime fault_started_;
     ros::WallTime fault_deadline_;
+    ros::WallTime constant_deadline_;
     ros::WallTime last_timer_time_;
 };
 

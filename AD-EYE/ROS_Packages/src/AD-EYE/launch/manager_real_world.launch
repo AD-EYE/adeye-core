@@ -57,7 +57,8 @@
     <arg name="recorded_steering_topic" default="/replay/steering_requested_phy"/>
     <arg name="steering_proxy_publish_rate_hz" default="20.0"/>
     <arg name="steering_proxy_max_input_age_s" default="0.3"/>
-    <arg name="steering_proxy_max_angle_rad" default="0.85"/>
+    <!-- 35 degrees, expressed in radians. Applies to steering faults. -->
+    <arg name="steering_proxy_max_angle_rad" default="0.6108652381980153"/>
     <arg name="steering_proxy_max_offset_rad" default="0.017453292519943295"/>
     <arg name="steering_proxy_min_saturation_rad" default="0.017453292519943295"/>
     <arg name="steering_proxy_max_saturation_rad" default="0.17453292519943295"/>
