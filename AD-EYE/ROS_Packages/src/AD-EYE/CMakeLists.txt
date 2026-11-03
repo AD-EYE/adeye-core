@@ -413,6 +413,11 @@ catkin_install_python(PROGRAMS src/zed_driver.py
 )
 
 catkin_install_python(PROGRAMS
+  src/test_configuration_monitor.py
+  src/launch_configured_manager.py
+  src/physical_goal_stop_monitor.py
+  src/vehicle_recovery_monitor.py
+  src/manual_vehicle_recovery.py
   src/record_physical_commands.py
   src/fault_injections/fault_test.py
   src/fault_injections/fault_test_all.py
@@ -420,3 +425,9 @@ catkin_install_python(PROGRAMS
   src/fault_injections/SensorFaultInjectionManager.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
+
+# Feature list used by the configuration monitor; it does not change car settings.
+install(FILES src/test_feature_registry.py DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+install(FILES src/fault_availability.py src/fault_availability_coordinator.py DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+install(FILES src/startup_configuration.py DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+install(FILES src/configuration_diagnostics.py DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})

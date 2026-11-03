@@ -1,12 +1,6 @@
 <!-- -->
 <launch>
 
-    <include file="$(find can_vehicle)/launch/vic.launch">
-        <arg name="allow_direct_steering_commands" value="true"/>
-        <arg name="allow_direct_acceleration_commands" value="true"/>
-        <arg name="max_acceleration_command_age_s" value="0.3"/>
-        <arg name="max_steering_command_age_s" value="0.3"/>
-    </include>
 
     <env name="ROSCONSOLE_FORMAT" value="[${severity}] [${time}] [${node}]: ${message}"/>
 
@@ -50,6 +44,44 @@
     <arg name="recorded_acceleration_recovery_jerk" default="1.0"/>
     <arg name="recorded_input_end_timeout_s" default="2.0"/>
     <arg name="use_recorded_steering" default="$(arg use_recorded_inputs)"/>
+    <!-- Phase 2 goal monitoring only; this does not stop the car. -->
+    <arg name="enable_goal_stop_monitor" default="false"/>
+    <arg name="enable_vehicle_recovery_monitor" default="true"/>
+    <arg name="enable_manual_recovery" default="false"/>
+    <arg name="enable_test_configuration_monitor" default="false"/>
+    <param name="/adeye/enable_fault_availability" value="$(arg enable_test_configuration_monitor)"/>
+    <arg name="test_configuration_profile" default="manager_real_world"/>
+    <arg name="test_configuration_startup_enabled" default="false"/>
+    <arg name="test_configuration_lidar_path" default="false"/>
+    <arg name="test_configuration_gnss_path" default="false"/>
+    <param name="/adeye/enable_manual_recovery" value="$(arg enable_manual_recovery)"/>
+    <param name="/adeye/vehicle_recovery_token" value="" type="str"/>
+    <node pkg="adeye" type="manual_vehicle_recovery.py" name="manual_vehicle_recovery"
+          output="screen" if="$(arg enable_manual_recovery)"/>
+    <include file="$(find adeye)/launch/vehicle_recovery_monitor.launch"
+             if="$(arg enable_vehicle_recovery_monitor)"/>
+    <arg name="enable_goal_stop" default="false"/>
+    <include file="$(find can_vehicle)/launch/vic.launch">
+        <arg name="enable_manual_recovery" value="$(arg enable_manual_recovery)"/>
+        <arg name="allow_direct_steering_commands" value="true"/>
+        <arg name="allow_direct_acceleration_commands" value="true"/>
+        <arg name="max_acceleration_command_age_s" value="0.3"/>
+        <arg name="max_steering_command_age_s" value="0.3"/>
+        <arg name="enable_goal_stop_priority" value="$(eval arg('enable_goal_stop') and not arg('use_recorded_acceleration') and not arg('use_recorded_steering'))"/>
+    </include>
+    <arg name="goal_stop_deceleration_mps2" default="0.5"/>
+    <arg name="goal_stop_tolerance_m" default="1.0"/>
+    <arg name="goal_stop_approach_distance_m" default="5.0"/>
+    <arg name="goal_stop_reaction_time_s" default="0.5"/>
+    <include file="$(find adeye)/launch/goal_stop_monitor.launch"
+             if="$(eval arg('enable_goal_stop_monitor') or arg('enable_goal_stop'))">
+        <arg name="replay_mode" value="$(eval arg('use_recorded_acceleration') or arg('use_recorded_steering'))"/>
+        <arg name="enable_speed_control" value="$(arg enable_goal_stop)"/>
+        <arg name="suggested_deceleration_mps2" value="$(arg goal_stop_deceleration_mps2)"/>
+        <arg name="goal_tolerance_m" value="$(arg goal_stop_tolerance_m)"/>
+        <arg name="approach_distance_m" value="$(arg goal_stop_approach_distance_m)"/>
+        <arg name="reaction_time_s" value="$(arg goal_stop_reaction_time_s)"/>
+    </include>
     <arg name="enable_steering_proxy" default="true"/>
     <arg name="enable_steering_faults" default="true"/>
     <arg name="live_steering_topic" default="/nominal/steering_requested_phy"/>
@@ -59,11 +91,11 @@
     <arg name="steering_proxy_max_input_age_s" default="0.3"/>
     <!-- 35 degrees, expressed in radians. Applies to steering faults. -->
     <arg name="steering_proxy_max_angle_rad" default="0.6108652381980153"/>
-    <arg name="steering_proxy_max_offset_rad" default="0.017453292519943295"/>
+    <arg name="steering_proxy_max_offset_rad" default="0.6108652381980153"/>
     <arg name="steering_proxy_min_saturation_rad" default="0.017453292519943295"/>
-    <arg name="steering_proxy_max_saturation_rad" default="0.17453292519943295"/>
+    <arg name="steering_proxy_max_saturation_rad" default="0.6108652381980153"/>
     <arg name="steering_proxy_min_oscillation_rad" default="0.0008726646259971648"/>
-    <arg name="steering_proxy_max_oscillation_rad" default="0.008726646259971648"/>
+    <arg name="steering_proxy_max_oscillation_rad" default="0.6108652381980153"/>
     <arg name="steering_proxy_oscillation_frequency_hz" default="1.0"/>
     <arg name="steering_proxy_max_recovery_rate_rad_s" default="0.2"/>
     <!-- Allow the tester to choose how long an active fault lasts. This is not
@@ -165,6 +197,7 @@
         <param name="oscillation_frequency_hz" value="$(arg steering_proxy_oscillation_frequency_hz)"/>
         <param name="max_recovery_rate_rad_s" value="$(arg steering_proxy_max_recovery_rate_rad_s)"/>
         <param name="enable_fault_injection" value="$(arg enable_steering_faults)"/>
+        <param name="enable_goal_stop_priority" value="$(eval arg('enable_goal_stop') and not arg('use_recorded_acceleration') and not arg('use_recorded_steering'))"/>
         <param name="enable_fault_timeout" value="$(arg enable_physical_fault_timeout)"/>
         <param name="zero_on_source_loss" value="false"/>
         <param name="source_loss_timeout_s" value="$(arg recorded_input_end_timeout_s)"/>
@@ -193,7 +226,7 @@
         <param name="max_recovery_rate_rad_s" value="$(arg steering_proxy_max_recovery_rate_rad_s)"/>
         <param name="enable_fault_injection" value="$(arg enable_steering_faults)"/>
         <param name="enable_fault_timeout" value="$(arg enable_physical_fault_timeout)"/>
-        <param name="zero_on_source_loss" value="true"/>
+        <param name="zero_on_source_loss" value="false"/>
         <param name="source_loss_timeout_s" value="$(arg recorded_input_end_timeout_s)"/>
     </node>
 
@@ -209,6 +242,7 @@
         <param name="topic_acceleration_request" value="$(arg acceleration_producer_output_topic)"/>
         <param name="topic_steering_request" value="/old_steering_requested_phy"/>
         <param name="enable_internal_acceleration_faults" value="false"/>
+        <param name="enable_goal_stop" value="$(eval arg('enable_goal_stop') and not arg('use_recorded_acceleration') and not arg('use_recorded_steering'))"/>
         <!-- Start with small fault limits for physical-car tests. -->
         <param name="fault_timeout_s" value="5.0" />
         <param name="max_fault_timeout_s" value="300.0" />
@@ -241,6 +275,7 @@
         <param name="oscillation_frequency_hz" value="$(arg recorded_acceleration_oscillation_frequency_hz)"/>
         <param name="max_recovery_jerk" value="$(arg recorded_acceleration_recovery_jerk)"/>
         <param name="enable_fault_injection" value="$(arg enable_acceleration_faults)"/>
+        <param name="enable_goal_stop_priority" value="$(eval arg('enable_goal_stop') and not arg('use_recorded_acceleration') and not arg('use_recorded_steering'))"/>
         <param name="enable_fault_timeout" value="$(arg enable_physical_fault_timeout)"/>
         <param name="zero_on_source_loss" value="false"/>
         <param name="source_loss_timeout_s" value="$(arg recorded_input_end_timeout_s)"/>
@@ -271,7 +306,7 @@
         <param name="max_recovery_jerk" value="$(arg recorded_acceleration_recovery_jerk)"/>
         <param name="enable_fault_injection" value="$(arg enable_acceleration_faults)"/>
         <param name="enable_fault_timeout" value="$(arg enable_physical_fault_timeout)"/>
-        <param name="zero_on_source_loss" value="true"/>
+        <param name="zero_on_source_loss" value="false"/>
         <param name="source_loss_timeout_s" value="$(arg recorded_input_end_timeout_s)"/>
     </node>
 
@@ -282,4 +317,37 @@
           args="/os_cloud_node/points /points_raw"
           if="$(arg enable_default_points_raw_relay)"/>
 
+    <!-- Keep this after the argument definitions. No commands are published. -->
+    <node pkg="adeye" type="test_configuration_monitor.py" name="test_configuration_monitor"
+          output="screen" if="$(arg enable_test_configuration_monitor)">
+        <param name="profile" value="$(arg test_configuration_profile)"/>
+        <param name="startup_configuration_enabled" value="$(arg test_configuration_startup_enabled)"/>
+        <param name="startup_settings/steering_proxy" value="$(arg enable_steering_proxy)"/>
+        <param name="startup_settings/acceleration_proxy" value="$(arg enable_acceleration_proxy)"/>
+        <param name="startup_settings/steering_faults" value="$(arg enable_steering_faults)"/>
+        <param name="startup_settings/acceleration_faults" value="$(arg enable_acceleration_faults)"/>
+        <param name="startup_settings/lidar_path" value="$(arg test_configuration_lidar_path)"/>
+        <param name="startup_settings/gnss_path" value="$(arg test_configuration_gnss_path)"/>
+        <param name="startup_settings/recorded_steering" value="$(arg use_recorded_steering)"/>
+        <param name="startup_settings/recorded_acceleration" value="$(arg use_recorded_acceleration)"/>
+        <param name="startup_settings/goal_monitor" value="$(arg enable_goal_stop_monitor)"/>
+        <param name="startup_settings/goal_stop" value="$(arg enable_goal_stop)"/>
+        <param name="startup_settings/manual_recovery" value="$(arg enable_manual_recovery)"/>
+        <param name="startup_settings/recovery_monitor" value="$(arg enable_vehicle_recovery_monitor)"/>
+        <param name="startup_settings/recording" value="$(arg record_physical_commands)"/>
+        <param name="startup_settings/fault_timeout" value="$(arg enable_physical_fault_timeout)"/>
+        <param name="startup_request/steering_proxy" value="$(arg enable_steering_proxy)"/>
+        <param name="startup_request/acceleration_proxy" value="$(arg enable_acceleration_proxy)"/>
+        <param name="startup_request/steering_fault_processing" value="$(arg enable_steering_faults)"/>
+        <param name="startup_request/acceleration_fault_processing" value="$(arg enable_acceleration_faults)"/>
+        <param name="startup_request/points_relay" value="$(arg enable_default_points_raw_relay)"/>
+        <param name="startup_request/recorded_steering" value="$(arg use_recorded_steering)"/>
+        <param name="startup_request/recorded_acceleration" value="$(arg use_recorded_acceleration)"/>
+        <param name="startup_request/goal_monitor" value="$(eval arg('enable_goal_stop_monitor') or arg('enable_goal_stop'))"/>
+        <param name="startup_request/goal_stop_action" value="$(eval arg('enable_goal_stop') and not arg('use_recorded_acceleration') and not arg('use_recorded_steering'))"/>
+        <param name="startup_request/manual_recovery" value="$(arg enable_manual_recovery)"/>
+        <param name="startup_request/recovery_monitor" value="$(arg enable_vehicle_recovery_monitor)"/>
+        <param name="startup_request/recording" value="$(arg record_physical_commands)"/>
+        <param name="startup_request/fault_timeout_enabled" value="$(arg enable_physical_fault_timeout)"/>
+    </node>
 </launch>

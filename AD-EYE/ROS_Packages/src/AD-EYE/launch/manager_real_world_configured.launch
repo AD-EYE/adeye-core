@@ -1,0 +1,58 @@
+<launch>
+  <!-- Use launch_configured_manager.py to read saved settings. This file never reads them itself. -->
+  <arg name="enable_steering_proxy" default="false"/>
+  <arg name="enable_acceleration_proxy" default="false"/>
+  <arg name="enable_steering_faults" default="false"/>
+  <arg name="enable_acceleration_faults" default="false"/>
+  <arg name="enable_lidar_path" default="false"/>
+  <arg name="enable_gnss_path" default="false"/>
+  <arg name="use_recorded_steering" default="false"/>
+  <arg name="use_recorded_acceleration" default="false"/>
+  <arg name="enable_goal_stop_monitor" default="false"/>
+  <arg name="enable_goal_stop" default="false"/>
+  <arg name="enable_manual_recovery" default="false"/>
+  <arg name="enable_vehicle_recovery_monitor" default="true"/>
+  <arg name="record_physical_commands" default="false"/>
+  <arg name="enable_physical_fault_timeout" default="true"/>
+
+  <include file="$(find adeye)/launch/manager_real_world.launch">
+    <arg name="enable_test_configuration_monitor" value="true"/>
+    <arg name="test_configuration_profile" value="configured"/>
+    <arg name="test_configuration_startup_enabled" value="true"/>
+    <arg name="test_configuration_lidar_path" value="$(arg enable_lidar_path)"/>
+    <arg name="test_configuration_gnss_path" value="$(arg enable_gnss_path)"/>
+    <arg name="enable_steering_proxy" value="$(arg enable_steering_proxy)"/>
+    <arg name="enable_acceleration_proxy" value="$(arg enable_acceleration_proxy)"/>
+    <arg name="enable_steering_faults" value="$(arg enable_steering_faults)"/>
+    <arg name="enable_acceleration_faults" value="$(arg enable_acceleration_faults)"/>
+    <arg name="use_recorded_steering" value="$(arg use_recorded_steering)"/>
+    <arg name="use_recorded_acceleration" value="$(arg use_recorded_acceleration)"/>
+    <arg name="enable_goal_stop_monitor" value="$(arg enable_goal_stop_monitor)"/>
+    <arg name="enable_goal_stop" value="$(arg enable_goal_stop)"/>
+    <arg name="enable_manual_recovery" value="$(arg enable_manual_recovery)"/>
+    <arg name="enable_vehicle_recovery_monitor" value="$(arg enable_vehicle_recovery_monitor)"/>
+    <arg name="record_physical_commands" value="$(arg record_physical_commands)"/>
+    <arg name="enable_physical_fault_timeout" value="$(arg enable_physical_fault_timeout)"/>
+    <arg name="steering_producer_output_topic" value="$(eval '/nominal/steering_requested_phy' if arg('enable_steering_proxy') else '/steering_requested_phy')"/>
+    <arg name="acceleration_producer_output_topic" value="$(eval '/nominal/acceleration_requested_phy' if arg('enable_acceleration_proxy') else '/acceleration_requested_phy')"/>
+    <arg name="enable_default_points_raw_relay" value="$(eval not arg('enable_lidar_path'))"/>
+  </include>
+
+  <node pkg="adeye" type="SensorFaultInjectionManager.py" name="sensor_fault_injection_manager"
+        output="screen" if="$(eval arg('enable_lidar_path') or arg('enable_gnss_path'))">
+    <param name="enable_lidar" value="$(arg enable_lidar_path)"/>
+    <param name="enable_gnss" value="$(arg enable_gnss_path)"/>
+    <param name="lidar_input_topic" value="/os_cloud_node/points"/>
+    <param name="lidar_output_topic" value="/points_raw"/>
+    <param name="gnss_input_topic" value="/fix"/>
+    <param name="gnss_output_topic" value="/adeye/fault_injection/fix"/>
+    <param name="sensor_input_timeout_s" value="2.0"/>
+    <param name="max_gnss_bias_m" value="5.0"/>
+    <param name="max_lidar_drop_every_n" value="20"/>
+    <param name="max_lidar_timestamp_offset_s" value="0.2"/>
+  </node>
+  <group if="$(arg enable_gnss_path)">
+    <remap from="/fix" to="/adeye/fault_injection/fix"/>
+    <include file="$(find adeye)/launch/gnss_broadcaster.launch"/>
+  </group>
+</launch>

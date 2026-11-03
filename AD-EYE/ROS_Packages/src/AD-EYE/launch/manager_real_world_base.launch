@@ -1,10 +1,26 @@
 <launch>
+  <arg name="enable_manual_recovery" default="false"/>
+  <arg name="enable_test_configuration_monitor" default="false"/>
+  <arg name="test_configuration_profile" default="base"/>
     <!-- Basic live-car mode with no steering or acceleration fault proxies. -->
     <arg name="record_physical_commands" default="false"/>
     <arg name="use_recorded_inputs" default="false"/>
+    <arg name="enable_goal_stop" default="false"/>
+    <arg name="goal_stop_deceleration_mps2" default="0.5"/>
+    <arg name="goal_stop_tolerance_m" default="1.0"/>
+    <arg name="goal_stop_approach_distance_m" default="5.0"/>
+    <arg name="goal_stop_reaction_time_s" default="0.5"/>
     <include file="$(find adeye)/launch/manager_real_world.launch">
+      <arg name="enable_manual_recovery" value="$(arg enable_manual_recovery)"/>
+      <arg name="enable_test_configuration_monitor" value="$(arg enable_test_configuration_monitor)"/>
+      <arg name="test_configuration_profile" value="$(arg test_configuration_profile)"/>
         <arg name="record_physical_commands" value="$(arg record_physical_commands)"/>
         <arg name="use_recorded_inputs" value="$(arg use_recorded_inputs)"/>
+        <arg name="enable_goal_stop" value="$(arg enable_goal_stop)"/>
+        <arg name="goal_stop_deceleration_mps2" value="$(arg goal_stop_deceleration_mps2)"/>
+        <arg name="goal_stop_tolerance_m" value="$(arg goal_stop_tolerance_m)"/>
+        <arg name="goal_stop_approach_distance_m" value="$(arg goal_stop_approach_distance_m)"/>
+        <arg name="goal_stop_reaction_time_s" value="$(arg goal_stop_reaction_time_s)"/>
         <arg name="enable_steering_proxy" value="false"/>
         <arg name="enable_acceleration_proxy" value="false"/>
 

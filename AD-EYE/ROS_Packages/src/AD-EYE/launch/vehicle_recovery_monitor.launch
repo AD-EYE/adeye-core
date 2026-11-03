@@ -1,0 +1,11 @@
+<launch>
+  <!-- Information only. This node cannot reset the car or send CAN commands. -->
+  <arg name="input_timeout_s" default="2.0" />
+  <arg name="stopped_speed_mps" default="0.1" />
+  <arg name="publish_rate_hz" default="1.0" />
+  <node pkg="adeye" type="vehicle_recovery_monitor.py" name="vehicle_recovery_monitor" output="screen">
+    <param name="input_timeout_s" value="$(arg input_timeout_s)" />
+    <param name="stopped_speed_mps" value="$(arg stopped_speed_mps)" />
+    <param name="publish_rate_hz" value="$(arg publish_rate_hz)" />
+  </node>
+</launch>

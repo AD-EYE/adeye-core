@@ -14,6 +14,11 @@ public:
   T getTarget();
   T getOutput();
   T getFeedback();
+  void resetForRecovery() {
+    target = output = currentFeedback = lastFeedback = error = lastError = 0;
+    integralCumulation = cycleDerivative = 0;
+    currentTime = lastTime = 0L;
+  }
   T getError();
   void setEnabled(bool e);
   bool isEnabled();

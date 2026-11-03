@@ -5,6 +5,8 @@
 #include <string>
 
 #include <ros/ros.h>
+#include "recovery_gate.h"
+std::unique_ptr<RecoveryGate> recovery_gate;
 #include <autoware_msgs/ControlCommandStamped.h>
 #include <std_msgs/Bool.h>
 #include <std_msgs/Float64.h>
@@ -145,6 +147,7 @@ void physicalFaultConfigCallback(const std_msgs::String::ConstPtr& message)
 
 void vehicleCommandCallback(const std_msgs::String::ConstPtr& message)
 {
+    if (recovery_gate && recovery_gate->blocked()) return;
     if (!enable_internal_steering_faults) {
         return;
     }
@@ -243,6 +246,7 @@ bool clearExpiredSteeringFaults()
 
 void ctrlCmdCallback(const autoware_msgs::ControlCommandStamped::ConstPtr& control_cmd)
 {
+    if (recovery_gate && recovery_gate->blocked()) return;
     clearExpiredSteeringFaults();
     double steering_radians = control_cmd->cmd.steering_angle;
     steering_radians = std::max(
@@ -289,6 +293,7 @@ void ctrlCmdCallback(const autoware_msgs::ControlCommandStamped::ConstPtr& contr
 
 void steeringFaultWatchdogCallback(const ros::WallTimerEvent&)
 {
+    if (recovery_gate && recovery_gate->blocked()) return;
     if (!enable_internal_steering_faults) {
         return;
     }
@@ -296,21 +301,22 @@ void steeringFaultWatchdogCallback(const ros::WallTimerEvent&)
         const bool nominal_is_fresh = has_last_unfaulted_steering &&
             (ros::WallTime::now() - last_unfaulted_steering_time).toSec() <=
                 max_nominal_command_age_s;
-        if (nominal_is_fresh) {
+        if (has_last_unfaulted_steering) {
+            if (!nominal_is_fresh) {
+                ROS_WARN("Last nominal steering is old; freshness is diagnostic only");
+            }
             std_msgs::Float64 steering_cmd;
             steering_cmd.data = last_unfaulted_steering;
             pub.publish(steering_cmd);
             publishSteeringFaultStatus(
                 "recovery", "steering_output", false, last_unfaulted_steering,
-                "fresh nominal steering republished after timeout"
+                "last nominal steering republished after selected fault duration"
             );
         } else {
-            std_msgs::Bool inhibit;
-            inhibit.data = true;
-            steering_output_inhibit_pub.publish(inhibit);
+            ROS_WARN("No nominal steering available after fault duration; diagnostic only");
             publishSteeringFaultStatus(
-                "inhibited", "steering_output", false, 0.0,
-                "nominal steering stale or absent; ros2can steering output inhibited"
+                "reset", "steering_output", false, 0.0,
+                "no nominal steering available; no recovery command sent"
             );
         }
     } else if (fault_deadline_active) {
@@ -395,6 +401,13 @@ int main(int argc, char** argv)
     steering_output_inhibit_pub = nh.advertise<std_msgs::Bool>(
         "/adeye/steering_output_inhibit", 1
     );
+    recovery_gate.reset(new RecoveryGate(nh, []() {
+        const std::string cancelled = active_steering_fault;
+        steering_offset = steering_saturation = steering_oscillation = frozen_steering = last_unfaulted_steering = 0.0;
+        steering_freeze_enabled = has_frozen_steering = has_last_unfaulted_steering = fault_deadline_active = false;
+        active_steering_fault.clear();
+        if (!cancelled.empty()) publishSteeringFaultStatus("reset", cancelled, false, 0.0, "cancelled for manual reset");
+    }, true));
     ros::WallTimer fault_watchdog = nh.createWallTimer(
         ros::WallDuration(0.1), steeringFaultWatchdogCallback
     );

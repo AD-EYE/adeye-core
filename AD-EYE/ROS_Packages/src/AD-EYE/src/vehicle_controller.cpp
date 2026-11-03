@@ -5,6 +5,8 @@
 #include <string>
 
 #include <ros/ros.h>
+#include "recovery_gate.h"
+std::unique_ptr<RecoveryGate> recovery_gate;
 #include <geometry_msgs/TwistStamped.h>
 #include <std_msgs/Float64.h>
 #include <std_msgs/String.h>
@@ -135,6 +137,7 @@ void physicalFaultConfigCallback(const std_msgs::String::ConstPtr& message) {
 }
 
 void vehicleCommandCallback(const std_msgs::String::ConstPtr& message) {
+    if (recovery_gate && recovery_gate->blocked()) return;
     if (!enable_internal_acceleration_faults) {
         return;
     }
@@ -247,11 +250,12 @@ public:
     }
 
     void velocityRequestedCallback(const geometry_msgs::TwistStamped::ConstPtr& msg) {
+        if (recovery_gate && recovery_gate->blocked()) return;
         ROS_DEBUG("Desired TwistS: Long. Vel. = %f, Rot. Spd. = %f", msg->twist.linear.x, msg->twist.angular.z);
         linear_speed_target_ = msg->twist.linear.x;
         angular_speed_target_ = msg->twist.angular.z;
 
-        accelPIDController.setTarget(linear_speed_target_);
+        // updatePID applies the goal-stop speed limit before passing the target to the controller.
     }
 
     void velocityCurrentCallback(const geometry_msgs::TwistStamped::ConstPtr& msg) {
@@ -261,15 +265,57 @@ public:
     }
 
     void updatePID() {
+        if (recovery_gate && recovery_gate->blocked()) return;
+        // Check the limit on every update so repeated old /TwistS messages cannot undo the stop.
+        double target = linear_speed_target_;
+        if (goal_stop_enabled_ && has_goal_speed_limit_) {
+            target = std::copysign(std::min(std::abs(target), goal_speed_limit_), target);
+        }
+        accelPIDController.setTarget(target);
         accelPIDController.tick();
     }
 
+    void enableGoalStop(bool enabled, ros::NodeHandle* nh) {
+        goal_stop_enabled_ = enabled;
+        if (enabled) {
+            pub_goal_stop_acceleration = nh->advertise<std_msgs::Float64>(
+                "/adeye/goal_stop_acceleration", 1);
+        }
+    }
+
+    void goalSpeedLimitCallback(const std_msgs::Float64::ConstPtr& msg) {
+        if (recovery_gate && recovery_gate->blocked()) return;
+        if (!goal_stop_enabled_) {
+            return;
+        }
+        // -1 on the speed-limit topic means a new goal removed the old stop limit.
+        if (msg->data == -1.0) {
+            if (has_goal_speed_limit_) {
+                // Do not immediately reuse the previous goal's stored target.
+                linear_speed_target_ = 0.0;
+            }
+            has_goal_speed_limit_ = false;
+            goal_speed_limit_ = 0.0;
+            return;
+        }
+        if (!std::isfinite(msg->data) || msg->data < 0.0) {
+            ROS_WARN("Ignored invalid goal-stop speed limit");
+            return;
+        }
+        // For the same goal, the speed limit may go down but not back up.
+        goal_speed_limit_ = has_goal_speed_limit_
+            ? std::min(goal_speed_limit_, msg->data) : msg->data;
+        has_goal_speed_limit_ = true;
+    }
+
     void updateSteering() {
+        if (recovery_gate && recovery_gate->blocked()) return;
         double steering_angle_command = steering(angular_speed_target_);
         sendSteeringAngle(steering_angle_command);
     }
 
     void accelerationFaultWatchdogCallback(const ros::WallTimerEvent&) {
+        if (recovery_gate && recovery_gate->blocked()) return;
         if (!enable_internal_acceleration_faults) {
             return;
         }
@@ -294,6 +340,14 @@ public:
 
 private:
     void sendAcceleration(double req) {
+        if (goal_stop_enabled_ && has_goal_speed_limit_) {
+            // This is the PID result with the goal speed limit applied, before faults.
+            std_msgs::Float64 goal_command;
+            goal_command.data = req;
+            pub_goal_stop_acceleration.publish(goal_command);
+            pub_acceleration.publish(goal_command);
+            return;
+        }
         // ===== AD-EYE fault-injection change: apply GUI fault state =====
         clearExpiredAccelerationFaults();
         last_unfaulted_acceleration = req;
@@ -359,15 +413,31 @@ private:
         return static_cast<unsigned long>(ros::Time::now().toSec() * 1000);
     }
 
+public:
+    void clearForRecovery() {
+        linear_speed_target_ = angular_speed_target_ = 0.0;
+        accelPIDController.resetForRecovery();
+        has_goal_speed_limit_ = false; goal_speed_limit_ = 0.0;
+        const std::string cancelled = active_acceleration_fault;
+        active_acceleration_fault.clear();
+        acceleration_offset = acceleration_saturation = acceleration_oscillation = frozen_acceleration = last_unfaulted_acceleration = 0.0;
+        acceleration_freeze_enabled = has_frozen_acceleration = has_last_unfaulted_acceleration = fault_deadline_active = false;
+        if (!cancelled.empty()) publishAccelerationFaultStatus("reset", cancelled, false, 0.0, "cancelled for manual reset");
+    }
 private:
     double linear_speed_target_;
     double linear_speed_current_;
     double angular_speed_target_;
     double angular_speed_current_;
 
+    bool goal_stop_enabled_ = false;
+    bool has_goal_speed_limit_ = false;
+    double goal_speed_limit_ = 0.0;
+
     double P_, I_, D_;
 
     ros::Publisher pub_acceleration;
+    ros::Publisher pub_goal_stop_acceleration;
     ros::Publisher pub_steering_angle;
     PIDController<double> accelPIDController;
 };
@@ -417,9 +487,19 @@ int main(int argc, char** argv) {
         D = 0.0;
     }
     VehicleController ttv(&nh,P,I,D);
+    bool enable_goal_stop = false;
+    private_nh.param("enable_goal_stop", enable_goal_stop, false);
+    ttv.enableGoalStop(enable_goal_stop, &nh);
+    ros::Subscriber sub_goal_speed_limit;
+    if (enable_goal_stop) {
+        sub_goal_speed_limit = nh.subscribe(
+            "/adeye/goal_stop_speed_limit", 1,
+            &VehicleController::goalSpeedLimitCallback, &ttv);
+    }
     acceleration_fault_status_pub = nh.advertise<std_msgs::String>(
         "/adeye/physical_fault_status", 10
     );
+    recovery_gate.reset(new RecoveryGate(nh, [&ttv]() { ttv.clearForRecovery(); }, true));
     ros::Subscriber sub_velocity_requested = nh.subscribe("TwistS", 2, &VehicleController::velocityRequestedCallback, &ttv);
     ros::Subscriber sub_velocity_current = nh.subscribe(topic_velocity_current, 2, &VehicleController::velocityCurrentCallback, &ttv);
     // AD-EYE fault-injection change: GUI fault-control subscription.

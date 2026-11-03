@@ -1,13 +1,19 @@
 #include <algorithm>
 #include <cmath>
 #include <exception>
+#include <iomanip>
 #include <sstream>
 #include <string>
 
 #include <ros/ros.h>
+#include "recovery_gate.h"
+#include "fault_availability.h"
 #include <std_msgs/Bool.h>
 #include <std_msgs/Float64.h>
 #include <std_msgs/String.h>
+
+// Set true to restore the configured min/max checks on fault input values.
+constexpr bool kEnforceFaultInputRanges = false;
 
 class SteeringFaultProxy
 {
@@ -24,15 +30,15 @@ public:
         private_nh_.param("max_input_age_s", max_input_age_s_, 0.3);
         private_nh_.param("max_steering_angle_rad", max_angle_rad_, 35.0 * M_PI / 180.0);
         private_nh_.param("max_steering_offset_rad", max_offset_rad_,
-                          0.017453292519943295);
+                          35.0 * M_PI / 180.0);
         private_nh_.param("min_steering_saturation_rad", min_saturation_rad_,
                           0.017453292519943295);
         private_nh_.param("max_steering_saturation_rad", max_saturation_rad_,
-                          0.17453292519943295);
+                          35.0 * M_PI / 180.0);
         private_nh_.param("min_steering_oscillation_rad", min_oscillation_rad_,
                           0.0008726646259971648);
         private_nh_.param("max_steering_oscillation_rad", max_oscillation_rad_,
-                          0.008726646259971648);
+                          35.0 * M_PI / 180.0);
         offset_min_rad_ = -max_offset_rad_;
         offset_max_rad_ = max_offset_rad_;
         saturation_min_rad_ = min_saturation_rad_;
@@ -44,7 +50,9 @@ public:
         private_nh_.param("max_recovery_rate_rad_s", max_recovery_rate_rad_s_,
                           0.2);
         private_nh_.param("enable_fault_injection", enable_fault_injection_, true);
+        private_nh_.param("enable_goal_stop_priority", enable_goal_stop_priority_, false);
         private_nh_.param("enable_fault_timeout", enable_fault_timeout_, false);
+        // Still accept these old launch options, but do not let them change commands.
         private_nh_.param("zero_on_source_loss", zero_on_source_loss_, false);
         private_nh_.param("source_loss_timeout_s", source_loss_timeout_s_, 2.0);
 
@@ -64,7 +72,14 @@ public:
         input_sub_ = nh_.subscribe<std_msgs::Float64>(
             input_topic_, 1, &SteeringFaultProxy::inputCallback, this
         );
-        if (enable_fault_injection_) {
+        if (enable_goal_stop_priority_) {
+            goal_limit_sub_ = nh_.subscribe<std_msgs::Float64>(
+                "/adeye/goal_stop_speed_limit", 1,
+                &SteeringFaultProxy::goalLimitCallback, this);
+        }
+        bool availability_enabled = false;
+        nh_.param("/adeye/enable_fault_availability", availability_enabled, false);
+        if (enable_fault_injection_ || availability_enabled) {
             command_sub_ = nh_.subscribe<std_msgs::String>(
                 "/vehicle_commands", 10, &SteeringFaultProxy::commandCallback, this
             );
@@ -73,6 +88,20 @@ public:
                 &SteeringFaultProxy::configCallback, this
             );
         }
+        recovery_gate_.reset(new RecoveryGate(nh_, [this]() {
+            const std::string cancelled = faultName(active_fault_);
+            active_fault_ = Fault::NONE; state_ = State::PASS_THROUGH;
+            fault_value_ = frozen_value_ = recovery_value_ = constant_duration_s_ = 0.0;
+            has_latest_input_ = has_last_published_ = false;
+            latest_input_ = last_published_value_ = 0.0;
+            goal_stop_active_ = has_goal_steering_ = has_can_range_output_ = false;
+            goal_steering_value_ = last_can_range_output_ = 0.0;
+            if (!cancelled.empty()) publishStatus("reset", cancelled, false, 0.0, "cancelled for manual reset; no old command restored");
+        }));
+        if (availability_enabled) availability_.reset(new FaultAvailability(nh_, private_nh_,
+            {"STEERFREEZE_command", "STEEROFFSET_command", "STEERSAT_command", "STEEROSC_command", "STEERCONSTANT_command"},
+            [this]() { return state_ != State::PASS_THROUGH || goal_stop_active_ || (recovery_gate_ && recovery_gate_->blocked()); },
+            "STEER_GROUP_command", enable_fault_injection_));
         timer_ = nh_.createWallTimer(
             ros::WallDuration(1.0 / publish_rate_hz_),
             &SteeringFaultProxy::timerCallback, this
@@ -253,6 +282,8 @@ private:
         }
         std_msgs::String status;
         std::ostringstream json;
+        // Keep enough decimal places when the panel changes the range values to degrees.
+        json << std::setprecision(17);
         json << "{\"source\":\"steering\",\"event\":\"" << event
              << "\",\"fault\":\"" << fault << "\",\"active\":"
              << (active ? "true" : "false") << ",\"value\":" << value
@@ -301,7 +332,7 @@ private:
         // Continuous commands and their return to normal have no range cap for now.
         // Restore valueAllowed(value) here to cap continuous sending too.
         if (!std::isfinite(value) ||
-            (active_fault_ != Fault::CONSTANT && !valueAllowed(value))) {
+            (!goal_stop_active_ && active_fault_ != Fault::CONSTANT && !valueAllowed(value))) {
             enterInhibited("steering with the fault applied is outside the allowed range");
             return false;
         }
@@ -311,6 +342,10 @@ private:
         last_published_value_ = value;
         last_published_time_ = ros::WallTime::now();
         has_last_published_ = true;
+        if (std::abs(value) <= 0.85) {
+            last_can_range_output_ = value;
+            has_can_range_output_ = true;
+        }
         return true;
     }
 
@@ -485,6 +520,7 @@ private:
 
     void inputCallback(const std_msgs::Float64::ConstPtr& message)
     {
+        if (recovery_gate_ && recovery_gate_->blocked()) return;
         if (!valueAllowed(message->data)) {
             enterInhibited("nominal steering outside configured bounds");
             return;
@@ -492,7 +528,10 @@ private:
         latest_input_ = message->data;
         latest_input_time_ = ros::WallTime::now();
         has_latest_input_ = true;
-        source_ended_ = false;
+
+        if (goal_stop_active_) {
+            return;
+        }
 
         if (state_ == State::INHIBITED && active_fault_ == Fault::NONE) {
             state_ = State::PASS_THROUGH;
@@ -522,7 +561,10 @@ private:
     {
         if (value == 0.0) {
             deactivateFault(fault);
-        } else if (value < minimum || value > maximum) {
+        } else if ((fault == Fault::SATURATION || fault == Fault::OSCILLATION) && value < 0.0) {
+            publishStatus("rejected", command, false, value,
+                          "saturation and oscillation need a positive value");
+        } else if (kEnforceFaultInputRanges && (value < minimum || value > maximum)) {
             publishStatus("rejected", command, false, value,
                           "fault value is outside the test limit");
         } else if (activationReady(command, value)) {
@@ -532,6 +574,14 @@ private:
 
     void commandCallback(const std_msgs::String::ConstPtr& message)
     {
+        const auto denied = availability_ ? availability_->blockedActivation(message->data) : std::string();
+        if (!denied.empty()) { publishStatus("rejected", denied, false, 0.0, "fault disabled by Test Configuration"); return; }
+        if (recovery_gate_ && recovery_gate_->blocked()) return;
+        if (goal_stop_active_ && message->data.compare(0, 5, "STEER") == 0) {
+            publishStatus("rejected", message->data.substr(0, message->data.find('=')),
+                          false, 0.0, "goal stop active; steering faults and continuous sending are disabled");
+            return;
+        }
         double value = 0.0;
         double duration_s = 0.0;
         if (parseConstantCommand(message->data, &value, &duration_s)) {
@@ -628,11 +678,36 @@ private:
 
     void timerCallback(const ros::WallTimerEvent&)
     {
+        if (recovery_gate_ && recovery_gate_->blocked()) return;
         const ros::WallTime now = ros::WallTime::now();
         const double elapsed_s = std::max(
             0.0, (now - last_timer_time_).toSec()
         );
         last_timer_time_ = now;
+
+        // Still show how old the input is while goal-stop controls the steering.
+        if (!has_latest_input_) {
+            ROS_WARN_THROTTLE(5.0, "Steering input has not arrived; diagnostic only");
+        } else if (!inputFresh()) {
+            ROS_WARN_THROTTLE(5.0, "Steering input age %.3f s; diagnostic only, commands unchanged",
+                              (now - latest_input_time_).toSec());
+        }
+
+        if (goal_stop_active_) {
+            if (has_latest_input_) {
+                if (!has_goal_steering_) {
+                    goal_steering_value_ = latest_input_;
+                    has_goal_steering_ = true;
+                }
+                const double maximum_step = max_recovery_rate_rad_s_ * std::min(elapsed_s, 0.1);
+                const double delta = latest_input_ - goal_steering_value_;
+                goal_steering_value_ += std::max(-maximum_step, std::min(delta, maximum_step));
+            }
+            if (has_goal_steering_) {
+                publishOutput(goal_steering_value_);
+            }
+            return;
+        }
 
         if (state_ == State::FAULT_ACTIVE && active_fault_ == Fault::CONSTANT) {
             if (constant_duration_s_ > 0.0 && now >= constant_deadline_) {
@@ -646,21 +721,8 @@ private:
             return;
         }
 
-        if (zero_on_source_loss_ && has_latest_input_ &&
-            (now - latest_input_time_).toSec() > source_loss_timeout_s_) {
-            if (!source_ended_) {
-                const std::string ended_fault = faultName(active_fault_);
-                active_fault_ = Fault::NONE;
-                fault_value_ = 0.0;
-                state_ = State::PASS_THROUGH;
-                source_ended_ = true;
-                ROS_WARN("Recorded steering source ended; publishing zero steering");
-                publishStatus("reset", ended_fault, false, 0.0,
-                              "recorded steering ended; sending zero");
-            }
-            publishOutput(0.0);
-            return;
-        }
+        // Missing replay data does not cancel faults or publish zero commands.
+        // The old zero_on_source_loss option no longer turns this behaviour on.
 
         if (state_ == State::PASS_THROUGH) {
             // Turned off for current live tests:
@@ -712,12 +774,44 @@ private:
         }
     }
 
+    void goalLimitCallback(const std_msgs::Float64::ConstPtr& message)
+    {
+        if (recovery_gate_ && recovery_gate_->blocked()) return;
+        if (enable_goal_stop_priority_ && message->data == -1.0) {
+            goal_stop_active_ = false;
+            has_goal_steering_ = false;
+            // The cancelled fault stays cancelled. Wait for normal input.
+            return;
+        }
+        if (!enable_goal_stop_priority_ || goal_stop_active_ || !std::isfinite(message->data) || message->data < 0.0) {
+            return;
+        }
+        const std::string cancelled_fault = faultName(active_fault_);
+        const bool was_fault_active = active_fault_ != Fault::NONE;
+        goal_stop_active_ = true;
+        // Start from the last steering request that ros2can can represent.
+        has_goal_steering_ = has_can_range_output_;
+        goal_steering_value_ = last_can_range_output_;
+        active_fault_ = Fault::NONE;
+        fault_value_ = 0.0;
+        constant_duration_s_ = 0.0;
+        state_ = State::PASS_THROUGH;
+        if (was_fault_active) {
+            publishStatus("reset", cancelled_fault, false, 0.0,
+                          "cancelled for goal stop; returning gradually to normal steering");
+        }
+        ROS_INFO("Goal stop cancelled steering injection; normal steering is restored gradually");
+    }
+
     ros::NodeHandle nh_;
     ros::NodeHandle private_nh_;
     ros::Publisher output_pub_;
     ros::Publisher status_pub_;
     ros::Publisher inhibit_pub_;
     ros::Subscriber input_sub_;
+    std::unique_ptr<RecoveryGate> recovery_gate_;
+    std::unique_ptr<FaultAvailability> availability_;
+    ros::Subscriber goal_limit_sub_;
     ros::Subscriber command_sub_;
     ros::Subscriber config_sub_;
     ros::WallTimer timer_;
@@ -728,24 +822,29 @@ private:
     double max_fault_timeout_s_ = 300.0;
     double max_input_age_s_ = 0.3;
     double max_angle_rad_ = 35.0 * M_PI / 180.0;
-    double max_offset_rad_ = 0.017453292519943295;
+    double max_offset_rad_ = 35.0 * M_PI / 180.0;
     double min_saturation_rad_ = 0.017453292519943295;
-    double max_saturation_rad_ = 0.17453292519943295;
+    double max_saturation_rad_ = 35.0 * M_PI / 180.0;
     double min_oscillation_rad_ = 0.0008726646259971648;
-    double max_oscillation_rad_ = 0.008726646259971648;
-    double offset_min_rad_ = -0.017453292519943295;
-    double offset_max_rad_ = 0.017453292519943295;
+    double max_oscillation_rad_ = 35.0 * M_PI / 180.0;
+    double offset_min_rad_ = -35.0 * M_PI / 180.0;
+    double offset_max_rad_ = 35.0 * M_PI / 180.0;
     double saturation_min_rad_ = 0.017453292519943295;
-    double saturation_max_rad_ = 0.17453292519943295;
+    double saturation_max_rad_ = 35.0 * M_PI / 180.0;
     double oscillation_min_rad_ = 0.0008726646259971648;
-    double oscillation_max_rad_ = 0.008726646259971648;
+    double oscillation_max_rad_ = 35.0 * M_PI / 180.0;
     double oscillation_frequency_hz_ = 1.0;
     double max_recovery_rate_rad_s_ = 0.2;
     bool valid_configuration_ = true;
+    bool enable_goal_stop_priority_ = false;
+    bool goal_stop_active_ = false;
+    bool has_goal_steering_ = false;
+    double goal_steering_value_ = 0.0;
+    bool has_can_range_output_ = false;
+    double last_can_range_output_ = 0.0;
     bool enable_fault_injection_ = true;
     bool enable_fault_timeout_ = false;
     bool zero_on_source_loss_ = false;
-    bool source_ended_ = false;
     double source_loss_timeout_s_ = 2.0;
     State state_ = State::PASS_THROUGH;
     Fault active_fault_ = Fault::NONE;

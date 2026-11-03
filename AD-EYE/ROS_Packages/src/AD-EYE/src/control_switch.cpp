@@ -6,6 +6,7 @@
 #include <cpp_utils/pose_datatypes.h>
 #include <std_msgs/Int32.h>
 #include <std_msgs/Bool.h>
+#include "recovery_gate.h"
 
 #define AUTOWARE 0
 #define SSMP 1
@@ -39,6 +40,7 @@ class ControlSwitch
 
     ros::Rate rate_;
     geometry_msgs::TwistStamped out_twist_command_;
+    std::unique_ptr<RecoveryGate> recovery_gate_;
 
     /*!
     * \brief SSMP Traj Callback : Called when the SSMP velocities has changed
@@ -47,6 +49,7 @@ class ControlSwitch
     */
     void safeStopTrajectoryCallback(const rcv_common_msgs::current_traj_info::ConstPtr& traj)
     {
+        if (recovery_gate_ && recovery_gate_->blocked()) return;
         SSMP_twist_lin_x_ = traj->v_lin;
         SSMP_twist_ang_z_ = traj->v_ang;
         if (SSMP_twist_lin_x_ < 0)
@@ -64,6 +67,7 @@ class ControlSwitch
     */
     void autowareCommandCallback(const geometry_msgs::TwistStamped::ConstPtr& carVel)
     {
+        if (recovery_gate_ && recovery_gate_->blocked()) return;
         autoware_twist_lin_x_ = carVel->twist.linear.x;
         autoware_twist_ang_z_ = carVel->twist.angular.z;
         new_command_message_ = true;
@@ -124,6 +128,11 @@ class ControlSwitch
 
         // the velocities that will be send to prescan
         out_twist_command_.header.frame_id = "base_link";
+        recovery_gate_.reset(new RecoveryGate(nh_, [this]() {
+            SSMP_twist_lin_x_ = SSMP_twist_ang_z_ = autoware_twist_lin_x_ = autoware_twist_ang_z_ = 0.0;
+            out_twist_command_.twist = geometry_msgs::Twist();
+            new_command_message_ = false;
+        }, true));
     }
 
     /*!
@@ -149,6 +158,7 @@ class ControlSwitch
         while (nh_.ok())
         {
             ros::spinOnce();
+            if (recovery_gate_->blocked()) { rate_.sleep(); continue; }
 
             switch (switch_command_)
             {

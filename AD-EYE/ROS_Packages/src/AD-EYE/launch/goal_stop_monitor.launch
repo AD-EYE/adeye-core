@@ -1,0 +1,38 @@
+<launch>
+    <!-- Lower the requested speed only when enabled. No brake-hold, wheel-lock or CAN commands. -->
+    <arg name="enable_speed_control" default="false"/>
+    <arg name="goal_topic" default="/move_base_simple/goal"/>
+    <arg name="pose_topic" default="/current_pose"/>
+    <arg name="speed_topic" default="/current_velocity"/>
+    <arg name="ad_status_topic" default="/adeye/vehicle_fault_status"/>
+    <arg name="reference_frame" default="map"/>
+    <arg name="replay_mode" default="false"/>
+    <arg name="goal_tolerance_m" default="1.0"/>
+    <arg name="approach_distance_m" default="5.0"/>
+    <arg name="suggested_deceleration_mps2" default="0.5"/>
+    <arg name="reaction_time_s" default="0.5"/>
+    <arg name="stopped_speed_mps" default="0.1"/>
+    <arg name="stopped_duration_s" default="1.0"/>
+    <arg name="input_timeout_s" default="2.0"/>
+    <arg name="ad_status_timeout_s" default="5.0"/>
+    <arg name="publish_rate_hz" default="10.0"/>
+    <node pkg="adeye" type="physical_goal_stop_monitor.py"
+          name="physical_goal_stop_monitor" output="screen">
+        <param name="enable_speed_control" value="$(arg enable_speed_control)"/>
+        <param name="goal_topic" value="$(arg goal_topic)"/>
+        <param name="pose_topic" value="$(arg pose_topic)"/>
+        <param name="speed_topic" value="$(arg speed_topic)"/>
+        <param name="ad_status_topic" value="$(arg ad_status_topic)"/>
+        <param name="reference_frame" value="$(arg reference_frame)"/>
+        <param name="replay_mode" value="$(arg replay_mode)"/>
+        <param name="goal_tolerance_m" value="$(arg goal_tolerance_m)"/>
+        <param name="approach_distance_m" value="$(arg approach_distance_m)"/>
+        <param name="suggested_deceleration_mps2" value="$(arg suggested_deceleration_mps2)"/>
+        <param name="reaction_time_s" value="$(arg reaction_time_s)"/>
+        <param name="stopped_speed_mps" value="$(arg stopped_speed_mps)"/>
+        <param name="stopped_duration_s" value="$(arg stopped_duration_s)"/>
+        <param name="input_timeout_s" value="$(arg input_timeout_s)"/>
+        <param name="ad_status_timeout_s" value="$(arg ad_status_timeout_s)"/>
+        <param name="publish_rate_hz" value="$(arg publish_rate_hz)"/>
+    </node>
+</launch>
