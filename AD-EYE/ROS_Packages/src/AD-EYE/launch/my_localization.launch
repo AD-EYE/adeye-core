@@ -1,6 +1,11 @@
 <!-- -->
 <launch>
     <arg name="lidar_frame_id" default="os_sensor" />
+    <!-- Keep the car settings by default; laptop replay can select CPU and no GNSS. -->
+    <arg name="ndt_method_type" default="2"/>
+    <arg name="use_gnss" default="1"/>
+    <arg name="use_imu" default="1"/>
+    <arg name="use_scan_stamp" default="false"/>
 
     <!-- Set localization method: -->
     <arg name="topic_pose_stamped" default="/ndt_pose"/> <!-- ndt_pose | icp_pose | gnss_pose -->
@@ -49,10 +54,10 @@
 
     <!-- ndt_matching --> <!-- METHOD TYPE: pcl_generic=0, pcl_anh=1, pcl_anh_gpu=2, pcl_openmp=3 -->
     <include file="$(find lidar_localizer)/launch/ndt_matching.launch">
-        <arg name="method_type" value="2" />
-        <arg name="use_gnss" value="1" />
+        <arg name="method_type" value="$(arg ndt_method_type)" />
+        <arg name="use_gnss" value="$(arg use_gnss)" />
         <arg name="use_odom" value="false" />
-        <arg name="use_imu" value="1" />
+        <arg name="use_imu" value="$(arg use_imu)" />
         <arg name="imu_upside_down" value="false" />
         <arg name="imu_topic" value="/os_cloud_node/imu" />
         <arg name="queue_size" value="1" />
@@ -60,7 +65,7 @@
         <arg name="get_height" value="true" />
         <arg name="use_local_transform" value="false" />
         <arg name="sync" value="false" />
-        <arg name="use_scan_stamp" value="false" />
+        <arg name="use_scan_stamp" value="$(arg use_scan_stamp)" />
     </include>
 
     <!-- Pose Connect -->

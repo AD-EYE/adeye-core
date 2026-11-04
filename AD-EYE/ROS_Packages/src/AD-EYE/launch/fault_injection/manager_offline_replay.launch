@@ -1,9 +1,18 @@
 <launch>
-  <!-- Laptop-only fault tests. No CAN, physical sensors, maps or planners start here.
+  <!-- Laptop-only fault tests. No CAN or physical sensor drivers start here.
        Use a separate ROS master, not the master's address used by the car. -->
+  <arg name="enable_processing" default="false"/>
+  <arg name="enable_localization" default="$(arg enable_processing)"/>
+  <arg name="enable_perception" default="$(arg enable_processing)"/>
+  <arg name="enable_planning" default="$(arg enable_processing)"/>
+  <arg name="enable_rviz" default="$(arg enable_processing)"/>
+  <arg name="use_sim_time" default="$(arg enable_processing)"/>
+  <arg name="ndt_method_type" default="0"/>
+  <arg name="localization_use_imu" default="true"/>
+  <arg name="lidar_frame_id" default="os_sensor"/>
   <arg name="enable_steering_faults" default="true"/>
   <arg name="enable_acceleration_faults" default="true"/>
-  <arg name="enable_lidar_path" default="false"/>
+  <arg name="enable_lidar_path" default="$(arg enable_processing)"/>
   <arg name="enable_gnss_path" default="false"/>
   <arg name="enable_test_configuration_monitor" default="true"/>
   <arg name="enable_physical_fault_timeout" default="true"/>
@@ -27,11 +36,26 @@
   <arg name="recorded_acceleration_min_oscillation" default="0.01"/>
   <arg name="recorded_acceleration_max_oscillation" default="0.1"/>
 
-  <!-- Wall-clock fault timers behave like the real-car launch, even if the bag pauses. -->
-  <param name="/use_sim_time" value="false"/>
+  <!-- ROS time follows the bag in processing mode; fault timers still use wall time. -->
+  <param name="/use_sim_time" value="$(arg use_sim_time)"/>
   <param name="/adeye/enable_manual_recovery" value="false"/>
   <param name="/adeye/vehicle_recovery_token" value="" type="str"/>
   <param name="/adeye/enable_fault_availability" value="$(arg enable_test_configuration_monitor)"/>
+
+  <include file="$(find adeye)/launch/fault_injection/offline_replay_processing.launch">
+    <arg name="enable_localization" value="$(arg enable_localization)"/>
+    <arg name="enable_perception" value="$(arg enable_perception)"/>
+    <arg name="enable_planning" value="$(arg enable_planning)"/>
+    <arg name="enable_rviz" value="$(arg enable_rviz)"/>
+    <arg name="ndt_method_type" value="$(arg ndt_method_type)"/>
+    <arg name="localization_use_imu" value="$(arg localization_use_imu)"/>
+    <arg name="lidar_frame_id" value="$(arg lidar_frame_id)"/>
+  </include>
+
+  <!-- Without sensor fault processing, feed the replay cloud straight to processing. -->
+  <node pkg="topic_tools" type="relay" name="offline_points_raw_relay"
+        args="$(arg lidar_input_topic) /points_raw"
+        if="$(eval not arg('enable_lidar_path') and (arg('enable_localization') or arg('enable_perception')))"/>
 
   <node pkg="adeye" type="steering_fault_proxy" name="steering_fault_proxy_recorded" output="screen">
     <param name="input_topic" value="$(arg recorded_steering_topic)"/>

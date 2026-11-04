@@ -1,0 +1,64 @@
+<launch>
+  <!-- Recorded maps and sensor data replace hardware. Never include a car manager here. -->
+  <arg name="enable_localization" default="false"/>
+  <arg name="enable_perception" default="false"/>
+  <arg name="enable_planning" default="false"/>
+  <arg name="enable_rviz" default="false"/>
+  <arg name="ndt_method_type" default="0"/>
+  <arg name="localization_use_imu" default="true"/>
+  <arg name="lidar_frame_id" default="os_sensor"/>
+
+  <!-- Do not replay old map-to-car transforms when localization is running. -->
+  <node pkg="tf" type="static_transform_publisher" name="offline_world_to_map"
+        args="0 0 0 0 0 0 world map 100" if="$(arg enable_localization)"/>
+  <group if="$(arg enable_localization)">
+    <remap from="/os_cloud_node/imu" to="/replay/imu"/>
+    <include file="$(find adeye)/launch/my_localization.launch">
+      <arg name="lidar_frame_id" value="$(arg lidar_frame_id)"/>
+      <arg name="ndt_method_type" value="$(arg ndt_method_type)"/>
+      <arg name="use_gnss" value="0"/>
+      <arg name="use_imu" value="$(arg localization_use_imu)"/>
+      <arg name="use_scan_stamp" value="true"/>
+    </include>
+  </group>
+
+  <!-- LiDAR-only perception: no camera, radar or GPU requirement. -->
+  <group if="$(arg enable_perception)">
+    <include file="$(find lidar_euclidean_cluster_detect)/launch/lidar_euclidean_cluster_detect.launch">
+      <arg name="points_node" value="/points_raw"/>
+      <arg name="use_gpu" value="false"/>
+      <arg name="remove_ground" value="true"/>
+      <arg name="downsample_cloud" value="true"/>
+      <arg name="leaf_size" value="0.2"/>
+      <arg name="cluster_size_min" value="7"/>
+      <arg name="cluster_size_max" value="100000"/>
+      <arg name="pose_estimation" value="true"/>
+      <arg name="output_frame" value="$(arg lidar_frame_id)"/>
+      <arg name="use_vector_map" value="false"/>
+    </include>
+    <node pkg="imm_ukf_pda_track" type="imm_ukf_pda" name="offline_lidar_tracker" output="screen">
+      <remap from="/detection/fusion_tools/objects" to="/detection/lidar_detector/objects"/>
+      <remap from="/detection/objects" to="/detection/lidar_tracker/objects"/>
+      <param name="tracking_frame" value="world"/>
+      <param name="use_vectormap" value="false"/>
+    </node>
+    <include file="$(find adeye)/launch/objectsFrameAdapter.launch">
+      <arg name="nodeName" value="offline_lidar_objects_to_map"/>
+      <arg name="inputTopic" value="/detection/lidar_tracker/objects"/>
+      <arg name="outputTopic" value="/tracked_objects"/>
+      <arg name="targetFrame" value="map"/>
+    </include>
+    <node pkg="detected_objects_visualizer" type="visualize_detected_objects"
+          name="offline_lidar_objects_visualizer" output="screen">
+      <param name="objects_src_topic" value="/detection/lidar_tracker/objects"/>
+      <remap from="/objects_markers" to="/detection/lidar_tracker/objects_markers"/>
+    </node>
+  </group>
+
+  <!-- Planner outputs are for inspection only. The actuator proxies still use the bag. -->
+  <group if="$(arg enable_planning)">
+    <include file="$(find adeye)/launch/my_mission_planning.launch"/>
+    <include file="$(find adeye)/launch/my_motion_planning.launch"/>
+  </group>
+  <include file="$(find adeye)/launch/my_rviz.launch" if="$(arg enable_rviz)"/>
+</launch>
