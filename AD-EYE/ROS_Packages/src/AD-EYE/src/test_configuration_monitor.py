@@ -125,12 +125,14 @@ class TestConfigurationMonitor(object):
         if self.availability_enabled:
             from fault_availability_coordinator import AvailabilityCoordinator
             self.availability = AvailabilityCoordinator(rospy, String, self.registry, self.boot_id)
-            try:
-                from startup_configuration import StartupStore, StartupServices
-                launch_settings = rospy.get_param("~startup_settings", None) if rospy.get_param("~startup_configuration_enabled", False) else None
-                self.startup = StartupServices(rospy, self.boot_id, StartupStore(launch_settings=launch_settings))
-            except Exception as error:
-                self.control_errors["startup"] = str(error)
+            # Offline replay must not change saved settings used to launch the car.
+            if rospy.get_param("~enable_startup_configuration_services", True):
+                try:
+                    from startup_configuration import StartupStore, StartupServices
+                    launch_settings = rospy.get_param("~startup_settings", None) if rospy.get_param("~startup_configuration_enabled", False) else None
+                    self.startup = StartupServices(rospy, self.boot_id, StartupStore(launch_settings=launch_settings))
+                except Exception as error:
+                    self.control_errors["startup"] = str(error)
         self.lock = threading.Lock()
         self.reports = {}
         self.clock = getattr(time, "monotonic", time.time)

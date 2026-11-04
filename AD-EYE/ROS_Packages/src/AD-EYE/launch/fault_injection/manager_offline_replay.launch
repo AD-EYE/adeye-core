@@ -1,0 +1,107 @@
+<launch>
+  <!-- Laptop-only fault tests. No CAN, physical sensors, maps or planners start here.
+       Use a separate ROS master, not the master's address used by the car. -->
+  <arg name="enable_steering_faults" default="true"/>
+  <arg name="enable_acceleration_faults" default="true"/>
+  <arg name="enable_lidar_path" default="false"/>
+  <arg name="enable_gnss_path" default="false"/>
+  <arg name="enable_test_configuration_monitor" default="true"/>
+  <arg name="enable_physical_fault_timeout" default="true"/>
+  <arg name="recorded_steering_topic" default="/replay/steering_requested_phy"/>
+  <arg name="recorded_acceleration_topic" default="/replay/acceleration_requested_phy"/>
+  <arg name="lidar_input_topic" default="/replay/points_raw"/>
+  <arg name="gnss_input_topic" default="/replay/fix"/>
+
+  <!-- Keep the same limits and fault behavior as the car's recorded-input path. -->
+  <arg name="steering_proxy_max_angle_rad" default="0.6108652381980153"/>
+  <arg name="steering_proxy_max_offset_rad" default="0.6108652381980153"/>
+  <arg name="steering_proxy_min_saturation_rad" default="0.017453292519943295"/>
+  <arg name="steering_proxy_max_saturation_rad" default="0.6108652381980153"/>
+  <arg name="steering_proxy_min_oscillation_rad" default="0.0008726646259971648"/>
+  <arg name="steering_proxy_max_oscillation_rad" default="0.6108652381980153"/>
+  <arg name="recorded_acceleration_min" default="-0.5"/>
+  <arg name="recorded_acceleration_max" default="0.75"/>
+  <arg name="recorded_acceleration_max_offset" default="0.2"/>
+  <arg name="recorded_acceleration_min_saturation" default="0.1"/>
+  <arg name="recorded_acceleration_max_saturation" default="0.5"/>
+  <arg name="recorded_acceleration_min_oscillation" default="0.01"/>
+  <arg name="recorded_acceleration_max_oscillation" default="0.1"/>
+
+  <!-- Wall-clock fault timers behave like the real-car launch, even if the bag pauses. -->
+  <param name="/use_sim_time" value="false"/>
+  <param name="/adeye/enable_manual_recovery" value="false"/>
+  <param name="/adeye/vehicle_recovery_token" value="" type="str"/>
+  <param name="/adeye/enable_fault_availability" value="$(arg enable_test_configuration_monitor)"/>
+
+  <node pkg="adeye" type="steering_fault_proxy" name="steering_fault_proxy_recorded" output="screen">
+    <param name="input_topic" value="$(arg recorded_steering_topic)"/>
+    <param name="output_topic" value="/steering_requested_phy"/>
+    <param name="publish_rate_hz" value="20.0"/>
+    <param name="max_steering_angle_rad" value="$(arg steering_proxy_max_angle_rad)"/>
+    <param name="max_steering_offset_rad" value="$(arg steering_proxy_max_offset_rad)"/>
+    <param name="min_steering_saturation_rad" value="$(arg steering_proxy_min_saturation_rad)"/>
+    <param name="max_steering_saturation_rad" value="$(arg steering_proxy_max_saturation_rad)"/>
+    <param name="min_steering_oscillation_rad" value="$(arg steering_proxy_min_oscillation_rad)"/>
+    <param name="max_steering_oscillation_rad" value="$(arg steering_proxy_max_oscillation_rad)"/>
+    <param name="enable_fault_injection" value="$(arg enable_steering_faults)"/>
+    <param name="enable_fault_timeout" value="$(arg enable_physical_fault_timeout)"/>
+    <param name="enable_goal_stop_priority" value="false"/>
+    <param name="zero_on_source_loss" value="false"/>
+  </node>
+
+  <node pkg="adeye" type="recorded_acceleration_fault_proxy" name="recorded_acceleration_fault_proxy" output="screen">
+    <param name="input_topic" value="$(arg recorded_acceleration_topic)"/>
+    <param name="output_topic" value="/acceleration_requested_phy"/>
+    <param name="publish_rate_hz" value="10.0"/>
+    <param name="min_acceleration" value="$(arg recorded_acceleration_min)"/>
+    <param name="max_acceleration" value="$(arg recorded_acceleration_max)"/>
+    <param name="max_acceleration_offset" value="$(arg recorded_acceleration_max_offset)"/>
+    <param name="min_acceleration_saturation" value="$(arg recorded_acceleration_min_saturation)"/>
+    <param name="max_acceleration_saturation" value="$(arg recorded_acceleration_max_saturation)"/>
+    <param name="min_acceleration_oscillation" value="$(arg recorded_acceleration_min_oscillation)"/>
+    <param name="max_acceleration_oscillation" value="$(arg recorded_acceleration_max_oscillation)"/>
+    <param name="enable_fault_injection" value="$(arg enable_acceleration_faults)"/>
+    <param name="enable_fault_timeout" value="$(arg enable_physical_fault_timeout)"/>
+    <param name="enable_goal_stop_priority" value="false"/>
+    <param name="zero_on_source_loss" value="false"/>
+  </node>
+
+  <!-- Only recorded clouds/fixes are processed; no Ouster or GPS driver starts.
+       GNSS output is a NavSatFix, not a map pose; no map settings are needed. -->
+  <node pkg="adeye" type="SensorFaultInjectionManager.py" name="sensor_fault_injection_manager"
+        output="screen" if="$(eval arg('enable_lidar_path') or arg('enable_gnss_path'))">
+    <param name="enable_lidar" value="$(arg enable_lidar_path)"/>
+    <param name="enable_gnss" value="$(arg enable_gnss_path)"/>
+    <param name="lidar_input_topic" value="$(arg lidar_input_topic)"/>
+    <param name="lidar_output_topic" value="/points_raw"/>
+    <param name="gnss_input_topic" value="$(arg gnss_input_topic)"/>
+    <param name="gnss_output_topic" value="/adeye/fault_injection/fix"/>
+    <param name="sensor_input_timeout_s" value="2.0"/>
+    <param name="max_gnss_bias_m" value="5.0"/>
+    <param name="max_lidar_drop_every_n" value="20"/>
+    <param name="max_lidar_timestamp_offset_s" value="0.2"/>
+  </node>
+
+  <node pkg="adeye" type="test_configuration_monitor.py" name="test_configuration_monitor"
+        output="screen" if="$(arg enable_test_configuration_monitor)">
+    <param name="profile" value="offline_replay"/>
+    <!-- Offline tests do not load or replace saved real-car startup settings. -->
+    <param name="startup_configuration_enabled" value="false"/>
+    <param name="enable_startup_configuration_services" value="false"/>
+    <param name="startup_request/steering_proxy" value="true"/>
+    <param name="startup_request/acceleration_proxy" value="true"/>
+    <param name="startup_request/steering_fault_processing" value="$(arg enable_steering_faults)"/>
+    <param name="startup_request/acceleration_fault_processing" value="$(arg enable_acceleration_faults)"/>
+    <param name="startup_request/lidar_fault_processing" value="$(arg enable_lidar_path)"/>
+    <param name="startup_request/gnss_fault_processing" value="$(arg enable_gnss_path)"/>
+    <param name="startup_request/recorded_steering" value="true"/>
+    <param name="startup_request/recorded_acceleration" value="true"/>
+    <param name="startup_request/points_relay" value="false"/>
+    <param name="startup_request/goal_monitor" value="false"/>
+    <param name="startup_request/goal_stop_action" value="false"/>
+    <param name="startup_request/manual_recovery" value="false"/>
+    <param name="startup_request/recovery_monitor" value="false"/>
+    <param name="startup_request/recording" value="false"/>
+    <param name="startup_request/fault_timeout_enabled" value="$(arg enable_physical_fault_timeout)"/>
+  </node>
+</launch>
