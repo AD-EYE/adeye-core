@@ -743,7 +743,7 @@ private:
             ROS_WARN_THROTTLE(5.0, "Acceleration input has not arrived; diagnostic only");
         } else if (!inputFresh()) {
             ROS_WARN_THROTTLE(5.0, "Acceleration input age %.3f s; diagnostic only, commands unchanged",
-                              (now - latest_input_time_).toSec());
+                              (ros::WallTime::now() - latest_input_time_).toSec());
         }
 
         if (goal_stop_active_) {
