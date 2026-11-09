@@ -6,9 +6,9 @@
           args="3.75 0.0 0.4 0.0 0.0 0.0 1.0 base_link radar 10"/>
 
     <!-- traffic_light_recognition -->
-    <include file="$(find adeye)/launch/radar_broadcaster.launch"/>
+    <include file="$(find adeye)/launch/Features/radar_broadcaster.launch"/>
 
     <!-- object frame adapter -->
-    <include file="$(find adeye)/launch/objectsFrameAdapter.launch"/>
+    <include file="$(find adeye)/launch/Features/objectsFrameAdapter.launch"/>
 
 </launch>
