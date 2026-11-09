@@ -36,7 +36,10 @@ class FaultInjectionManager:
     )
 
     def __init__(self, manager_state_machine):
-
+        self._fault_log_lock = threading.RLock()
+        self._fault_log_stopped = False
+        self.fault_log = None
+        self.fault_log_path = None
         log_dir = rospy.get_param(
             "~fault_log_dir",
             os.path.join(
@@ -46,13 +49,6 @@ class FaultInjectionManager:
                 "fault_logs",
             ),
         )
-
-        if not os.path.isdir(log_dir):
-            try:
-                os.makedirs(log_dir)
-            except OSError:
-                if not os.path.isdir(log_dir):
-                    raise
 
         self.fault_log_dir = log_dir
         self.fault_log_max_bytes = max(
@@ -76,8 +72,11 @@ class FaultInjectionManager:
             "~fault_log_compress_rotated", True
         )
         self._last_fault_log_entries = {}
-        self._open_new_fault_log()
-        self._prune_fault_logs()
+        try:
+            self._open_new_fault_log()
+            self._prune_fault_logs()
+        except (IOError, OSError, ValueError) as error:
+            self._warn_fault_log_error(error)
         rospy.on_shutdown(self._close_fault_log)
         self.VehicleStates = self.VehicleStates()
         self._republishing_lock = threading.Lock()
@@ -152,10 +151,9 @@ class FaultInjectionManager:
 
         msg = fault + ": " + str(value)
 
-        self.fault_debug_pub.publish(msg)
-        self.fault_log_alias_pub.publish(msg)
-
-        rospy.loginfo(msg)
+        with self._fault_log_lock:
+            if not self._fault_log_stopped:
+                self._publish_fault_log_message(msg)
 
     def _new_fault_log_path(self):
         timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S_%f")
@@ -163,12 +161,22 @@ class FaultInjectionManager:
         return os.path.join(self.fault_log_dir, filename)
 
     def _open_new_fault_log(self):
-        self.fault_log_path = self._new_fault_log_path()
-        self.fault_log = open(self.fault_log_path, "a")
-        self.fault_log.write(
-            str(datetime.datetime.now()) + " | LOGGER_STARTED | writable\n"
-        )
-        self.fault_log.flush()
+        if not os.path.isdir(self.fault_log_dir):
+            try:
+                os.makedirs(self.fault_log_dir)
+            except OSError:
+                if not os.path.isdir(self.fault_log_dir):
+                    raise
+        path = self._new_fault_log_path()
+        new_log = open(path, "a")
+        try:
+            new_log.write(str(datetime.datetime.now()) + " | LOGGER_STARTED | writable\n")
+            new_log.flush()
+        except (IOError, OSError, ValueError):
+            new_log.close()
+            raise
+        self.fault_log_path = path
+        self.fault_log = new_log
         rospy.loginfo("Fault log file is writable: %s", self.fault_log_path)
 
     def _compress_fault_log(self, path):
@@ -206,15 +214,36 @@ class FaultInjectionManager:
         if os.path.getsize(self.fault_log_path) < self.fault_log_max_bytes:
             return
 
-        previous_path = self.fault_log_path
-        self.fault_log.close()
-        self._compress_fault_log(previous_path)
+        previous_path, previous_log = self.fault_log_path, self.fault_log
+        # Keep the current file usable if opening its replacement fails.
         self._open_new_fault_log()
+        previous_log.close()
+        self._compress_fault_log(previous_path)
         self._prune_fault_logs()
 
     def _close_fault_log(self):
-        if not self.fault_log.closed:
-            self.fault_log.close()
+        with self._fault_log_lock:
+            self._fault_log_stopped = True
+            if self.fault_log is not None and not self.fault_log.closed:
+                try:
+                    self.fault_log.close()
+                except (IOError, OSError, ValueError) as error:
+                    self._warn_fault_log_error(error)
+
+    def _warn_fault_log_error(self, error):
+        rospy.logwarn_throttle(5.0, "Fault log file could not be written; ROS logging continues: %s", error)
+
+    def _publish_fault_log_message(self, line):
+        topic_message = String()
+        topic_message.data = line.rstrip("\n")
+        for publisher in (self.fault_debug_pub, self.fault_log_alias_pub):
+            try:
+                publisher.publish(topic_message)
+            except rospy.ROSException as error:
+                if not rospy.is_shutdown():
+                    rospy.logwarn_throttle(5.0, "Fault log topic could not be published: %s", error)
+        if not rospy.is_shutdown():
+            rospy.loginfo(line)
 
     def _should_log_fault(self, fault, value, force):
         now = time.time()
@@ -241,37 +270,37 @@ class FaultInjectionManager:
     def logFault(self, fault, value, force=False):
         """Log fault transitions plus bounded periodic heartbeat records."""
 
-        if not self._should_log_fault(fault, value, force):
-            return
-
-        timestamp = datetime.datetime.now()
-
-        line = str(timestamp) + " | " + fault + " | " + str(value) + "\n"
-
-        self.fault_log.write(line)
-        self.fault_log.flush()
-        self._rotate_fault_log_if_needed()
-
-        topic_message = String()
-        topic_message.data = line.rstrip("\n")
-        self.fault_debug_pub.publish(topic_message)
-        self.fault_log_alias_pub.publish(topic_message)
-
-        rospy.loginfo(line)
+        # ROS callbacks may run together. Do not close or rotate a file mid-write.
+        with self._fault_log_lock:
+            if self._fault_log_stopped or not self._should_log_fault(fault, value, force):
+                return
+            line = str(datetime.datetime.now()) + " | " + fault + " | " + str(value) + "\n"
+            try:
+                if self.fault_log is None or self.fault_log.closed:
+                    self._open_new_fault_log()
+                self.fault_log.write(line)
+                self.fault_log.flush()
+                self._rotate_fault_log_if_needed()
+            except (IOError, OSError, ValueError) as error:
+                self._warn_fault_log_error(error)
+            self._publish_fault_log_message(line)
 
     def physicalFaultStatusCallback(self, msg):
         """Persist and publish physical actuator acceptance and timeout state."""
 
         try:
             status = json.loads(msg.data)
-            source = str(status.get("source", "unknown"))
-            fault = str(status.get("fault", "unknown"))
-            event = str(status.get("event", "unknown"))
-            log_key = "PHYSICAL_FAULT_STATUS:{}:{}".format(source, fault)
-            self.logFault(log_key, msg.data, force=(event != "active"))
+            if not isinstance(status, dict):
+                raise ValueError("Expected a JSON object")
         except (TypeError, ValueError):
             rospy.logwarn("Invalid physical fault status JSON: %s", msg.data)
             self.logFault("PHYSICAL_FAULT_STATUS_INVALID", msg.data, force=True)
+            return
+        source = status.get("source", "unknown")
+        fault = status.get("fault", "unknown")
+        event = status.get("event", "unknown")
+        log_key = "PHYSICAL_FAULT_STATUS:{}:{}".format(source, fault)
+        self.logFault(log_key, msg.data, force=(event != "active"))
 
     ##########################################################################
     # EMERGENCY STATE CALLBACK
