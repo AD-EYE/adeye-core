@@ -13,7 +13,7 @@
         <rosparam>
             use_ground_truth_dynamic_objects: false
         </rosparam>
-        <include file="$(find adeye)/launch/SSMP/safety_channel_perception.launch"/>
+        <include file="$(find adeye)/launch/Features/safety_channel_perception.launch"/>
     </group>
     <group if="$(arg use_ground_truth_dynamic_objects)"> <!-- if we use ground truth from dynamic object then the pose of other vehicle is gotten fron a topic-->
         <rosparam>
