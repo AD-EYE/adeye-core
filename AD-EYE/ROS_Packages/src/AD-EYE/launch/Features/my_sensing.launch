@@ -5,6 +5,6 @@
         args="0.0 0.0 0.0 0.0 0.0 0.0 1.0 base_link gps 10"/>
     
     <!-- gnss_broadcaster -->
-    <include file="$(find adeye)/launch/gnss_broadcaster.launch"/>
+    <include file="$(find adeye)/launch/Features/gnss_broadcaster.launch"/>
 
 </launch>
