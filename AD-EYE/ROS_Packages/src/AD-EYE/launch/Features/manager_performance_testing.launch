@@ -29,7 +29,7 @@
         args="/current_velocity_phy /current_velocity"
     />
 
-    <include file="$(find adeye)/launch/my_goal.launch"/>
+    <include file="$(find adeye)/launch/Features/my_goal.launch"/>
 
 <!--
     <include file="$(find can_vehicle)/launch/vic.launch"/>
