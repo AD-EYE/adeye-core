@@ -356,7 +356,7 @@ class ManagerTester(unittest.TestCase):
     ##A method to test if the manager remains alive despite an invalid XML syntax in a feature launch file.
     #@param self the object pointer
     def testInvalidXML(self):
-        with open("../../launch/my_map.launch", "r+") as f:
+        with open("../../launch/Features/my_map.launch", "r+") as f:
             old_content = f.read()  # back up the launch file
             f.seek(0)  # rewind
             f.write("!" + old_content)  # add a character making the launch file invalid
@@ -367,13 +367,13 @@ class ManagerTester(unittest.TestCase):
             manager.runOnce()
         except Exception as exc:  # errors happened and test failed but we should clean up
             stopROS()
-            with open("../../launch/my_map.launch", "r+") as f:  # restore the original launch file if it failed
+            with open("../../launch/Features/my_map.launch", "r+") as f:  # restore the original launch file if it failed
                 f.write(old_content)
             raise exc
         rospy.sleep(5)  # let nodes start a bit
         # number_of_nodes_running = len(get_node_names())
         is_manager_alive = rosnode_ping("/AD-EYE_Manager", 1)  # checks if /manager is still alive
-        with open("../../launch/my_map.launch", "w") as f:  # restore the original launch file
+        with open("../../launch/Features/my_map.launch", "w") as f:  # restore the original launch file
             f.write(old_content)
         stopROS()
         self.assertEquals(is_manager_alive, True)
