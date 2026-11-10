@@ -8,7 +8,7 @@ Node_to_check = '/controlSwitch'
 
 SECS = 0.1
 rospack = rospkg.RosPack()
-filepath = rospack.get_path('adeye')+"/launch/switch.launch"
+filepath = rospack.get_path('adeye')+"/launch/Features/switch.launch"
 
 ##A class to check the creation and behavior of the launch file and if the nodes are running
 class TestFeatureControl(TestCase):
