@@ -6,7 +6,7 @@
           args="1.1 -0.7 1.8 -0.3706 0.483 -0.6294 0.483 base_link tl_camera 10"/>
 
     <!-- traffic_light_camera_info -->
-    <include file="$(find adeye)/launch/camera_info_publisher.launch">
+    <include file="$(find adeye)/launch/Features/camera_info_publisher.launch">
         <arg name="node_name" value="traffic_light_camera_info_publisher"/>
         <arg name="args_list" value="/tl_camera/camera_info tl_camera 720 960 0.0 0.0 0.0 0.0 0.0 1125 0.0 480 0.0 1125 360 0.0 0.0 1.0 1.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 1.0 1125 0.0 480 0.0 0.0 1125 360 0.0 0.0 0.0 1.0 0.0"/>
     </include>
@@ -77,7 +77,7 @@
 
 
     <!-- objectsFrameAdapter -->
-    <include file="$(find adeye)/launch/objectsFrameAdapter.launch">
+    <include file="$(find adeye)/launch/Features/objectsFrameAdapter.launch">
         <arg name="nodeName" value="objectsFrameAdapter2"/>
         <arg name="inputTopic" value="detection/radar_tracker/objects"/>
         <arg name="outputTopic" value="detection/radar_tracker/objects2"/>
@@ -85,7 +85,7 @@
     </include>
 
     <!-- camera_setup for camera_1-->
-    <include file="$(find adeye)/launch/camera_setup.launch">
+    <include file="$(find adeye)/launch/Features/camera_setup.launch">
         <arg name="camera" value="camera_1"/>
         <arg name="tf_x" value="2.0"/>
         <arg name="tf_y" value="0.0"/>
@@ -99,7 +99,7 @@
 
     <!--
 
-    <include file="$(find adeye)/launch/camera_setup.launch">
+    <include file="$(find adeye)/launch/Features/camera_setup.launch">
         <arg name="camera" value="camera_2"/>
         <arg name="tf_x" value="-0.95"/>
         <arg name="tf_y" value="0.0"/>
@@ -110,7 +110,7 @@
         <arg name="tf_qw" value="0.5"/>
     </include>
 
-    <include file="$(find adeye)/launch/cameraObjectListFuse.launch">
+    <include file="$(find adeye)/launch/Features/cameraObjectListFuse.launch">
         <arg name="nodeName" value="cameraObjectsListFuse"/>
         <arg name="inputTopic1" value="camera_1/fusion/objects"/>
         <arg name="inputTopic2" value="camera_2/fusion/objects"/>
@@ -125,7 +125,7 @@
     </node>
 
     <!-- objectsFrameAdapter -->
-    <include file="$(find adeye)/launch/objectsFrameAdapter.launch">
+    <include file="$(find adeye)/launch/Features/objectsFrameAdapter.launch">
         <arg name="nodeName" value="objectsFrameAdapter"/>
         <arg name="inputTopic" value="fusion/objects"/>
         <arg name="outputTopic" value="tracked_objects"/>
