@@ -42,8 +42,8 @@ def startLaunchFiles():
         rospy.init_node('vector_map_tester', anonymous=True) #Initializing ROS Node given nodename. 
         uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
         roslaunch.configure_logging(uuid)
-        roslaunch_file = "/home/adeye/AD-EYE_Core/AD-EYE/ROS_Packages/src/AD-EYE/launch/my_map.launch"
-        roslaunch_file2 ="/home/adeye/AD-EYE_Core/AD-EYE/ROS_Packages/src/AD-EYE/launch/my_mission_planning.launch"
+        roslaunch_file = "/home/adeye/AD-EYE_Core/AD-EYE/ROS_Packages/src/AD-EYE/launch/Features/my_map.launch"
+        roslaunch_file2 ="/home/adeye/AD-EYE_Core/AD-EYE/ROS_Packages/src/AD-EYE/launch/Features/my_mission_planning.launch"
         launch = roslaunch.parent.ROSLaunchParent(uuid, [roslaunch_file, roslaunch_file2])
 
         launch.start()
