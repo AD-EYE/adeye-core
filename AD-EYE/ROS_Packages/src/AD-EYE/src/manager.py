@@ -150,7 +150,7 @@ class ManagerFeaturesHandler:
         # Basic folder locations
         rospack = rospkg.RosPack()
         adeye_package_path = rospack.get_path('adeye') + "/"
-        launch_folder = "launch/"
+        launch_folder = "launch/Features/"
 
         if rospy.get_param("test_automation", False):
             launch_folder = "modified_launch_files/"
