@@ -10,7 +10,7 @@
           args="/adeye/detection/BaseLink_to_radar/tf_x /adeye/detection/BaseLink_to_radar/tf_y /adeye/detection/BaseLink_to_radar/tf_z /adeye/detection/BaseLink_to_radar/tf_a /adeye/detection/BaseLink_to_radar/tf_b /adeye/detection/BaseLink_to_radar/tf_c /adeye/detection/BaseLink_to_radar/tf_d base_link radar 10"/>
 
     <!-- traffic_light_camera_info -->
-    <include file="$(find adeye)/launch/camera_info_publisher.launch">
+    <include file="$(find adeye)/launch/Features/camera_info_publisher.launch">
         <arg name="node_name" value="/adeye/detection/traffic_light_camera_info/node_name"/>
         <arg name="args_list" value="/adeye/detection/traffic_light_camera_info/topic /adeye/detection/traffic_light_camera_info/frame_id /adeye/detection/traffic_light_camera_info/height /adeye/detection/traffic_light_camera_info/width /adeye/detection/traffic_light_camera_info/D1 /adeye/detection/traffic_light_camera_info/D2 /adeye/detection/traffic_light_camera_info/D3 /adeye/detection/traffic_light_camera_info/D4 /adeye/detection/traffic_light_camera_info/D5 /adeye/detection/traffic_light_camera_info/K1 /adeye/detection/traffic_light_camera_info/K2 /adeye/detection/traffic_light_camera_info/K3 /adeye/detection/traffic_light_camera_info/K4 /adeye/detection/traffic_light_camera_info/K5 /adeye/detection/traffic_light_camera_info/K6 /adeye/detection/traffic_light_camera_info/K7 /adeye/detection/traffic_light_camera_info/K8 /adeye/detection/traffic_light_camera_info/K9 /adeye/detection/traffic_light_camera_info/R1 /adeye/detection/traffic_light_camera_info/R2 /adeye/detection/traffic_light_camera_info/R3 /adeye/detection/traffic_light_camera_info/R4 /adeye/detection/traffic_light_camera_info/R5 /adeye/detection/traffic_light_camera_info/R6 /adeye/detection/traffic_light_camera_info/R7 /adeye/detection/traffic_light_camera_info/R8 /adeye/detection/traffic_light_camera_info/R9 /adeye/detection/traffic_light_camera_info/P1 /adeye/detection/traffic_light_camera_info/P2 /adeye/detection/traffic_light_camera_info/P3 /adeye/detection/traffic_light_camera_info/P4 /adeye/detection/traffic_light_camera_info/P5 /adeye/detection/traffic_light_camera_info/P6 /adeye/detection/traffic_light_camera_info/P7 /adeye/detection/traffic_light_camera_info/P8 /adeye/detection/traffic_light_camera_info/P9 /adeye/detection/traffic_light_camera_info/P10 /adeye/detection/traffic_light_camera_info/P11 /adeye/detection/traffic_light_camera_info/P12"/>
     </include>
@@ -85,10 +85,10 @@
     </node>
 
     <!-- radar_broadcaster -->
-    <include file="$(find adeye)/launch/radar_broadcaster.launch"/>
+    <include file="$(find adeye)/launch/Features/radar_broadcaster.launch"/>
 
     <!-- objectsFrameAdapter -->
-    <include file="$(find adeye)/launch/objectsFrameAdapter.launch">
+    <include file="$(find adeye)/launch/Features/objectsFrameAdapter.launch">
         <arg name="nodeName" value="objectsFrameAdapter2"/>
         <arg name="inputTopic" value="detection/radar_tracker/objects"/>
         <arg name="outputTopic" value="detection/radar_tracker/objects2"/>
@@ -96,7 +96,7 @@
     </include>
 
     <!-- lidar_radar_fusion -->
-    <include file="$(find adeye)/launch/lidarRadarFuse.launch">
+    <include file="$(find adeye)/launch/Features/lidarRadarFuse.launch">
         <arg name="nodeName" value="objectsListFuse1"/>
         <arg name="lidar_topic" value="detection/lidar_tracker/objects"/>
         <arg name="radar_topic" value="detection/radar_tracker/objects2"/>
@@ -104,7 +104,7 @@
     </include>
 
     <!-- camera_setup for camera_1-->
-    <include file="$(find adeye)/launch/camera_setup.launch">
+    <include file="$(find adeye)/launch/Features/camera_setup.launch">
         <arg name="camera" value="camera_1"/>
         <arg name="tf_x" value="/adeye/detection/BaseLink_to_camera1/tf_x"/>
         <arg name="tf_y" value="/adeye/detection/BaseLink_to_camera1/tf_y"/>
@@ -116,7 +116,7 @@
     </include>
 
     <!-- camera_setup for camera_2-->
-    <include file="$(find adeye)/launch/camera_setup.launch">
+    <include file="$(find adeye)/launch/Features/camera_setup.launch">
         <arg name="camera" value="camera_2"/>
         <arg name="tf_x" value="/adeye/detection/BaseLink_to_camera2/tf_x"/>
         <arg name="tf_y" value="/adeye/detection/BaseLink_to_camera2/tf_y"/>
@@ -128,7 +128,7 @@
     </include>
 
     <!-- Two_cameras_fusion -->
-    <include file="$(find adeye)/launch/cameraObjectListFuse.launch">
+    <include file="$(find adeye)/launch/Features/cameraObjectListFuse.launch">
         <arg name="nodeName" value="cameraObjectsListFuse"/>
         <arg name="inputTopic1" value="camera_1/fusion/objects"/>
         <arg name="inputTopic2" value="camera_2/fusion/objects"/>
@@ -141,7 +141,7 @@
     </node>
 
     <!-- objectsFrameAdapter -->
-    <include file="$(find adeye)/launch/objectsFrameAdapter.launch">
+    <include file="$(find adeye)/launch/Features/objectsFrameAdapter.launch">
         <arg name="nodeName" value="objectsFrameAdapter"/>
         <arg name="inputTopic" value="fusion/objects"/>
         <arg name="outputTopic" value="tracked_objects"/>
