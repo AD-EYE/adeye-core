@@ -35,11 +35,19 @@ class ResetPolicyTests(unittest.TestCase):
         for reason in ["STOP_COMMAND", "DRIVER_ACCELERATOR_INTERVENTION"]:
             manual.validate_reset(sample(reason=reason, fault_entry_reason=reason), True)
 
-    def test_missing_motion_or_intervention_evidence_refuses_reset(self):
+    def test_missing_motion_or_ad_off_evidence_refuses_reset(self):
         for changes in [{"speed_mps": None}, {"speed_mps": float("nan")}, {"speed_mps": 1}, {"speed_mps": -1},
-                        {"ad_mode_state": 1}, {"ad_mode_state": 3}, {"brake_interrupt": 1},
-                        {"accelerator_interrupt": None}, {"steering_interrupt": 1}]:
+                        {"ad_mode_state": 1}, {"ad_mode_state": 3}, {"ad_mode_state": None}]:
             with self.assertRaises(ValueError): manual.validate_reset(sample(**changes), True)
+
+    def test_stored_intervention_flags_do_not_prevent_operator_requested_reset(self):
+        for field in ["brake_interrupt", "accelerator_interrupt", "steering_interrupt"]:
+            for value in [0, 1, 2, 3, None]:
+                snapshot = sample(**{field: value})
+                original = dict(snapshot)
+                manual.validate_reset(snapshot, True)
+                manual.validate_observations(snapshot)
+                self.assertEqual(snapshot, original)
 
     def test_new_command_age_watchdogs_are_not_used(self):
         manual.validate_reset(sample(steering_command_age_s=10000, acceleration_command_age_s=10000,
@@ -107,6 +115,44 @@ class ResetOrderingTests(unittest.TestCase):
         node.wait = wait
         node.prepare()
 
+    def test_prepare_does_not_wait_for_stored_intervention_flags_to_clear(self):
+        node = manual.ManualVehicleRecovery.__new__(manual.ManualVehicleRecovery)
+        node.required = {"/vi_controller"}
+        node.acks = {("/vi_controller", "prepared"): {}}
+        node.snapshot = sample(brake_interrupt=1, accelerator_interrupt=1, steering_interrupt=None)
+        node.stage = lambda *args: None
+        node.wait = lambda predicate, action: self.assertTrue(predicate())
+        node.prepare()
+
+    def test_initialization_accepts_new_boot_with_flags_still_set(self):
+        node = manual.ManualVehicleRecovery.__new__(manual.ManualVehicleRecovery)
+        node.old_boot = "old-boot"
+        node.acks = {("/vi_controller", "initialized"): {}}
+        node.snapshot = sample(state="INITIALIZING", boot_id="new-boot",
+                               brake_interrupt=1, accelerator_interrupt=1, steering_interrupt=1)
+        node.stage = lambda *args: None
+        waits = []
+        def wait(predicate, action=None):
+            waits.append(action)
+            self.assertTrue(predicate())
+        node.wait = wait
+        node.initialize()
+        self.assertEqual(waits, ["INITIALIZE", None])
+        self.assertEqual(node.snapshot["state"], "INITIALIZING")
+
+    def test_status_keeps_intervention_values_visible_without_changing_them(self):
+        node = manual.ManualVehicleRecovery.__new__(manual.ManualVehicleRecovery)
+        node.lock = threading.RLock()
+        node.phase = "idle"; node.detail = "Ready"; node.token = ""
+        node.snapshot = sample(brake_interrupt=1, accelerator_interrupt=None, steering_interrupt=1)
+        sent = []
+        node.String = lambda **kwargs: Obj(**kwargs)
+        node.status_pub = Obj(publish=lambda message: sent.append(json.loads(message.data)))
+        node.publish_status()
+        self.assertTrue(sent[0]["intervention_flags_informational_only"])
+        self.assertEqual(sent[0]["intervention_flags"], {
+            "brake_interrupt": 1, "accelerator_interrupt": None, "steering_interrupt": 1})
+
     def test_release_does_not_wait_for_a_gui_to_rearm_or_send_commands(self):
         node = manual.ManualVehicleRecovery.__new__(manual.ManualVehicleRecovery)
         node.required = {"/vi_controller", "/vehicle_controller", "gui-123"}
@@ -147,6 +193,22 @@ class ResetSourceGuards(unittest.TestCase):
         self.assertIn("if (recovery_held_) return", state)
         self.assertIn("!recovery_needs_ad_request_", state)
 
+    def test_existing_driver_emergency_and_stop_command_paths_remain_present(self):
+        text = self.read("ros2can/ros_canlib/src/vehicle/src/VehicleController.cpp")
+        intervention = self.block(text, "void VehicleController::checkDriverInterrupt()")
+        for marker in ["DrvrIntvStsDrvrIntvByBrkPedl", "DrvrIntvStsDrvrIntvByAccrPedl",
+                       "DRIVER_BRAKE_INTERVENTION", "DRIVER_ACCELERATOR_INTERVENTION", "emergency_stop("]:
+            self.assertIn(marker, intervention)
+        emergency = self.block(text, "void VehicleController::emergency_stop(")
+        self.assertIn("state_ = VCState::FAULT", emergency)
+        self.assertIn("exitAD()", emergency)
+        self.assertIn("stopCAN()", emergency)
+        self.assertIn('\\"phase\\":\\"failed\\"', emergency)
+        hvi = self.read("ros2can/ros_canlib/src/vehicle/src/HVIController.cpp")
+        self.assertIn("vh_.recoveryHeld() && command != HVICommand::STOP_command", hvi)
+        stop = self.block(hvi, "case HVICommand::STOP_command:")
+        self.assertIn("vh_.emergency_stop()", stop)
+
     def test_both_driving_commands_and_all_gui_commands_are_held(self):
         text = self.read("ros2can/ros_canlib/src/vehicle/src/VehicleController.cpp")
         for method in ["scSteer(double", "scAccelerate(double", "scEnterAD()"]:
@@ -183,7 +245,9 @@ class ResetSourceGuards(unittest.TestCase):
     def test_opt_in_flag_is_forwarded_by_all_module_launches(self):
         package = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
         import glob
-        for filename in glob.glob(os.path.join(package, "launch", "manager_real_world*.launch")):
+        filenames = glob.glob(os.path.join(package, "launch", "manager_real_world*.launch"))
+        filenames += glob.glob(os.path.join(package, "launch", "fault_injection", "manager_real_world*.launch"))
+        for filename in filenames:
             root = ET.parse(filename).getroot()
             args = {a.get("name"): a for a in root.findall("arg")}
             self.assertEqual(args["enable_manual_recovery"].get("default"), "false", filename)

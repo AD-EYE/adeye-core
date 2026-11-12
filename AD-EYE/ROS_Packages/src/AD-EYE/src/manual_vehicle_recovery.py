@@ -20,7 +20,7 @@ ACTORS = frozenset(["vicontroller", "controlswitch", "ctrlcmdrepublisher", "vehi
 
 def validate_reset(snapshot, confirmation):
     if confirmation is not True:
-        raise ValueError("Confirm physical standstill, AD mode off and rosbag paused before requesting reset")
+        raise ValueError("Confirm physical standstill, AD mode off and rosbag stopped before requesting reset")
     if not snapshot or snapshot.get("state") != "FAULT":
         raise ValueError("Reset is only available for a latched ros2can FAULT")
     if snapshot.get("reason") not in SUPPORTED_REASONS or snapshot.get("fault_entry_reason") not in SUPPORTED_REASONS:
@@ -31,15 +31,16 @@ def validate_reset(snapshot, confirmation):
 
 
 def validate_observations(snapshot):
+    """Check standstill and AD off, not whether stored intervention flags cleared."""
     from vehicle_recovery_monitor import finite_number
     speed = snapshot.get("speed_mps")
     if not finite_number(speed) or abs(speed) > 0.1:
         raise ValueError("A usable standstill speed reading is required")
     if snapshot.get("ad_mode_state") != 0:
         raise ValueError("Vehicle must report AD mode off (raw value 0)")
-    for field in ["brake_interrupt", "accelerator_interrupt", "steering_interrupt"]:
-        if snapshot.get(field) != 0:
-            raise ValueError("Driver intervention is active or unknown: " + field)
+    # These flags can remain set after a driver releases the controls. They do
+    # not approve driving, and must not prevent a requested software restart.
+    # The car's intervention handling and emergency-stop code are unchanged.
 
 
 def run_reset(backend):
@@ -52,7 +53,7 @@ def run_reset(backend):
     except Exception as error:
         backend.abort(str(error))
         return False, str(error)
-    return True, "ros2can restarted in INITIALIZING. Set a new live goal, or resume replay deliberately, before requesting AD mode."
+    return True, "ros2can restarted in INITIALIZING. Intervention readings were information only; driver intervention handling is unchanged. Set a new live goal, or restart replay deliberately, before requesting AD mode."
 
 
 class ManualVehicleRecovery(object):
@@ -65,7 +66,7 @@ class ManualVehicleRecovery(object):
         self.operation_lock = threading.Lock()
         self.snapshot = None
         self.acks, self.pending_gui = {}, set()
-        self.token, self.phase, self.detail = "", "idle", "Manual software reset is available on explicit request only"
+        self.token, self.phase, self.detail = "", "idle", "Manual software reset is available on explicit request only; stored intervention flags do not prevent it"
         self.required = set()
         self.old_pid = None
         self.old_boot = None
@@ -126,6 +127,9 @@ class ManualVehicleRecovery(object):
                       "held": bool(self.token and self.phase != "complete"),
                       "enabled": True, "automatic_recovery": False,
                       "requires_operator_confirmation": True,
+                      "intervention_flags_informational_only": True,
+                      "intervention_flags": {name: (self.snapshot or {}).get(name) for name in
+                                             ["brake_interrupt", "accelerator_interrupt", "steering_interrupt"]},
                       "waiting_for_cleanup": sorted(name for name in self.required if (name, "prepared") not in self.acks) if self.phase == "preparing" else [],
                       "can_sample_freshness_verified": False,
                       "wall_time_s": time.time()}
@@ -263,7 +267,7 @@ class ManualVehicleRecovery(object):
         self.wait(booted, "PREPARE")
 
     def initialize(self):
-        self.stage("initializing", "Restoring the existing startup CAN sequence while commands remain held")
+        self.stage("initializing", "Restoring startup CAN communication while commands remain held; stored intervention flags are information only")
         self.wait(lambda: ("/vi_controller", "initialized") in self.acks, "INITIALIZE")
         def ready_observation():
             if not self.snapshot or self.snapshot.get("boot_id") == self.old_boot:
